@@ -48,3 +48,8 @@ docker exec -i -t d83c525a65b3  /bin/bash
 ```
 
 ### Consideraciones a tener en cuenta
+
+
+## To create a super User
+python manage.py createsuperuser
+

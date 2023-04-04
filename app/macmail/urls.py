@@ -20,8 +20,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic.base import TemplateView
 
-from actividad import views as views_actividad
-from reportes import actions
 # from modeladmin_reorder import reorder
 # from reportes import admin as admin_reportes
 
