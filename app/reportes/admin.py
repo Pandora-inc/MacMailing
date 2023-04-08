@@ -2,8 +2,8 @@
 from django import forms
 from django.utils.html import format_html
 from django.contrib import admin
-from reportes.models import (Countrys,ContactType,WebType,EmailType,SocialType,Clientes,ClientesContact,ClientesWeb,ClientesEmail,ClientesSocial,ClientesAddress,ClientesUTM)
-
+from reportes.models import (Countrys, ContactType, WebType, EmailType, SocialType, Clientes, ClientesContact,
+                             ClientesWeb, ClientesEmail, ClientesSocial, ClientesAddress, ClientesUTM, ExcelFiles)
 
 
 admin.site.register(Countrys)
@@ -18,3 +18,4 @@ admin.site.register(ClientesEmail)
 admin.site.register(ClientesSocial)
 admin.site.register(ClientesAddress)
 admin.site.register(ClientesUTM)
+admin.site.register(ExcelFiles)

@@ -43,3 +43,4 @@ services:
 volumes:
   macmail_db_volume:
   macmail_pgadmin-data:
+  macmail_repo_data:

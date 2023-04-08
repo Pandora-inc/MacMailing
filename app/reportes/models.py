@@ -1,4 +1,5 @@
 """ Modelo de datos relacionados a la actividad """
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -177,7 +178,7 @@ class MailCorp(models.Model):
 
     def __str__(self):
         return str(self.name)
-    
+
 class Mail(models.Model):
     mail_corp = models.ForeignKey(MailCorp, models.RESTRICT, blank=True, null=True)
     cliente = models.ForeignKey(Clientes, models.RESTRICT, blank=True, null=True)
@@ -188,9 +189,17 @@ class Mail(models.Model):
     status = models.BooleanField(default=False)
     send_number = models.IntegerField(default=0)
     last_send = models.DateTimeField(blank=True, null=True)
-    
+
 
     def __str__(self):
         return str(self.subject)
-    
 
+
+class ExcelFiles(models.Model):
+    name = models.CharField(max_length=64, blank=True, null=True)
+    file = models.FileField(upload_to='excel_files/', blank=True, null=True)
+    created = models.DateTimeField(blank=True, null=True, default=timezone.now())
+    create_user = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.name)
