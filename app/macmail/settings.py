@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'admin_reorder',
+    # 'admin_reorder',
     'reportes',
 ]
 
@@ -51,7 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'admin_reorder.middleware.ModelAdminReorder',
+    # 'admin_reorder.middleware.ModelAdminReorder',
 ]
 
 ROOT_URLCONF = 'macmail.urls'
@@ -80,10 +80,10 @@ WSGI_APPLICATION = 'macmail.wsgi.application'
 DATABASES = {
     'default': {
         "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.mysql"),
-        "NAME": os.environ.get("SQL_NAME", "db_name"),
-        "USER": os.environ.get("SQL_USER", "db_user"),
-        "PASSWORD": os.environ.get("SQL_PASSWORD", "db_password"),
-        "HOST": os.environ.get("SQL_HOST", "db"),
+        "NAME": os.environ.get("SQL_NAME", "macmail_db"),
+        "USER": os.environ.get("SQL_USER", "macmail_user"),
+        "PASSWORD": os.environ.get("SQL_PASSWORD", "macmail_pass"),
+        "HOST": os.environ.get("SQL_HOST", "macmail_db_host"),
         "PORT": os.environ.get("SQL_PORT", "3306"),
         'OPTIONS': {
             "init_command": "SET sql_mode='STRICT_TRANS_TABLES'"

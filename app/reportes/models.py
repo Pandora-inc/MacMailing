@@ -1,5 +1,7 @@
 """ Modelo de datos relacionados a la actividad """
+from django.utils import timezone
 from django.db import models
+from django.contrib.auth.models import User
 
 
 TIPOS_LIBROS = [
@@ -12,68 +14,192 @@ TIPOS_IMPRESION = [
     ('Rubricados', 'Imprimir Rubricados'),
 ]
 
-class LibrosRubricados(models.Model):
-    """ Modelo para la generación de libros de rendiciones y operaciones """
-    nombre = models.CharField(max_length=32)
-    fecha = models.DateField(blank=True, null=True, verbose_name='Fecha',
-                             help_text='Fecha de la operación', auto_now_add=True)
-    impresion = models.CharField(
-        max_length=16, choices=TIPOS_IMPRESION, verbose_name='Impresión',blank=True, null=True, )
-    tipo = models.CharField(
-        max_length=16, choices=TIPOS_LIBROS, verbose_name='Tipo')
-    status = models.BooleanField(default=True, verbose_name='Activo')
-    fecha_desde = models.DateField(blank=True, null=True)
-    fecha_hasta = models.DateField(blank=True, null=True)
-    pagina_desde = models.IntegerField(blank=True, null=True)
-    pagina_hasta = models.IntegerField(blank=True, null=True)
-    generado = models.BooleanField(default=False)
+SALUDATIONS = [('Mrs.','Mrs.'), ('Mr.', 'Mr.'), ('Ms.', 'Ms.'), ('Dr.', 'Dr.'), ('Prof.', 'Prof.'), ('Other', 'Other')]
+CURRENCYS = [('US Dollar','US Dollar'),]
+
+class Countrys(models.Model):
+    description = models.CharField(max_length=64, blank=True, null=True)
 
     def __str__(self):
-        return str(self.id) + " - " + str(self.nombre)
+        return str(self.description)
+    
 
-    class Meta:
-        """ Meta """
-        # managed = False
-        db_table = 'libro_rubricados'
-        verbose_name = 'libro rubricado'
-        verbose_name_plural = 'libros rubricados'
-        ordering = ('fecha',)
-
-
-class RegistrosLibros(models.Model):
-    """ Modelo para el registro de los items de los libros de rendiciones y operaciones """
-    libro = models.ForeignKey(
-        LibrosRubricados, models.RESTRICT, blank=True, null=True)
-    numero = models.IntegerField(
-        blank=True, null=True, verbose_name='Numero de orden')
-    fecha = models.DateField(blank=True, null=True,
-                             help_text='Fecha de registro de la poliza')
-    vigencia_desde = models.DateField(
-        blank=True, null=True, help_text='Fecha de la vigencia desde de la poliza')
-    vigencia_hasta = models.DateField(
-        blank=True, null=True, help_text='Fecha de la vigencia hasta de la poliza')
-    prima = models.DecimalField(
-        max_digits=11, decimal_places=2, help_text='Prima de la poliza')
-    cliente_nombre = models.CharField(
-        max_length=64, help_text='Nombre registrado del cliente')
-    cliente_direccion = models.CharField(
-        max_length=64, help_text='Direccion del cliente')
-    compania_nombre = models.CharField(
-        max_length=32, help_text='Nombre de la compañia')
-    orden_direccion = models.CharField(
-        max_length=64, help_text='Direccion registrada de la orden. Ubicacion del riesgo')
-    riesgo_desc = models.TextField(help_text='Descripcion del riesgo de la orden. Bien a asegurar')
-    secciones = models.CharField(
-        max_length=64, help_text='Nombre de la seccion de la orden. Riesgo a cubrir')
-    observaciones = models.CharField(max_length=64)
+class ContactType(models.Model):
+    name = models.CharField(max_length=32, blank=True, null=True)
+    description = models.CharField(max_length=64, blank=True, null=True)
+    
+    def __str__(self):
+        return str(self.name)
+    
+class WebType(models.Model):
+    name = models.CharField(max_length=32, blank=True, null=True)
+    description = models.CharField(max_length=64, blank=True, null=True)
 
     def __str__(self):
-        return str(self.libro) + " - " + str(self.numero) + " - " + str(self.cliente_nombre)
+        return str(self.name)
+    
+class EmailType(models.Model):
+    name = models.CharField(max_length=32, blank=True, null=True)
+    description = models.CharField(max_length=64, blank=True, null=True)
+    
+    def __str__(self):
+        return str(self.name)
 
+class SocialType(models.Model):
+    name = models.CharField(max_length=32, blank=True, null=True)
+    description = models.CharField(max_length=64, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.name)
+
+class Clientes(models.Model):
+    """ Modelo para el registro de los clientes """
+    cliente_id = models.IntegerField(blank=True, null=True)	
+    status = models.CharField(max_length=32, blank=True, null=True)	
+    lead_name = models.CharField(max_length=64, blank=True, null=True)	
+    salutation = models.CharField(max_length=16, blank=True, null=True, choices=SALUDATIONS)	
+    first_name = models.CharField(max_length=32, blank=True, null=True)	
+    middle_name = models.CharField(max_length=32, blank=True, null=True)
+    last_name = models.CharField(max_length=32, blank=True, null=True)    
+    date_of_birth = models.DateField(blank=True, null=True)
+    created = models.DateTimeField(blank=True, null=True)	
+    source = models.CharField(max_length=32, blank=True, null=True)
+    responsible = models.ForeignKey(User, models.RESTRICT, blank=True, null=True, related_name='responsable')	
+    status_information = models.CharField(max_length=32, blank=True, null=True)
+    source_information = models.CharField(max_length=64, blank=True, null=True)
+    created_by = models.ForeignKey(User, models.RESTRICT, blank=True, null=True, related_name='creado_por')
+    modified = models.DateTimeField(blank=True, null=True)
+    modified_by = models.ForeignKey(User, models.RESTRICT, blank=True, null=True, related_name='modificado_por')
+    company_name = models.CharField(max_length=64, blank=True, null=True)
+    position = models.CharField(max_length=32, blank=True, null=True)
+    comment = models.TextField(blank=True, null=True)
+    total = models.DecimalField(max_digits=11, decimal_places=2, blank=True, null=True)
+    currency = models.CharField(max_length=16, blank=True, null=True, choices=CURRENCYS)
+    product = models.CharField(max_length=32, blank=True, null=True)
+    price = models.DecimalField(max_digits=11, decimal_places=2, blank=True, null=True)
+    quantity = models.IntegerField(blank=True, null=True)
+    created_by_crm_form = models.CharField(max_length=32, blank=True, null=True)
+    repeat_lead = models.BooleanField(blank=True, null=True, default=False)
+    client = models.CharField(max_length=32, blank=True, null=True)
+    customer_journey = models.CharField(max_length=32, blank=True, null=True)	
+    type = models.CharField(max_length=32, blank=True, null=True)
+    country = models.ForeignKey(Countrys, models.RESTRICT, blank=True, null=True)
+    account	= models.CharField(max_length=32, blank=True, null=True)
+    addl_type_details_other	= models.CharField(max_length=32, blank=True, null=True)
+    industry_sub_type = models.CharField(max_length=32, blank=True, null=True)	
+    last_updated_on = models.DateTimeField(blank=True, null=True)
+  
+    def __str__(self):
+        return str(self.cliente_id)+ " - " + str(self.first_name) + " " + str(self.last_name) + " - " + str(self.company_name)
     class Meta:
         """ Meta data del modelo """
         # managed = False
-        db_table = 'registros_libros'
-        verbose_name = 'registro libro'
-        verbose_name_plural = 'registros libros'
-        ordering = ('libro', 'fecha')
+        db_table = 'clientes'
+        verbose_name = 'cliente'
+        verbose_name_plural = 'clientes'
+        ordering = ('cliente_id',)
+
+class ClientesContact(models.Model):
+    cliente = models.ForeignKey(Clientes, models.RESTRICT, blank=True, null=True)
+    type = models.ForeignKey(ContactType, models.RESTRICT, blank=True, null=True)
+    data = models.CharField(max_length=64, blank=True, null=True)
+    
+    def __str__(self):
+        return str(self.data)
+class ClientesWeb(models.Model):
+    cliente = models.ForeignKey(Clientes, models.RESTRICT, blank=True, null=True)
+    type = models.ForeignKey(WebType, models.RESTRICT, blank=True, null=True)
+    data = models.CharField(max_length=64, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.data)
+
+class ClientesEmail(models.Model):
+    cliente = models.ForeignKey(Clientes, models.RESTRICT, blank=True, null=True)
+    type = models.ForeignKey(EmailType, models.RESTRICT, blank=True, null=True)
+    data = models.CharField(max_length=64, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.data)
+class ClientesSocial(models.Model):  
+    cliente = models.ForeignKey(Clientes, models.RESTRICT, blank=True, null=True)
+    type = models.ForeignKey(SocialType, models.RESTRICT, blank=True, null=True)
+    data = models.CharField(max_length=64, blank=True, null=True)  
+    
+    def __str__(self):
+        return str(self.data)
+class ClientesAddress(models.Model): 
+    cliente = models.ForeignKey(Clientes, models.RESTRICT, blank=True, null=True)
+    address = models.CharField(max_length=64, blank=True, null=True)
+    street_house_no = models.CharField(max_length=32, blank=True, null=True)
+    apartment_office_room_floor = models.CharField(max_length=32, blank=True, null=True)
+    city = models.CharField(max_length=32, blank=True, null=True)
+    district = models.CharField(max_length=32, blank=True, null=True)
+    region_area = models.CharField(max_length=32, blank=True, null=True)
+    postal_code = models.CharField(max_length=32, blank=True, null=True)
+    country = models.ForeignKey(Countrys, models.RESTRICT, blank=True, null=True)
+
+
+class ClientesUTM(models.Model):
+    cliente = models.ForeignKey(Clientes, models.RESTRICT, blank=True, null=True)
+    source = models.CharField(max_length=64, help_text='Codigo')
+    medium = models.CharField(max_length=64, help_text='Medio')
+    campaign = models.CharField(max_length=64, help_text='Campaign')
+    content = models.CharField(max_length=64, help_text='Content')
+    term = models.CharField(max_length=64, help_text='Term')
+
+
+class attachment(models.Model):
+    name = models.CharField(max_length=64, blank=True, null=True)
+    file = models.FileField(upload_to='attachments/', blank=True, null=True)
+    created = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return str(self.name)
+
+class Account(models.Model):
+    name = models.CharField(max_length=64, blank=True, null=True)
+    supervisor = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
+    created = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return str(self.name)
+class MailCorp(models.Model):
+    name = models.CharField(max_length=64, blank=True, null=True)
+    email = models.CharField(max_length=64, blank=True, null=True)
+    password = models.CharField(max_length=64, blank=True, null=True)
+    smtp = models.CharField(max_length=64, blank=True, null=True)
+    smtp_port = models.CharField(max_length=64, blank=True, null=True)
+    imap = models.CharField(max_length=64, blank=True, null=True)
+    imap_port = models.CharField(max_length=64, blank=True, null=True)
+    created = models.DateTimeField(blank=True, null=True)
+    account = models.ForeignKey(Account, models.RESTRICT, blank=True, null=True)
+    user = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.name)
+
+class Mail(models.Model):
+    mail_corp = models.ForeignKey(MailCorp, models.RESTRICT, blank=True, null=True)
+    cliente = models.ForeignKey(Clientes, models.RESTRICT, blank=True, null=True)
+    subject = models.CharField(max_length=64, blank=True, null=True)
+    body = models.TextField(blank=True, null=True)
+    created = models.DateTimeField(blank=True, null=True)
+    attachment = models.ManyToManyField(attachment, blank=True)
+    status = models.BooleanField(default=False)
+    send_number = models.IntegerField(default=0)
+    last_send = models.DateTimeField(blank=True, null=True)
+
+
+    def __str__(self):
+        return str(self.subject)
+
+
+class ExcelFiles(models.Model):
+    name = models.CharField(max_length=64, blank=True, null=True)
+    file = models.FileField(upload_to='excel_files/', blank=True, null=True)
+    created = models.DateTimeField(blank=True, null=True, default=timezone.now())
+    create_user = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.name)
