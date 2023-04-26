@@ -52,6 +52,27 @@ class SocialType(models.Model):
     def __str__(self):
         return str(self.name)
 
+class Account(models.Model):
+    name = models.CharField(max_length=64, blank=True, null=True)
+    supervisor = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
+    created = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return str(self.name)
+class MailCorp(models.Model):
+    name = models.CharField(max_length=64, blank=True, null=True)
+    email = models.CharField(max_length=64, blank=True, null=True)
+    password = models.CharField(max_length=64, blank=True, null=True)
+    smtp = models.CharField(max_length=64, blank=True, null=True)
+    smtp_port = models.CharField(max_length=64, blank=True, null=True)
+    imap = models.CharField(max_length=64, blank=True, null=True)
+    imap_port = models.CharField(max_length=64, blank=True, null=True)
+    created = models.DateTimeField(blank=True, null=True)
+    account = models.ForeignKey(Account, models.RESTRICT, blank=True, null=True)
+    user = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.name)
 class Clientes(models.Model):
     """ Modelo para el registro de los clientes """
     cliente_id = models.IntegerField(blank=True, null=True)	
@@ -64,12 +85,12 @@ class Clientes(models.Model):
     date_of_birth = models.DateField(blank=True, null=True)
     created = models.DateTimeField(blank=True, null=True)	
     source = models.CharField(max_length=32, blank=True, null=True)
-    responsible = models.ForeignKey(User, models.RESTRICT, blank=True, null=True, related_name='responsable')	
+    responsible = models.ForeignKey(MailCorp, models.RESTRICT, blank=True, null=True, related_name='responsable')	
     status_information = models.CharField(max_length=32, blank=True, null=True)
     source_information = models.CharField(max_length=64, blank=True, null=True)
-    created_by = models.ForeignKey(User, models.RESTRICT, blank=True, null=True, related_name='creado_por')
+    created_by = models.ForeignKey(MailCorp, models.RESTRICT, blank=True, null=True, related_name='creado_por')
     modified = models.DateTimeField(blank=True, null=True)
-    modified_by = models.ForeignKey(User, models.RESTRICT, blank=True, null=True, related_name='modificado_por')
+    modified_by = models.ForeignKey(MailCorp, models.RESTRICT, blank=True, null=True, related_name='modificado_por')
     company_name = models.CharField(max_length=64, blank=True, null=True)
     position = models.CharField(max_length=32, blank=True, null=True)
     comment = models.TextField(blank=True, null=True)
@@ -91,6 +112,27 @@ class Clientes(models.Model):
   
     def __str__(self):
         return str(self.cliente_id)+ " - " + str(self.first_name) + " " + str(self.last_name) + " - " + str(self.company_name)
+    
+    def add_contact(self, type, data):
+        contact = ClientesContact(cliente=self, type=type, data=data)
+        contact.save()
+        
+    def add_web(self, type, data):
+        web = ClientesWeb(cliente=self, type=type, data=data)
+        web.save()
+    
+    def add_address(self, type, data):
+        address = ClientesAddress(cliente=self, type=type, data=data)
+        address.save()
+    
+    def add_email(self, type, data):
+        email = ClientesEmail(cliente=self, type=type, data=data)
+        email.save()
+
+    def add_social(self, type, data):
+        social = ClientesSocial(cliente=self, type=type, data=data)
+        social.save()
+
     class Meta:
         """ Meta data del modelo """
         # managed = False
@@ -106,6 +148,7 @@ class ClientesContact(models.Model):
     
     def __str__(self):
         return str(self.data)
+    
 class ClientesWeb(models.Model):
     cliente = models.ForeignKey(Clientes, models.RESTRICT, blank=True, null=True)
     type = models.ForeignKey(WebType, models.RESTRICT, blank=True, null=True)
@@ -132,7 +175,7 @@ class ClientesAddress(models.Model):
     cliente = models.ForeignKey(Clientes, models.RESTRICT, blank=True, null=True)
     address = models.CharField(max_length=64, blank=True, null=True)
     street_house_no = models.CharField(max_length=32, blank=True, null=True)
-    apartment_office_room_floor = models.CharField(max_length=32, blank=True, null=True)
+    apartment_office_room_floor = models.CharField(max_length=128, blank=True, null=True)
     city = models.CharField(max_length=32, blank=True, null=True)
     district = models.CharField(max_length=32, blank=True, null=True)
     region_area = models.CharField(max_length=32, blank=True, null=True)
@@ -157,27 +200,6 @@ class attachment(models.Model):
     def __str__(self):
         return str(self.name)
 
-class Account(models.Model):
-    name = models.CharField(max_length=64, blank=True, null=True)
-    supervisor = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
-    created = models.DateTimeField(blank=True, null=True)
-
-    def __str__(self):
-        return str(self.name)
-class MailCorp(models.Model):
-    name = models.CharField(max_length=64, blank=True, null=True)
-    email = models.CharField(max_length=64, blank=True, null=True)
-    password = models.CharField(max_length=64, blank=True, null=True)
-    smtp = models.CharField(max_length=64, blank=True, null=True)
-    smtp_port = models.CharField(max_length=64, blank=True, null=True)
-    imap = models.CharField(max_length=64, blank=True, null=True)
-    imap_port = models.CharField(max_length=64, blank=True, null=True)
-    created = models.DateTimeField(blank=True, null=True)
-    account = models.ForeignKey(Account, models.RESTRICT, blank=True, null=True)
-    user = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
-
-    def __str__(self):
-        return str(self.name)
 
 class Mail(models.Model):
     mail_corp = models.ForeignKey(MailCorp, models.RESTRICT, blank=True, null=True)
@@ -193,7 +215,19 @@ class Mail(models.Model):
 
     def __str__(self):
         return str(self.subject)
+    
 
+class UserAcount(models.Model):
+    user = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
+    account = models.ForeignKey(Account, models.RESTRICT, blank=True, null=True)
+    name_usr_acount = models.CharField(max_length=64, blank=True, null=True)
+    created = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return str(self.user)
+
+    def get_usr_acount(self):
+        return str(self.name_usr_acount)+" ("+str(self.account)+")"
 
 class ExcelFiles(models.Model):
     name = models.CharField(max_length=64, blank=True, null=True)

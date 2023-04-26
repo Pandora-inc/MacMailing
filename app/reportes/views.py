@@ -5,52 +5,85 @@ from django.views.generic import ListView, CreateView, DeleteView, UpdateView
 from django.core.paginator import Paginator
 from django.utils import timezone
 from django.db import connection
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.http import Http404
+from .serializers import ClientesSerializer, ExcelSerializer
+from .utils import excelFile
+# from reportes.serializers.excel_serializer import ClientesSerializer, ExcelSerializer
 
-from .forms import ClientesPolizasForm, CompaniaForm, LibrosRubricadosForm, VencimientoPolizasForm
-from .models import Clientes, Companias, Secciones, Productores, Ordenes, Polizas
+from .models import Clientes, ExcelFiles
 
+class ClientesList_APIView(APIView):
+    def get(self, request, format=None):
+        clientes = Clientes.objects.all()
+        serializer = ClientesSerializer(clientes, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request, format=None):
+        serializer = ClientesSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class ClientesDetail_APIView(APIView):
+    def get_object(self, pk):
+        try:
+            return Clientes.objects.get(pk=pk)
+        except Clientes.DoesNotExist:
+            raise Http404
 
-# Create your views here.
+    def get(self, request, pk, format=None):
+        cliente = self.get_object(pk)
+        serializer = ClientesSerializer(cliente)
+        return Response(serializer.data)
 
-def libros_rubricados(request, libro_id):
-    """Libros rubricados"""
-    if request.method == "POST":
-        form = LibrosRubricadosForm(request.POST)
+    def put(self, request, pk, format=None):
+        cliente = self.get_object(pk)
+        serializer = ClientesSerializer(cliente, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        if form.is_valid():
+    def delete(self, request, pk, format=None):
+        cliente = self.get_object(pk)
+        cliente.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
 
-            if int(request.POST.get('encRubr')) == 2:
-                if int(request.POST.get('rendOp')) == 1:
-                    ordenes = recuperar_rubri_rendiciones(request.POST.get(
-                        'vigencia_desde'), request.POST.get('vigencia_hasta'))
-                else:
-                    ordenes = recuperar_rubri_operaciones(request.POST.get(
-                        'vigencia_desde'), request.POST.get('vigencia_hasta'))
-                    
+class ExcelsList_APIView(APIView):
+    def get(self, request, format=None):
+        excels = ExcelFiles.objects.all()
+        serializer = ExcelSerializer(excels, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request, format=None):
+        serializer = ExcelSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            return render(request, 'libros_rubricados.html', {'ordenes': ordenes})
-    else:
-        form = LibrosRubricadosForm()
-        return render(request, 'form_libros.html', {'form': form})
+class ProssesExcel(APIView):
+    def get(self, request, format=None):
+        # cursor = connection.cursor()
+        # cursor.execute("SELECT * FROM reportes_clientes")
+        # clientes = cursor.fetchall()
 
-def recuperar_rubri_operaciones(fecha_desde, fecha_hasta):
-    with connection.cursor() as cursor:
-        print(fecha_desde, fecha_hasta)
-        sql = "SELECT ordenes.numero, polizas.fecha, polizas.vigencia_desde, polizas.vigencia_hasta, polizas.prima, clientes.nombre, clientes.direccion, companias.nombre, ordenes.direccion, ordenes.riesgo_desc, secciones.nombre, 'observaciones' FROM     polizas, ordenes, clientes, companias, secciones WHERE polizas.fecha BETWEEN '"+fecha_desde+"' AND '"+fecha_hasta+"' AND polizas.id = ordenes.poliza_id AND polizas.cliente_id = clientes.id AND polizas.compania_id = companias.id AND polizas.seccion_id = secciones.id ORDER BY polizas.fecha"
-        print (sql)
-        cursor.execute(sql)
-        ordenes = cursor.fetchall()
-        return ordenes
+        file = ExcelFiles.objects.get(id=1)
+        excel = excelFile()
+        excel.open_file(file.file.path)
+        excel.print_datos()
 
-def recuperar_rubri_rendiciones(fecha_desde, fecha_hasta):
-    with connection.cursor() as cursor:
-        sql = "SELECT 1, pagos_cuotas.fecha, polizas.numero, companias.nombre, pagos_cuotas.importe, 0, cuotas_polizas.nro_cuota, polizas.cant_cuotas FROM polizas, companias, cuotas_polizas, pagos_cuotas WHERE polizas.id = cuotas_polizas.poliza_id AND cuotas_polizas.id = pagos_cuotas.cuota_id AND polizas.compania_id = companias.id AND pagos_cuotas.fecha BETWEEN '%s' AND '%s' UNION SELECT 2, rendiciones.fecha, polizas.numero, companias.nombre, 0, SUM(pagos_cuotas.importe), cuotas_polizas.nro_cuota, polizas.cant_cuotas FROM rendiciones, polizas, companias, pagos_cuotas, cuotas_polizas WHERE rendiciones.cuota_id = cuotas_polizas.id AND rendiciones.poliza_id = polizas.id AND polizas.id = cuotas_polizas.poliza_id AND cuotas_polizas.id = pagos_cuotas.cuota_id AND polizas.compania_id = companias.id AND rendiciones.fecha BETWEEN '%s' AND '%s' ORDER BY 2"
-
-        cursor.execute(sql, (
-            fecha_desde,
-            fecha_hasta,
-            fecha_desde,
-            fecha_hasta))
-        
-        row = cursor.fetchall()
-    return row
+        return Response(file)
+    
+    def post(self, request, format=None):
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM reportes_clientes")
+        clientes = cursor.fetchall()
+        return Response(clientes)
+    
