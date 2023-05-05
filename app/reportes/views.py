@@ -1,9 +1,6 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, DeleteView, UpdateView
-from django.core.paginator import Paginator
-from django.utils import timezone
+""" 
+    Este archivo contiene las vistas de la app reportes
+"""
 from django.db import connection
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -14,8 +11,20 @@ from .serializers import ClientesSerializer, ExcelSerializer
 from .utils import excelFile
 # from reportes.serializers.excel_serializer import ClientesSerializer, ExcelSerializer
 
+from .actions import send_mail
 from .models import Clientes, ExcelFiles
 
+class SendEmail(APIView):
+    def get(self, request, format=None):
+        print("pepino")
+        send_mail(2)
+        # send_mail(6)
+        # send_mail(8)
+        return Response("Hola Mundo")
+    
+    def post(self, request, format=None):
+        return Response("Hola Mundo")
+    
 class ClientesList_APIView(APIView):
     def get(self, request, format=None):
         clientes = Clientes.objects.all()
@@ -68,18 +77,18 @@ class ExcelsList_APIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class ProssesExcel(APIView):
+class ProcessExcel(APIView):
     def get(self, request, format=None):
         # cursor = connection.cursor()
         # cursor.execute("SELECT * FROM reportes_clientes")
         # clientes = cursor.fetchall()
 
-        file = ExcelFiles.objects.get(id=1)
+        file = ExcelFiles.objects.get(id=2)
         excel = excelFile()
         excel.open_file(file.file.path)
         excel.print_datos()
 
-        return Response(file)
+        return Response("success")
     
     def post(self, request, format=None):
         cursor = connection.cursor()
