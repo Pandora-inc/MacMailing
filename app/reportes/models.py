@@ -192,7 +192,7 @@ class ClientesUTM(models.Model):
     term = models.CharField(max_length=64, help_text='Term')
 
 
-class attachment(models.Model):
+class Attachment(models.Model):
     name = models.CharField(max_length=64, blank=True, null=True)
     file = models.FileField(upload_to='attachments/', blank=True, null=True)
     created = models.DateTimeField(blank=True, null=True)
@@ -201,14 +201,36 @@ class attachment(models.Model):
         return str(self.name)
 
 
+class TemplatesGroup(models.Model):
+    name = models.CharField(max_length=64, blank=True, null=True)
+    created = models.DateTimeField(blank=True, null=True, default=timezone.now())
+    create_user = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.name)
+
+class TemplateFiles(models.Model):
+    name = models.CharField(max_length=64, blank=True, null=True)
+    orden = models.IntegerField(blank=True, null=True)
+    file = models.FileField(upload_to='excel_files/', blank=True, null=True)
+    created = models.DateTimeField(blank=True, null=True, default=timezone.now())
+    create_user = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
+    template_group = models.ForeignKey(TemplatesGroup, models.RESTRICT, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.name)
+    
 class Mail(models.Model):
     mail_corp = models.ForeignKey(MailCorp, models.RESTRICT, blank=True, null=True)
     cliente = models.ForeignKey(Clientes, models.RESTRICT, blank=True, null=True)
     subject = models.CharField(max_length=64, blank=True, null=True)
     body = models.TextField(blank=True, null=True)
     created = models.DateTimeField(blank=True, null=True)
-    attachment = models.ManyToManyField(attachment, blank=True)
+    attachment = models.ManyToManyField(Attachment, blank=True)
     status = models.BooleanField(default=False)
+    status_response = models.BooleanField(default=False)
+    use_template = models.BooleanField(default=False)
+    template_group = models.ForeignKey(TemplatesGroup, models.RESTRICT, blank=True, null=True)
     send_number = models.IntegerField(default=0)
     last_send = models.DateTimeField(blank=True, null=True)
 
@@ -237,3 +259,4 @@ class ExcelFiles(models.Model):
 
     def __str__(self):
         return str(self.name)
+    
