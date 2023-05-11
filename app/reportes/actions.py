@@ -1,4 +1,9 @@
 
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import COMMASPACE, formatdate
+import os
 import string
 import smtplib
 from django.utils.html import format_html
@@ -41,13 +46,33 @@ def send_mail(id_mail):
         server.starttls()
         server.login(row[6], row[7])
         server.command_encoding = 'utf-8'
-        print("#########")
-        msg = "Subject: {}\n\n{}".format(row[0], row[1])
-        print("#########")
-        msg = msg.encode('utf-8', "replace")
-        print("#########")
+        # msg = "Subject: {}\n\n{}".format(row[0], row[1])
+
+        msg = MIMEMultipart()
+        msg['Subject'] = row[0]
+        msg['From'] = row[5]
+        msg['To'] = row[16]
+        msg['Date'] = formatdate(localtime=True)
+        msg.attach(MIMEText(row[1], 'html'))
+
+        consulta_attachment = f"SELECT * FROM reportes_mail_attachment \
+                                INNER JOIN reportes_attachment ON reportes_attachment.id = reportes_mail_attachment.attachment_id \
+                                WHERE mail_id = {id_mail}"
+        cursor.execute(consulta_attachment)
+        attachment = cursor.fetchall()
+
+        for f in attachment:
+            with open('static_media/'+f[5], 'rb') as a_file:
+                aux = f[5].split('.')
+                basename = os.path.basename(f[4]+".%s" % aux[-1])
+                part = MIMEApplication(a_file.read(), Name=basename)
+            part['Content-Disposition'] = 'attachment; filename="%s"' % basename
+            msg.attach(part)
+
+
+        # msg = msg.encode('utf-8', "replace")
         try:
-            server.sendmail(row[5], row[16], msg)
+            server.sendmail(row[5], row[16], msg.as_string())
             cursor.execute(f"UPDATE reportes_mail SET status = 1, send_number = {row[3] + 1}, last_send = NOW() WHERE id = {id_mail}")
             col_afectada = cursor.rowcount
             connection.commit()
@@ -55,6 +80,8 @@ def send_mail(id_mail):
             print (e_error)
         server.quit()
 
+def abrir_plantilla():
+    pass
 
 def emails_cadena(cadena):
     """ Función que nos servirá para extraer todos los email válidos de una cadena de texto. """

@@ -212,7 +212,7 @@ class TemplatesGroup(models.Model):
 class TemplateFiles(models.Model):
     name = models.CharField(max_length=64, blank=True, null=True)
     orden = models.IntegerField(blank=True, null=True)
-    file = models.FileField(upload_to='excel_files/', blank=True, null=True)
+    file = models.FileField(upload_to='template_files/', blank=True, null=True)
     created = models.DateTimeField(blank=True, null=True, default=timezone.now())
     create_user = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
     template_group = models.ForeignKey(TemplatesGroup, models.RESTRICT, blank=True, null=True)

@@ -11,15 +11,13 @@ from .serializers import ClientesSerializer, ExcelSerializer
 from .utils import excelFile
 # from reportes.serializers.excel_serializer import ClientesSerializer, ExcelSerializer
 
-from .actions import send_mail
+from .actions import abrir_plantilla
 from .models import Clientes, ExcelFiles
 
-class SendEmail(APIView):
+class AbrirPlantill(APIView):
     def get(self, request, format=None):
         print("pepino")
-        send_mail(2)
-        # send_mail(6)
-        # send_mail(8)
+        abrir_plantilla()
         return Response("Hola Mundo")
     
     def post(self, request, format=None):

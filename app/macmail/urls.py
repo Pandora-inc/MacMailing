@@ -19,7 +19,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic.base import TemplateView
 
-from reportes.views import ClientesList_APIView, ExcelsList_APIView, ProcessExcel, SendEmail
+from reportes.views import ClientesList_APIView, ExcelsList_APIView, ProcessExcel, AbrirPlantill
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,7 +27,7 @@ urlpatterns = [
     path('clientes/', ClientesList_APIView.as_view(), name='clientes'),
     path('excels/', ExcelsList_APIView.as_view(), name='archivos'),
     path('excels_work/', ProcessExcel.as_view(), name='excels_work'),
-    path('send_email/', SendEmail.as_view(), name='send_email'),
+    path('plantilla/', AbrirPlantill.as_view(), name='excels_work'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
