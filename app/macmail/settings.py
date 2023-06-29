@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     # 'admin_reorder',
     'rest_framework',
     'reportes',
+    'ckeditor', # CKEditor config
+    'ckeditor_uploader', # CKEditor media uploader
 ]
 
 MIDDLEWARE = [
@@ -131,6 +133,8 @@ ADMIN_MEDIA_PREFIX = 'static_files/admin/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "static_media")
 
+#ckeditor upload path
+CKEDITOR_UPLOAD_PATH="uploads/"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

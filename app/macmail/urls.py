@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, re_path
+from django.urls import include, path, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic.base import TemplateView
@@ -24,6 +24,7 @@ from reportes.views import ClientesList_APIView, ExcelsList_APIView, ProcessExce
 urlpatterns = [
     path('admin/', admin.site.urls),
     re_path(r'^$', TemplateView.as_view(template_name='static_pages/index.html'), name='home'),
+    re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
     path('clientes/', ClientesList_APIView.as_view(), name='clientes'),
     path('excels/', ExcelsList_APIView.as_view(), name='archivos'),
     path('excels_work/', ProcessExcel.as_view(), name='excels_work'),

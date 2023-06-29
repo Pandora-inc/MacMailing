@@ -1,16 +1,32 @@
 
+from email.message import EmailMessage
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.utils import COMMASPACE, formatdate
+from email.mime.image import MIMEImage
+from email.utils import COMMASPACE, formatdate, make_msgid
 import os
 import string
 import smtplib
 from django.utils.html import format_html
 from django.db import connection
 
+from reportes.models import Mail, TemplateFiles, TemplatesGroup
 
-def send_mail(id_mail):
+def registro_envio_mail(id_mail: int, send_number: int):
+    with connection.cursor() as cursor:
+        consulta = f"UPDATE reportes_mail SET status = 1, send_number = {send_number}, last_send = NOW() WHERE id = {id_mail}"
+        cursor.execute(consulta)
+        connection.commit()
+
+
+def prepare_email_body(text: str, data: dict) -> str:
+    for key, value in data.items():
+        print(key, value)
+        text = text.replace('{{'+key+'}}', str(value))
+    return text
+
+def get_mail_data(id_mail: int) -> dict:
     with connection.cursor() as cursor:
         consulta = f"SELECT \
             reportes_mail.subject, \
@@ -38,50 +54,92 @@ def send_mail(id_mail):
         WHERE \
             reportes_mail.id = {id_mail} \
             AND reportes_clientesemail.type_id = 1"
-        
+
         cursor.execute(consulta)
         row = cursor.fetchone()
 
-        server = smtplib.SMTP(row[8], row[9])
-        server.starttls()
-        server.login(row[6], row[7])
-        server.command_encoding = 'utf-8'
-        # msg = "Subject: {}\n\n{}".format(row[0], row[1])
-
-        msg = MIMEMultipart()
+        msg = {}
         msg['Subject'] = row[0]
         msg['From'] = row[5]
         msg['To'] = row[16]
         msg['Date'] = formatdate(localtime=True)
-        msg.attach(MIMEText(row[1], 'html'))
+        msg['CC'] = ', '.join(emails_cadena(row[15]))
+        msg['content-type'] = 'text/html'
+        msg['content'] = row[1]
+        msg['number'] = row[3]
+        msg['from_email'] = row[6]
+        msg['from_pass'] = row[7]
+        msg['from_smtp'] = row[8]
+        msg['from_port'] = row[9]
+        msg['salutation'] = row[10]
+        msg['first_name'] = row[11]
+        msg['middle_name'] = row[12]
+        msg['last_name'] = row[13]
+        msg['lead_name'] = row[14]
 
+        return msg
+
+
+def send_mail(id_mail: int) -> bool:
+    msg_data = get_mail_data(id_mail)
+
+    message = MIMEMultipart()
+    message['From'] = msg_data['From']
+    message['To'] = msg_data['To']
+    message['Subject'] = msg_data['Subject']
+
+    msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
+
+    message.attach(MIMEText(msg_data['content'], "html"))
+
+    with connection.cursor() as cursor:
         consulta_attachment = f"SELECT * FROM reportes_mail_attachment \
-                                INNER JOIN reportes_attachment ON reportes_attachment.id = reportes_mail_attachment.attachment_id \
-                                WHERE mail_id = {id_mail}"
+                                    INNER JOIN reportes_attachment ON reportes_attachment.id = reportes_mail_attachment.attachment_id \
+                                    WHERE mail_id = {id_mail}"
         cursor.execute(consulta_attachment)
         attachment = cursor.fetchall()
 
         for f in attachment:
-            with open('static_media/'+f[5], 'rb') as a_file:
-                aux = f[5].split('.')
-                basename = os.path.basename(f[4]+".%s" % aux[-1])
-                part = MIMEApplication(a_file.read(), Name=basename)
-            part['Content-Disposition'] = 'attachment; filename="%s"' % basename
-            msg.attach(part)
+            with open('static_media/'+f[5], 'rb') as file:
+                image = MIMEImage(file.read())
+                image.add_header('Content-ID', '<'+f[4]+'>')
+                message.attach(image)
 
+    with smtplib.SMTP(msg_data['from_smtp'], msg_data['from_port']) as server:
+        server.starttls()
 
-        # msg = msg.encode('utf-8', "replace")
         try:
-            server.sendmail(row[5], row[16], msg.as_string())
-            cursor.execute(f"UPDATE reportes_mail SET status = 1, send_number = {row[3] + 1}, last_send = NOW() WHERE id = {id_mail}")
-            col_afectada = cursor.rowcount
-            connection.commit()
+            server.login(msg_data['from_email'], msg_data['from_pass'])
+            server.send_message(message)
+            server.quit()
+            registro_envio_mail(id_mail, msg_data['number']+1)
+            return True
         except Exception as e_error:
-            print (e_error)
-        server.quit()
+            print(e_error)
+            server.quit()
+            return False
+
+
+
+def get_template_file_and_save(id_template: int):
+    template = TemplateFiles.objects.get(id=id_template)
+    filename = template.file.path
+
+    archivo = open(filename, "r")
+    template.text = archivo.read()
+    template.save()
+
+
+def prepare_text(id_client: int, id_mail: int) -> str:
+
+    pass
+
+
+
 
 def abrir_plantilla():
     pass
+
 
 def emails_cadena(cadena):
     """ Función que nos servirá para extraer todos los email válidos de una cadena de texto. """
@@ -90,7 +148,7 @@ def emails_cadena(cadena):
         caracteres_puntuacion = string.punctuation.replace(
             '@', '').replace('.', '')
 
-        # Eliminamos todos los caracteres de puntuación de la cadena, 
+        # Eliminamos todos los caracteres de puntuación de la cadena,
         # que no se usan en los correos electrónicos
         traductor = str.maketrans("", "", caracteres_puntuacion)
         cadena_sin_puntuacion = cadena.translate(traductor)
@@ -114,12 +172,12 @@ def emails_cadena(cadena):
                     # eliminamos los espacios en blanco del correo
                     correo_limpio = correo.replace(" ", "")
 
-                    # si hay un punto después de la arroba dividimos el correo en nombre 
+                    # si hay un punto después de la arroba dividimos el correo en nombre
                     # (antes de la arroba) y dominio (después de la arroba)
                     if "." in correo_limpio[indice_arroba + 1:]:
                         nombre, dominio = correo.split("@")
 
-                        # si tiene dos o más caracteres, el dominio es válido. 
+                        # si tiene dos o más caracteres, el dominio es válido.
                         # Quitamos los espacios que puedan haber en el dominio
                         # y añadimos el correo (tupla) en la lista 'emails'
                         if len(dominio.split(".")[-1]) > 1:
@@ -140,13 +198,17 @@ def emails_cadena(cadena):
             print("No se encontraron correos electrónicos en la cadena.")
         else:
             # Recorremos la lista y mostramos todos los emails en caso de tener nombre de usuario..,
+            response = []
             for email in emails:
                 if email[0]:
                     print(f"{email[0]}@{email[1]}")
+                    response.append(f"{email[0]}@{email[1]}")
                 # de lo contrario se muestra el texto con el nombre del dominio en cuestión
                 else:
                     print("No existe  un nombre de usuario en :", email[1])
 
+            return response
+
     except Exception as e_error:
-        print (e_error)
+        print(e_error)
         print("Ha ocurrido un error inesperado al procesar la cadena.")

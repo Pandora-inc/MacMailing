@@ -2,17 +2,11 @@
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.timezone import now
+from ckeditor_uploader.fields import RichTextUploadingField
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
-
-TIPOS_LIBROS = [
-    ('Operaciones', 'Operaciones'),
-    ('Rendiciones', 'Rendiciones'),
-]
-
-TIPOS_IMPRESION = [
-    ('Encabezados', 'Imprimir Encabezados'),
-    ('Rubricados', 'Imprimir Rubricados'),
-]
 
 SALUDATIONS = [('Mrs.','Mrs.'), ('Mr.', 'Mr.'), ('Ms.', 'Ms.'), ('Dr.', 'Dr.'), ('Prof.', 'Prof.'), ('Other', 'Other')]
 CURRENCYS = [('US Dollar','US Dollar'),]
@@ -55,19 +49,20 @@ class SocialType(models.Model):
 class Account(models.Model):
     name = models.CharField(max_length=64, blank=True, null=True)
     supervisor = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
-    created = models.DateTimeField(blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     def __str__(self):
         return str(self.name)
 class MailCorp(models.Model):
     name = models.CharField(max_length=64, blank=True, null=True)
-    email = models.CharField(max_length=64, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    # password = models.CharField(_('password'), max_length=64, blank=True, null=True)
     password = models.CharField(max_length=64, blank=True, null=True)
     smtp = models.CharField(max_length=64, blank=True, null=True)
     smtp_port = models.CharField(max_length=64, blank=True, null=True)
     imap = models.CharField(max_length=64, blank=True, null=True)
     imap_port = models.CharField(max_length=64, blank=True, null=True)
-    created = models.DateTimeField(blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     account = models.ForeignKey(Account, models.RESTRICT, blank=True, null=True)
     user = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
 
@@ -87,7 +82,7 @@ class Clientes(models.Model):
     source = models.CharField(max_length=32, blank=True, null=True)
     responsible = models.ForeignKey(MailCorp, models.RESTRICT, blank=True, null=True, related_name='responsable')	
     status_information = models.CharField(max_length=32, blank=True, null=True)
-    source_information = models.CharField(max_length=64, blank=True, null=True)
+    source_information = models.CharField(max_length=256, blank=True, null=True)
     created_by = models.ForeignKey(MailCorp, models.RESTRICT, blank=True, null=True, related_name='creado_por')
     modified = models.DateTimeField(blank=True, null=True)
     modified_by = models.ForeignKey(MailCorp, models.RESTRICT, blank=True, null=True, related_name='modificado_por')
@@ -195,7 +190,7 @@ class ClientesUTM(models.Model):
 class Attachment(models.Model):
     name = models.CharField(max_length=64, blank=True, null=True)
     file = models.FileField(upload_to='attachments/', blank=True, null=True)
-    created = models.DateTimeField(blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     def __str__(self):
         return str(self.name)
@@ -203,8 +198,9 @@ class Attachment(models.Model):
 
 class TemplatesGroup(models.Model):
     name = models.CharField(max_length=64, blank=True, null=True)
-    created = models.DateTimeField(blank=True, null=True, default=timezone.now())
+    created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     create_user = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
+    mail_corp = models.ForeignKey(MailCorp, models.RESTRICT, blank=True, null=True)
 
     def __str__(self):
         return str(self.name)
@@ -213,7 +209,8 @@ class TemplateFiles(models.Model):
     name = models.CharField(max_length=64, blank=True, null=True)
     orden = models.IntegerField(blank=True, null=True)
     file = models.FileField(upload_to='template_files/', blank=True, null=True)
-    created = models.DateTimeField(blank=True, null=True, default=timezone.now())
+    text = RichTextUploadingField(blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     create_user = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
     template_group = models.ForeignKey(TemplatesGroup, models.RESTRICT, blank=True, null=True)
 
@@ -224,8 +221,8 @@ class Mail(models.Model):
     mail_corp = models.ForeignKey(MailCorp, models.RESTRICT, blank=True, null=True)
     cliente = models.ForeignKey(Clientes, models.RESTRICT, blank=True, null=True)
     subject = models.CharField(max_length=64, blank=True, null=True)
-    body = models.TextField(blank=True, null=True)
-    created = models.DateTimeField(blank=True, null=True)
+    body = RichTextUploadingField(blank=True, null=True) # CKEditor Rich Text Field
+    created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     attachment = models.ManyToManyField(Attachment, blank=True)
     status = models.BooleanField(default=False)
     status_response = models.BooleanField(default=False)
@@ -233,17 +230,24 @@ class Mail(models.Model):
     template_group = models.ForeignKey(TemplatesGroup, models.RESTRICT, blank=True, null=True)
     send_number = models.IntegerField(default=0)
     last_send = models.DateTimeField(blank=True, null=True)
+    reminder_days = models.IntegerField(default=7)
 
 
     def __str__(self):
         return str(self.subject)
     
+class MailsToSend (models.Model):
+    mail = models.ForeignKey(Mail, models.RESTRICT, blank=True, null=True)
+    approved = models.BooleanField(default=False)
+    send = models.BooleanField(default=False)
+    user_approved = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
+    date_approved = models.DateTimeField(blank=True, null=True)
 
 class UserAcount(models.Model):
     user = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
     account = models.ForeignKey(Account, models.RESTRICT, blank=True, null=True)
     name_usr_acount = models.CharField(max_length=64, blank=True, null=True)
-    created = models.DateTimeField(blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     def __str__(self):
         return str(self.user)
@@ -254,9 +258,26 @@ class UserAcount(models.Model):
 class ExcelFiles(models.Model):
     name = models.CharField(max_length=64, blank=True, null=True)
     file = models.FileField(upload_to='excel_files/', blank=True, null=True)
-    created = models.DateTimeField(blank=True, null=True, default=timezone.now())
+    created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     create_user = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
 
     def __str__(self):
         return str(self.name)
-    
+
+
+def propague_template(id_template: int):
+    template = TemplateFiles.objects.get(id=id_template)
+    orden = template.orden-1
+    mails = Mail.objects.filter(template_group_id=template.template_group_id, send_number=orden)
+
+    for mail in mails:
+        texto = template.text
+
+        mail.body = texto
+        mail.save()
+
+@receiver(post_save, sender=TemplateFiles)
+def mi_funcion_al_guardar(sender, instance, **kwargs):
+    propague_template(instance.id)
+
+post_save.connect(mi_funcion_al_guardar, sender=TemplateFiles)
