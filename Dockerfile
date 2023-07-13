@@ -9,7 +9,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 RUN apt-get update && apt-get -y dist-upgrade
-RUN apt-get install -y netcat
+# RUN apt-get install -y netcat
 
 # install dependencies
 RUN pip install --upgrade pip

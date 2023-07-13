@@ -152,7 +152,6 @@ class excelFile():
                     e += 1
 
                 # cliente.save()
-                print(cliente)
                 print("Se ha creado el cliente: ",
                       cliente.first_name, cliente.last_name)
 

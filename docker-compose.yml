@@ -4,10 +4,7 @@ version: '3.8'
 
 services:
   macmail_web_app:
-    build:
-      context: ./
-      dockerfile: Dockerfile
-    image: prueba-web
+    image: iberlot/macmailling
     command: gunicorn macmail.wsgi:application --bind 0.0.0.0:8000
     restart: always
     volumes:

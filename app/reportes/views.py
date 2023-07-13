@@ -11,17 +11,8 @@ from .serializers import ClientesSerializer, ExcelSerializer
 from .utils import excelFile
 # from reportes.serializers.excel_serializer import ClientesSerializer, ExcelSerializer
 
-from .actions import abrir_plantilla
 from .models import Clientes, ExcelFiles
 
-class AbrirPlantill(APIView):
-    def get(self, request, format=None):
-        print("pepino")
-        abrir_plantilla()
-        return Response("Hola Mundo")
-    
-    def post(self, request, format=None):
-        return Response("Hola Mundo")
     
 class ClientesList_APIView(APIView):
     def get(self, request, format=None):

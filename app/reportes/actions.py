@@ -1,17 +1,35 @@
 
-from email.message import EmailMessage
-from email.mime.application import MIMEApplication
+from datetime import timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
-from email.utils import COMMASPACE, formatdate, make_msgid
-import os
+from email.utils import formatdate
 import string
 import smtplib
-from django.utils.html import format_html
+from django.contrib.auth.models import User
 from django.db import connection
+from calendarapp.models import Event
+from reportes.models import Mail, TemplateFiles
 
-from reportes.models import Mail, TemplateFiles, TemplatesGroup
+def crear_evento(mail: Mail):
+    title = mail.subject
+    description = "Recordatorio envio de mail Nro "+str(mail.send_number)
+    start_time = mail.last_send+timedelta(days=mail.reminder_days)
+    end_time = start_time+timedelta(hours=1)
+    # user = User.objects.get(id=mail.mail_corp.user.id)
+
+    print("Creando evento")
+
+    Event.objects.get_or_create(
+        user=mail.mail_corp.user,
+        title=title,
+        description=description,
+        start_time=start_time,
+        end_time=end_time,
+    )
+
+    print("Evento creado")
+
 
 def registro_envio_mail(id_mail: int, send_number: int):
     with connection.cursor() as cursor:
@@ -19,10 +37,12 @@ def registro_envio_mail(id_mail: int, send_number: int):
         cursor.execute(consulta)
         connection.commit()
 
+        mail = Mail.objects.get(id=id_mail)
+        crear_evento(mail)
+        
 
 def prepare_email_body(text: str, data: dict) -> str:
     for key, value in data.items():
-        print(key, value)
         text = text.replace('{{'+key+'}}', str(value))
     return text
 
@@ -130,17 +150,6 @@ def get_template_file_and_save(id_template: int):
     template.save()
 
 
-def prepare_text(id_client: int, id_mail: int) -> str:
-
-    pass
-
-
-
-
-def abrir_plantilla():
-    pass
-
-
 def emails_cadena(cadena):
     """ Función que nos servirá para extraer todos los email válidos de una cadena de texto. """
     try:
@@ -201,7 +210,6 @@ def emails_cadena(cadena):
             response = []
             for email in emails:
                 if email[0]:
-                    print(f"{email[0]}@{email[1]}")
                     response.append(f"{email[0]}@{email[1]}")
                 # de lo contrario se muestra el texto con el nombre del dominio en cuestión
                 else:
