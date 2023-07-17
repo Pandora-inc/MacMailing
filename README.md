@@ -3,6 +3,8 @@ Sistema de gestión de envío de correos a clientes.
 
 Puede descargar docker desde el siguiente link: [docker-desktop](https://www.docker.com/products/docker-desktop/)
 
+[TOC]
+
 ## Comandos para la ejecucion
 
 Activar las variables de ambiente en python
