@@ -68,92 +68,119 @@ class excelFile():
 
     def print_datos(self):
         data, indice = self.get_data()
-
         for i in range(len(data[list(data.keys())[0]])):
 
             if not Clientes.objects.filter(cliente_id=data['id'][i]).exists():
                 cliente = Clientes()
                 cliente.cliente_id = data['id'][i]
-                cliente.status = data['status'][i]
-                cliente.lead_name = data['lead_name'][i]
-                cliente.salutation = data['salutation'][i]
-                cliente.first_name = data['first_name'][i]
-                cliente.middle_name = data['middle_name'][i]
-                cliente.last_name = data['last_name'][i]
-                cliente.date_of_birth = data['date_of_birth'][i]
-                cliente.created = datetime.strptime(
-                    data['created'][i], '%m/%d/%y %H:%M')
-                cliente.source = data['source'][i]
-                cliente.responsible = MailCorp.objects.get(
-                    name=data['responsible'][i])
-                cliente.status_information = data['status_information'][i]
-                cliente.source_information = data['source_information'][i]
-                cliente.created_by = MailCorp.objects.get(
-                    name=data['created_by'][i])
-                cliente.modified = datetime.strptime(
-                    data['modified'][i], '%m/%d/%y %H:%M')
-                cliente.modified_by = MailCorp.objects.get(
-                    name=data['modified_by'][i])
-                cliente.company_name = data['company_name'][i]
-                cliente.position = data['position'][i]
-                cliente.comment = data['comment'][i]
-                cliente.total = data['total'][i]
-                cliente.currency = data['currency'][i]
-                cliente.product = data['product'][i]
-                cliente.price = data['price'][i]
-                cliente.quantity = data['quantity'][i]
-                cliente.created_by_crm_form = data['created_by_crm_form'][i]
-                cliente.repeat_lead = False if data['repeat_lead'][i] == 'N' else True
-                cliente.client = data['client'][i]
-                cliente.customer_journey = data['customer_journey'][i]
-                cliente.type = data['type'][i]
-                cliente.country = Countrys.objects.get(
-                    description=data['country'][i])
-                cliente.account = data['account'][i]
-                cliente.addl_type_details_other = data['addl_type_details_other'][i]
-                cliente.industry_sub_type = data['industry_sub_type'][i]
-                cliente.last_updated_on = datetime.strptime(
-                    data['last_updated_on'][i], '%m/%d/%y %H:%M')
+            else:
+                cliente = Clientes.objects.get(cliente_id=data['id'][i])
 
-                cliente.save()
+            cliente.status = data['status'][i]
+            cliente.lead_name = data['lead_name'][i]
+            cliente.salutation = data['salutation'][i]
+            cliente.first_name = data['first_name'][i]
+            cliente.middle_name = data['middle_name'][i]
+            cliente.last_name = data['last_name'][i]
+            cliente.date_of_birth = data['date_of_birth'][i]
+            cliente.created = datetime.strptime(
+                data['created'][i], '%m/%d/%y %H:%M')
+            cliente.source = data['source'][i]
+            cliente.responsible = MailCorp.objects.get(
+                name=data['responsible'][i])
+            cliente.status_information = data['status_information'][i]
+            cliente.source_information = data['source_information'][i]
+            cliente.created_by = MailCorp.objects.get(
+                name=data['created_by'][i])
+            cliente.modified = datetime.strptime(
+                data['modified'][i], '%m/%d/%y %H:%M')
+            cliente.modified_by = MailCorp.objects.get(
+                name=data['modified_by'][i])
+            cliente.company_name = data['company_name'][i]
+            cliente.position = data['position'][i]
+            cliente.comment = data['comment'][i]
+            cliente.total = data['total'][i]
+            cliente.currency = data['currency'][i]
+            cliente.product = data['product'][i]
+            cliente.price = data['price'][i]
+            cliente.quantity = data['quantity'][i]
+            cliente.created_by_crm_form = data['created_by_crm_form'][i]
+            cliente.repeat_lead = False if data['repeat_lead'][i] == 'N' else True
+            cliente.client = data['client'][i]
+            cliente.customer_journey = data['customer_journey'][i]
+            cliente.type = data['type'][i]
+            cliente.country = Countrys.objects.get(
+                description=data['country'][i])
+            cliente.account = data['account'][i]
+            cliente.addl_type_details_other = data['addl_type_details_other'][i]
+            cliente.industry_sub_type = data['industry_sub_type'][i]
+            cliente.last_updated_on = datetime.strptime(
+                data['last_updated_on'][i], '%m/%d/%y %H:%M')
 
-                direccion = ClientesAddress()
-                direccion.cliente = cliente
-                direccion.address = data['address'][i]
-                direccion.street_house_no = data['street_house_no'][i]
-                direccion.apartment_office_room_floor = data['apartment_office_room_floor'][i]
-                direccion.city = data['city'][i]
-                direccion.district = data['district'][i]
-                direccion.region_area = data['regionarea'][i]
-                direccion.postal_code = data['zippostal_code'][i]
-                direccion.country = data['country_dire'][i]
+            cliente.save()
 
-                direccion.save()
+            direccion = ClientesAddress()
+            direccion.cliente = cliente
+            direccion.address = data['address'][i]
+            direccion.street_house_no = data['street_house_no'][i]
+            direccion.apartment_office_room_floor = data['apartment_office_room_floor'][i]
+            direccion.city = data['city'][i]
+            direccion.district = data['district'][i]
+            direccion.region_area = data['regionarea'][i]
+            direccion.postal_code = data['zippostal_code'][i]
+            direccion.country = data['country_dire'][i]
 
-                e = 0
-                for clave, item in data.items():
-                    if item[i] :
-                        if indice[e] and ContactType.objects.filter(name=indice[e]):
+            direccion.save()
+            cliente_id = int(cliente.cliente_id)
+            e = 0
+            for clave, item in data.items():
+                if item[i]:
+
+                    if indice[e] and ContactType.objects.filter(name=indice[e]):
+                        if not ClientesContact.objects.filter(cliente=cliente, type=ContactType.objects.get(name=indice[e])).exists():
                             cliente.add_contact(
                                 ContactType.objects.get(name=indice[e]), item[i])
-                        
-                        elif indice[e] and WebType.objects.filter(name=indice[e]):
+                        else:
+                            contact = ClientesContact.objects.get(
+                                cliente=cliente, type=ContactType.objects.get(name=indice[e]))
+                            contact.data = item[i]
+                            contact.save()
+
+                    elif indice[e] and WebType.objects.filter(name=indice[e]):
+                        if not ClientesWeb.objects.filter(cliente=cliente, type=WebType.objects.get(name=indice[e])).exists():
                             cliente.add_web(
                                 WebType.objects.get(name=indice[e]), item[i])
-                        
-                        elif indice[e] and EmailType.objects.filter(name=indice[e]):
+                        else:
+                            contact = ClientesWeb.objects.get(
+                                cliente=cliente, type=WebType.objects.get(name=indice[e]))
+                            contact.data = item[i]
+                            contact.save()
+
+                    elif indice[e] and EmailType.objects.filter(name=indice[e]):
+                        if not ClientesEmail.objects.filter(cliente=cliente, type=EmailType.objects.get(name=indice[e])).exists():
                             cliente.add_email(
                                 EmailType.objects.get(name=indice[e]), item[i])
-                        
-                        elif indice[e] and SocialType.objects.filter(name=indice[e]):
+                        else:
+                            contact = ClientesEmail.objects.get(
+                                cliente=cliente, type=EmailType.objects.get(name=indice[e]))
+                            contact.data = item[i]
+                            contact.save()
+
+                    elif indice[e] and SocialType.objects.filter(name=indice[e]):
+                        if not ClientesSocial.objects.filter(cliente=cliente, type=SocialType.objects.get(name=indice[e])).exists():
                             cliente.add_social(
                                 SocialType.objects.get(name=indice[e]), item[i])
+                        else:
+                            contact = ClientesSocial.objects.get(
+                                cliente=cliente, type=SocialType.objects.get(name=indice[e]))
+                            contact.data = item[i]
+                            contact.save()
 
-                    e += 1
+                e += 1
 
-                # cliente.save()
-                print("Se ha creado el cliente: ",
-                      cliente.first_name, cliente.last_name)
+            # cliente.save()
+            print("Se ha creado el cliente: ",
+                  cliente.first_name, cliente.last_name)
 
     def add_sheet(self, sheet_name):
         self.ws = self.wb.create_sheet(sheet_name)
