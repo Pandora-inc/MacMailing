@@ -133,3 +133,4 @@ venv/*
 app/env/*
 data/db/*
 *.ibt
+app/static_media/excel_files/*

@@ -263,7 +263,8 @@ class MailsToSendAdmin(admin.ModelAdmin):
 
     def mail_to(self, obj):
         # FIXME: Esto deberia mostrar el mail principar del cliente
-        return obj.mail.mail_corp.email
+        email = ClientesEmail.objects.get(cliente=obj.mail.cliente, type=EmailType.objects.get(id=1))
+        return email
 
     mail_body.short_description = 'Cuerpo del Email'
     mail_subject.short_description = 'Asunto del Email'

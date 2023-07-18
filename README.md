@@ -1,6 +1,8 @@
 # Mac_Mail
 Sistema de gestión de envío de correos a clientes.
 
+
+
 Puede descargar docker desde el siguiente link: [docker-desktop](https://www.docker.com/products/docker-desktop/)
 
 [TOC]
@@ -55,3 +57,5 @@ docker exec -i -t d83c525a65b3  /bin/bash
 ## To create a super User
 python manage.py createsuperuser
 
+iberlot
+Julia3134!

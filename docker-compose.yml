@@ -4,6 +4,7 @@ version: '3.8'
 
 services:
   macmail_web_app:
+    # image: iberlot/macmailling
     build:
       context: ./
       dockerfile: Dockerfile
