@@ -1,5 +1,9 @@
 # MacMailling
+
+Aplicación para la gestión y planificación de envíos de correos a clientes. Gestión de calendario de envíos y administración de los usuarios.
 ## Manual de usuario
+
+Esta es una guía de uso de la aplicación orientada al usuario final y al administrador. Para obtener una gia técnica de implantación y mantenimiento diríjase al archivo README.md.
 ### Secciones
 
 

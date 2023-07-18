@@ -5,7 +5,7 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.utils import formatdate
 import string
-import smtplib
+import smtplib, ssl
 from django.contrib.auth.models import User
 from django.db import connection
 from calendarapp.models import Event
@@ -125,8 +125,9 @@ def send_mail(id_mail: int) -> bool:
                 image.add_header('Content-ID', '<'+f[4]+'>')
                 message.attach(image)
 
+    context = ssl.create_default_context()
     with smtplib.SMTP(msg_data['from_smtp'], msg_data['from_port']) as server:
-        server.starttls()
+        server.starttls(context=context)
 
         try:
             server.login(msg_data['from_email'], msg_data['from_pass'])
