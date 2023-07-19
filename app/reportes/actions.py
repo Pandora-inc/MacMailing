@@ -112,6 +112,17 @@ def send_mail(id_mail: int) -> bool:
 
     message.attach(MIMEText(msg_data['content'], "html"))
 
+    inicio = msg_data['content'].find('src="/media/uploads')
+    if inicio != -1:
+        imagen_url = msg_data['content'].replace('/media/', '/static_media/')
+        fin = imagen_url.find('"', inicio+5)
+        imagen_url = imagen_url[inicio+6:fin]
+        imagen_name = imagen_url[imagen_url.rfind('/')+1:]
+        with open(imagen_url, 'rb') as file:
+            image = MIMEImage(file.read())
+            image.add_header('Content-ID', '<'+imagen_name+'>')
+            message.attach(image)
+
     with connection.cursor() as cursor:
         consulta_attachment = f"SELECT * FROM reportes_mail_attachment \
                                     INNER JOIN reportes_attachment ON reportes_attachment.id = reportes_mail_attachment.attachment_id \
