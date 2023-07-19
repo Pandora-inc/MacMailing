@@ -41,29 +41,29 @@ Ej. el acceso a el ambiente de pruebas seria por el siguiente [link](http://macm
 
 Al acceder lo primero que veremos seria la pantalla de inicio de sesión.
 
-[![Iniciar sesión](img\00_iniciar_sesion.png "Iniciar sesión")](img\00_iniciar_sesion.png "Iniciar sesión")
+[![Iniciar sesión](img/00_iniciar_sesion.png "Iniciar sesión")](img/00_iniciar_sesion.png "Iniciar sesión")
 
 Una vez ingresadas las credenciales proporcionadas por el administrados podremos acceder a la pantalla de inicio del sitio.
 
 En la pantalla de inicio vemos un listado con las ultimas acciones que realizo el usuario y el menu con las opciones que tiene este autorizadas.
 
-[![Pantalla de inicio](img\01.png "Pantalla de inicio")](img\01.png "Pantalla de inicio")
+[![Pantalla de inicio](img/01.png "Pantalla de inicio")](img/01.png "Pantalla de inicio")
 
 En la esquina superior derecha de la pantalla tenderemos un botón para cerrar la sección. De esta manera podremos salir del sistema. Al presionarlo nos cerrara la sesión y nos mostrara un mensaje por si queremos volver a iniciarla.
 
-[![Cerrar sesión](img\00_cerrar_secion.png "Cerrar sesión")](img\00_cerrar_secion.png "Cerrar sesión")
+[![Cerrar sesión](img/00_cerrar_secion.png "Cerrar sesión")](img/00_cerrar_secion.png "Cerrar sesión")
 
 Al lado del botón de cerrar sesión tenemos otro para cambiar la contraseña.
 
-[![Cambiar password](img\00_cambiar_password.png "Cambiar password")](img\00_cambiar_password.png "Cambiar password")
+[![Cambiar password](img/00_cambiar_password.png "Cambiar password")](img/00_cambiar_password.png "Cambiar password")
 
 Si todo sale bien, se mostrara un mensaje de confirmación del cambio de contraseña.
 
-[![Cambiar password confirmación](img\00_cambiar_password_exito.png "Cambiar password confirmación")](img\00_cambiar_password_exito.png "Cambiar password confirmación")
+[![Cambiar password confirmación](img/00_cambiar_password_exito.png "Cambiar password confirmación")](img/00_cambiar_password_exito.png "Cambiar password confirmación")
 
 Si se coloca mal la contraseña antigua se mostrara un mensaje de error y no permitirá el cambio.
 
-[![Cambiar password error](img\00_cambiar_password_error.png "Cambiar password error")](img\00_cambiar_password_error.png "Cambiar password error")
+[![Cambiar password error](img/00_cambiar_password_error.png "Cambiar password error")](img/00_cambiar_password_error.png "Cambiar password error")
 
 - [Volver al indice](#secciones)
 
@@ -71,7 +71,7 @@ Si se coloca mal la contraseña antigua se mostrara un mensaje de error y no per
 
 Pantalla para la administración y creación de los grupos de usuarios. Estos son una forma de generar grupos de permisos de acceso a la aplicación. De esta forma se puede definir un conjunto de permisos y luego aplicarle los mismos a muchos usuarios distintos.
 
-[![Permisos Grupos](img\02_grupo_listado.png "Permisos Grupos")](img\02_grupo_listado.png "Permisos Grupos")
+[![Permisos Grupos](img/02_grupo_listado.png "Permisos Grupos")](img/02_grupo_listado.png "Permisos Grupos")
 
 ### Crear / Editar grupos
 
@@ -79,7 +79,7 @@ La pantalla de creación de grupos y de edición son la misma, la diferencia es 
 
 En esta pantalla podremos ponerle un nombre al grupo y seleccionar los permisos que tendrá cada persona.
 
-[![Crear Permisos Grupos](img\02_grupo_crear.png "Crear Permisos Grupos")](img\02_grupo_crear.png "Crear Permisos Grupos")
+[![Crear Permisos Grupos](img/02_grupo_crear.png "Crear Permisos Grupos")](img/02_grupo_crear.png "Crear Permisos Grupos")
 
 Los permisos se asignan pasándolos de la pantalla de permisos disponibles a permisos seleccionados. Estos permisos se dividen en cuatro tipos:
 
@@ -88,21 +88,21 @@ Los permisos se asignan pasándolos de la pantalla de permisos disponibles a per
 - **Delete**: *eliminar un elemento.* Si no se dan permisos de delete no se podrán eliminar los elementos de los listados.
 - **View**: *ver elementos.* Si no se dan permisos de view el usuario no vera ese elemento en el menu, ni podrá acceder al listado de estos.
 
-[![Permisos Grupos](img\02_grupo_permisos.png "Permisos Grupos")](img\02_grupo_permisos.png "Permisos Grupos")
+[![Permisos Grupos](img/02_grupo_permisos.png "Permisos Grupos")](img/02_grupo_permisos.png "Permisos Grupos")
 
 Luego de crear un grupo veremos un mensaje de confirmación y este aparecerá en el listado y en la lista de grupos para agregarles a los usuarios.
 
-[![Confirmación creación Grupos](img\02_grupo_crear_confirmacion.png "Confirmación creación Grupos")](img\02_grupo_crear_confirmacion.png "Confirmación creación Grupos")
+[![Confirmación creación Grupos](img/02_grupo_crear_confirmacion.png "Confirmación creación Grupos")](img/02_grupo_crear_confirmacion.png "Confirmación creación Grupos")
 
 ### Eliminar grupos
 
 Para eliminar un grupo se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar grupos seleccionados/as"* , luego presionar el botón Ejecutar.
 
-[![Eliminar Grupos](img\02_grupo_eliminar.png "Eliminar Grupos")](img\02_grupo_eliminar.png "Eliminar Grupos")
+[![Eliminar Grupos](img/02_grupo_eliminar.png "Eliminar Grupos")](img/02_grupo_eliminar.png "Eliminar Grupos")
 
 Si esta todo correcto se pedirá la confirmación de la eliminación.
 
-[![Confirmación eliminar Grupos](img\02_grupo_eliminar_confirmar.png "Confirmación eliminar Grupos")](img\02_grupo_eliminar_confirmar.png "Confirmación eliminar Grupos")
+[![Confirmación eliminar Grupos](img/02_grupo_eliminar_confirmar.png "Confirmación eliminar Grupos")](img/02_grupo_eliminar_confirmar.png "Confirmación eliminar Grupos")
 
 Luego de aceptar volveremos al listado y veremos la confirmación del borrad
 
@@ -114,17 +114,17 @@ Si un grupo llega a estar asociado a algún usuario ese usuario dejara de tenerl
 
 En esta pantalla podemos crear y administrar los usuarios que tendrán acceso a la aplicación
 
-[![Usuarios Listado](img\03_usuarios_listado.png "Usuarios Listado")](img\03_usuarios_listado.png "Usuarios Listado")
+[![Usuarios Listado](img/03_usuarios_listado.png "Usuarios Listado")](img/03_usuarios_listado.png "Usuarios Listado")
 
 ### Crear / Editar usuarios
 
 En este caso la pantalla de creación de usuarios y de la de edición no son la misma, ya que a diferencia de la de edición para crear un usuario primero deberemos poner el nombre de usuario a utilizar y la contraseña.
 
-[![Usuarios Crear](img\03_usuarios_crear.png "Usuarios Crear")](img\03_usuarios_crear.png "Usuarios Crear")
+[![Usuarios Crear](img/03_usuarios_crear.png "Usuarios Crear")](img/03_usuarios_crear.png "Usuarios Crear")
 
 Al guardar nos llevara a una pantalla donde podemos editar los datos del usuario, esta si igual a la pantalla de edición de los datos del formulario.
 
-[![Usuarios Crear Editar](img\03_usuarios_crear_editar.png "Usuarios Crear Editar")](img\03_usuarios_crear_editar.png "Usuarios Crear Editar")
+[![Usuarios Crear Editar](img/03_usuarios_crear_editar.png "Usuarios Crear Editar")](img/03_usuarios_crear_editar.png "Usuarios Crear Editar")
 
 Los datos que se pueden agregar en esta pantalla son:
 
@@ -144,27 +144,27 @@ Los datos que se pueden agregar en esta pantalla son:
 
 Entre las acciones disponibles en la pantalla de edición del usuario tenemos el historial. Al acceder podemos ver todas las modificaciones que sufrió ese registro.
   
-[![Usuarios Historial](img\03_usuarios_historial.png "Usuarios Historial")](img\03_usuarios_historial.png "Usuarios Historial")
+[![Usuarios Historial](img/03_usuarios_historial.png "Usuarios Historial")](img/03_usuarios_historial.png "Usuarios Historial")
 
 Al confirmar los cambios guardamos y nos llevara nuevamente a la pantalla del listado mostrándonos un mensaje de confirmación.
 
-[![Usuarios Crear Confirmación](img\03_usuarios_crear_confirmacion.png "Usuarios Crear Confirmación")](img\03_usuarios_crear_confirmacion.png "Usuarios Crear Confirmación")
+[![Usuarios Crear Confirmación](img/03_usuarios_crear_confirmacion.png "Usuarios Crear Confirmación")](img/03_usuarios_crear_confirmacion.png "Usuarios Crear Confirmación")
 
 ### Eliminar usuarios
 
 Para eliminar un usuario se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar usuarios seleccionados/as"* , luego presionar el botón Ejecutar.
 
-[![Usuarios Eliminar](img\03_usuarios_eliminar.png "Usuarios Eliminar")](img\03_usuarios_eliminar.png "Usuarios Eliminar")
+[![Usuarios Eliminar](img/03_usuarios_eliminar.png "Usuarios Eliminar")](img/03_usuarios_eliminar.png "Usuarios Eliminar")
 
 Si esta todo correcto se pedirá la confirmación de la eliminación.
 
-[![Usuarios Eliminar Confirmación](img\03_usuarios_eliminar_confirmacion.png "Usuarios Eliminar Confirmación")](img\03_usuarios_eliminar_confirmacion.png "Usuarios Eliminar Confirmación")
+[![Usuarios Eliminar Confirmación](img/03_usuarios_eliminar_confirmacion.png "Usuarios Eliminar Confirmación")](img/03_usuarios_eliminar_confirmacion.png "Usuarios Eliminar Confirmación")
 
 Luego de aceptar volveremos al listado y veremos la confirmación del borrado.
 
 Si el usuario llega a estar asociado a algún registro nos mostrara un mensaje de error.
 
-[![Usuarios Eliminar Error](img\03_usuarios_eliminar_error.png "Usuarios Eliminar Error")](img\03_usuarios_eliminar_error.png "Usuarios Eliminar Error")
+[![Usuarios Eliminar Error](img/03_usuarios_eliminar_error.png "Usuarios Eliminar Error")](img/03_usuarios_eliminar_error.png "Usuarios Eliminar Error")
 
 - [Volver al indice](#secciones)
 
@@ -480,27 +480,27 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 En esta pantalla podemos crear y administrar los mails que luego se enviaran a los clientes.
 
-[![Listar Mails Vacío](img\10_mails_list_empty.png "Listar Mails Vacío")](img\10_mails_list_empty.png "Listar Mails Vacío")
+[![Listar Mails Vacío](img/10_mails_list_empty.png "Listar Mails Vacío")](img/10_mails_list_empty.png "Listar Mails Vacío")
 
 Al ingresar en esta sección tenemos un listado de los mails ya creados. Estos tienen un reborde de color diferente dependiendo del tiempo faltante para el envío del proximo mail.
 
-[![Listar Mails](img\10_mails_list.png "Listar Mails")](img\10_mails_list.png "Listar Mails")
+[![Listar Mails](img/10_mails_list.png "Listar Mails")](img/10_mails_list.png "Listar Mails")
 
 En esta pantalla podemos ordenar los mails por los items del titulo, simplemente haciendo click sobre el nombre en el titulo. (Por Ejemplo: si queremos ordenar los mails por el estado, hacemos click sobre el titulo que dice STATUS).
 
-[![Ordenar Mails](img\10_mails_ordenar.png "Ordenar Mails")](img\10_mails_ordenar.png "Ordenar Mails")
+[![Ordenar Mails](img/10_mails_ordenar.png "Ordenar Mails")](img/10_mails_ordenar.png "Ordenar Mails")
 
 Podemos ademas filtrar los elementos de la lista por la casilla desde la que se van a enviar, por el numero de envío o por el estado. Esto lo logramos presionando en las opciones dentro del cuadro de filtrar.
 
-[![Filtrar Mails](img\10_mails_filtrar.png "Filtrar Mails")](img\10_mails_filtrar.png "Filtrar Mails")
+[![Filtrar Mails](img/10_mails_filtrar.png "Filtrar Mails")](img/10_mails_filtrar.png "Filtrar Mails")
 
 Dentro de las acciones generales que podemos tomar en esta pantalla se encuentran: Editar los datos del mail, accediendo a su información haciendo click sobre el nombre del mail corporativo asociado (dato azul del listado).
 
-[![Botón editar Mail](img\10_mails_boton_editar.png "Botón editar Mail")](img\10_mails_boton_editar.png "Botón editar Mail")
+[![Botón editar Mail](img/10_mails_boton_editar.png "Botón editar Mail")](img/10_mails_boton_editar.png "Botón editar Mail")
 
 Crear uno nuevo presionando en el botón agregar.
 
-[![Botón crear Mail](img\10_mails_boton_crear.png "Botón crear Mail")](img\10_mails_boton_crear.png "Botón crear Mail")
+[![Botón crear Mail](img/10_mails_boton_crear.png "Botón crear Mail")](img/10_mails_boton_crear.png "Botón crear Mail")
 
 O eliminar el mail, tildándolo, seleccionando la acción "Eliminar mails seleccionados/as" y presionando en ejecutar.
 
@@ -508,7 +508,7 @@ O eliminar el mail, tildándolo, seleccionando la acción "Eliminar mails selecc
 
 La pantalla de creación de Mail y de edición son la misma, la diferencia es que en la edición trae los datos del mail que queremos modificar.
 
-[![Editar Mail](img\10_mails_editar.png "Editar Mail")](img\10_mails_editar.png "Editar Mail")
+[![Editar Mail](img/10_mails_editar.png "Editar Mail")](img/10_mails_editar.png "Editar Mail")
 
 En esta pantalla podremos:
 
@@ -529,25 +529,25 @@ En esta pantalla podremos:
 
 Para eliminar un mail se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar mails seleccionados/as"* , luego presionar el botón Ejecutar.
 
-[![Eliminar Mail](img\10_mails_eliminar.png "Eliminar Mail")](img\10_mails_eliminar.png "Editar Mail")
+[![Eliminar Mail](img/10_mails_eliminar.png "Eliminar Mail")](img/10_mails_eliminar.png "Editar Mail")
 
 Si esta todo correcto se pedirá la confirmación de la eliminación.
 
-[![Confirmar Eliminar Mail](img\10_mails_eliminar_confirmacion.png "Confirmar Eliminar Mail")](img\10_mails_eliminar_confirmacion.png "Confirmar Editar Mail")
+[![Confirmar Eliminar Mail](img/10_mails_eliminar_confirmacion.png "Confirmar Eliminar Mail")](img/10_mails_eliminar_confirmacion.png "Confirmar Editar Mail")
 
 Luego de aceptar volveremos al listado y veremos la confirmación del borrado.
 
-[![Eliminar Mail Correcto](img\10_mails_eliminar_correcto.png "Confirmar Eliminar Correcto")](img\10_mails_eliminar_correcto.png "Editar Mail Correcto")
+[![Eliminar Mail Correcto](img/10_mails_eliminar_correcto.png "Confirmar Eliminar Correcto")](img/10_mails_eliminar_correcto.png "Editar Mail Correcto")
 
 Si llega a haber un mail en la cola de envío asociado nos mostrara un mensaje de error.
 
-[![Eliminar Mail error](img\10_mails_eliminar_error.png "Eliminar Mail error")](img\10_mails_eliminar_error.png "Editar Mail")
+[![Eliminar Mail error](img/10_mails_eliminar_error.png "Eliminar Mail error")](img/10_mails_eliminar_error.png "Editar Mail")
 
 ### Preparar Envío
 
 Para preparar el envío de los mails vamos a seleccionarlos y en el selector de acciones vamos a poner la opción *"Preparar envío"*.
 
-[![Preparar envío](img\10_mails_preparar_envio.png "Preparar envío")](img\10_mails_preparar_envio.png "Preparar envío")
+[![Preparar envío](img/10_mails_preparar_envio.png "Preparar envío")](img/10_mails_preparar_envio.png "Preparar envío")
 
 Una vez preparado el envio se creara un registro en Mails to send.
 
@@ -665,12 +665,12 @@ Si llega a haber un Web types asociado a algún registro nos mostrara un mensaje
 
 ### Calendario
 
-[![Calendario](img\12_calendario.png "Calendario")](img\12_calendario.png "Calendario")
+[![Calendario](img/12_calendario.png "Calendario")](img/12_calendario.png "Calendario")
 
-[![Listado de eventos](img\12_calendario_listado_eventos.png "Listado de eventos")](img\12_calendario_listado_eventos.png "Listado de eventos")
+[![Listado de eventos](img/12_calendario_listado_eventos.png "Listado de eventos")](img/12_calendario_listado_eventos.png "Listado de eventos")
 
 ## Notas importantes
 
 Es muy importante crear las [cuentas](#accounts) y los [mails corporativos](#mail-corps) asociados antes de procesar el Excel. De otra forma es muy probable que se retorne un mensaje de error.
 
-[![Error al importar](img\05_excel_error.png "Error al importar")](img\05_excel_error.png "Error al importar")
+[![Error al importar](img/05_excel_error.png "Error al importar")](img/05_excel_error.png "Error al importar")
