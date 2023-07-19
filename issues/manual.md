@@ -14,26 +14,26 @@ Esta es una guía de uso de la aplicación orientada al usuario final y al admin
 - [Eventos](#eventos)
 - [Accounts](#accounts)
 - [Clientes](#clientes)
-- [Clientes addresss](#clientes-addresss)
+- [Clientes address](#clientes-addresss)
 - [Clientes contacts](#clientes-contacts)
 - [Clientes emails](#clientes-emails)
 - [Clientes socials](#clientes-socials)
 - [Clientes utms](#clientes-utms)
 - [Clientes webs](#al-lado-del-bot%C3%B3n)
 - [Contact types](#contact-types)
-- [Countryss](#countryss)
+- [country's](#countryss)
 - [Email types](#email-types)
-- [Excel filess](#excel-filess)
+- [Excel files](#excel-filess)
 - [Mail corps](#mail-corps)
 - [Mails](#mails)
 - [Mails to sends](#mails-to-sends)
 - [Social types](#social-types)
-- [Template filess](#template-filess)
+- [Template files](#template-filess)
 - [Templates groups](#templates-groups)
 - [Web types](#web-types)
 - [Calendario](#calendario)
 
-#### Pantalla de inicio
+## Pantalla de inicio
 
 El acceso a esta es por medio de la direccion de administración del sitio [url del sitio]:8000/admin.
 
@@ -67,13 +67,13 @@ Si se coloca mal la contraseña antigua se mostrara un mensaje de error y no per
 
 - [Volver al indice](#secciones)
 
-#### Grupos
+## Grupos
 
 Pantalla para la administración y creación de los grupos de usuarios. Estos son una forma de generar grupos de permisos de acceso a la aplicación. De esta forma se puede definir un conjunto de permisos y luego aplicarle los mismos a muchos usuarios distintos.
 
-[![Permisos Grupos](img\02_grupo_permisos.png "Permisos Grupos")](img\02_grupo_permisos.png "Permisos Grupos")
+[![Permisos Grupos](img\02_grupo_listado.png "Permisos Grupos")](img\02_grupo_listado.png "Permisos Grupos")
 
-##### Crear / Editar grupos
+### Crear / Editar grupos
 
 La pantalla de creación de grupos y de edición son la misma, la diferencia es que en la edición trae los datos del grupo que queremos modificar.
 
@@ -94,7 +94,7 @@ Luego de crear un grupo veremos un mensaje de confirmación y este aparecerá en
 
 [![Confirmación creación Grupos](img\02_grupo_crear_confirmacion.png "Confirmación creación Grupos")](img\02_grupo_crear_confirmacion.png "Confirmación creación Grupos")
 
-##### Eliminar grupos
+### Eliminar grupos
 
 Para eliminar un grupo se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar grupos seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -110,39 +110,75 @@ Si un grupo llega a estar asociado a algún usuario ese usuario dejara de tenerl
 
 - [Volver al indice](#secciones)
 
-#### Usuarios
+## Usuarios
 
-En esta pantalla podemos crear y administrar los usuarios
+En esta pantalla podemos crear y administrar los usuarios que tendrán acceso a la aplicación
 
-##### Crear / Editar usuarios
+[![Usuarios Listado](img\03_usuarios_listado.png "Usuarios Listado")](img\03_usuarios_listado.png "Usuarios Listado")
 
-La pantalla de creación de usuarios y de edición son la misma, la diferencia es que en la edición trae los datos del usuario que queremos modificar.
+### Crear / Editar usuarios
 
-En esta pantalla podremos:
+En este caso la pantalla de creación de usuarios y de la de edición no son la misma, ya que a diferencia de la de edición para crear un usuario primero deberemos poner el nombre de usuario a utilizar y la contraseña.
 
-##### Eliminar usuarios
+[![Usuarios Crear](img\03_usuarios_crear.png "Usuarios Crear")](img\03_usuarios_crear.png "Usuarios Crear")
+
+Al guardar nos llevara a una pantalla donde podemos editar los datos del usuario, esta si igual a la pantalla de edición de los datos del formulario.
+
+[![Usuarios Crear Editar](img\03_usuarios_crear_editar.png "Usuarios Crear Editar")](img\03_usuarios_crear_editar.png "Usuarios Crear Editar")
+
+Los datos que se pueden agregar en esta pantalla son:
+
+- Información general
+  - Nombre
+  - Apellido
+  - Direccion de mail
+- Permisos
+  - Activo: *Tildado por defecto*. Si se deshabilita este campo el usuario dejara de tener acceso a la aplicación.
+  - Es staff: Imprescindible para acceder a los menu de edición de la aplicación.
+  - Es superusuario: Al tildar esta casilla se le habilitan al usuario permisos de administrador. Con estos puede acceder a cualquier area del sistema.
+  - Grupos: grupos de permisos que tiene asociado el usuario.
+  - Permisos de usuario: En caso de requerir un permiso particular que no es abarcado por los grupos se puede otorgar en esta sección particularmente. Por ejemplo un usuario que solo puede subir los archivos excel a la aplicación tendrá permiso de vista y de agregar en excel files.
+- Fechas importantes *(ambas fechas se cargan automáticamente y se desaconseja su modificación)*
+  - Ultimo ingreso
+  - Fecha de creación
+
+Entre las acciones disponibles en la pantalla de edición del usuario tenemos el historial. Al acceder podemos ver todas las modificaciones que sufrió ese registro.
+  
+[![Usuarios Historial](img\03_usuarios_historial.png "Usuarios Historial")](img\03_usuarios_historial.png "Usuarios Historial")
+
+Al confirmar los cambios guardamos y nos llevara nuevamente a la pantalla del listado mostrándonos un mensaje de confirmación.
+
+[![Usuarios Crear Confirmación](img\03_usuarios_crear_confirmacion.png "Usuarios Crear Confirmación")](img\03_usuarios_crear_confirmacion.png "Usuarios Crear Confirmación")
+
+### Eliminar usuarios
 
 Para eliminar un usuario se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar usuarios seleccionados/as"* , luego presionar el botón Ejecutar.
 
+[![Usuarios Eliminar](img\03_usuarios_eliminar.png "Usuarios Eliminar")](img\03_usuarios_eliminar.png "Usuarios Eliminar")
+
 Si esta todo correcto se pedirá la confirmación de la eliminación.
+
+[![Usuarios Eliminar Confirmación](img\03_usuarios_eliminar_confirmacion.png "Usuarios Eliminar Confirmación")](img\03_usuarios_eliminar_confirmacion.png "Usuarios Eliminar Confirmación")
 
 Luego de aceptar volveremos al listado y veremos la confirmación del borrado.
 
-´´´ Si llega a haber un usuarios asociado nos mostrara un mensaje de error. ´´´
+Si el usuario llega a estar asociado a algún registro nos mostrara un mensaje de error.
+
+[![Usuarios Eliminar Error](img\03_usuarios_eliminar_error.png "Usuarios Eliminar Error")](img\03_usuarios_eliminar_error.png "Usuarios Eliminar Error")
 
 - [Volver al indice](#secciones)
 
-#### Eventos
+## Eventos
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar XXX
+### Crear / Editar XXX
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+### Eliminar XXX
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -154,17 +190,17 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-#### Accounts
+## Accounts
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar XXX
+### Crear / Editar XXX
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+### Eliminar XXX
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -176,17 +212,17 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-#### Clientes
+## Clientes
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar XXX
+### Crear / Editar XXX
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+### Eliminar XXX
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -198,17 +234,17 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-#### Clientes addresss
+## Clientes addresss
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar XXX
+### Crear / Editar XXX
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+### Eliminar XXX
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -220,17 +256,17 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-#### Clientes contacts
+## Clientes contacts
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar XXX
+### Crear / Editar XXX
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+### Eliminar XXX
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -242,17 +278,17 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-#### Clientes emails
+## Clientes emails
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar XXX
+### Crear / Editar XXX
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+### Eliminar XXX
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -264,17 +300,17 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-#### Clientes socials
+## Clientes socials
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar XXX
+### Crear / Editar XXX
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+### Eliminar XXX
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -286,17 +322,17 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-#### Clientes utms
+## Clientes utms
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar XXX
+### Crear / Editar XXX
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+### Eliminar XXX
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -308,17 +344,17 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-#### Clientes webs
+## Clientes webs
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar XXX
+### Crear / Editar XXX
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+### Eliminar XXX
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -330,17 +366,17 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-#### Contact types
+## Contact types
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar XXX
+### Crear / Editar XXX
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+### Eliminar XXX
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -352,17 +388,17 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-#### Countryss
+## Countryss
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar XXX
+### Crear / Editar XXX
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+### Eliminar XXX
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -374,17 +410,17 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-#### Email types
+## Email types
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar XXX
+### Crear / Editar XXX
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+### Eliminar XXX
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -396,17 +432,17 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-#### Excel filess
+## Excel filess
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar XXX
+### Crear / Editar XXX
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+### Eliminar XXX
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -418,17 +454,17 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-#### Mail corps
+## Mail corps
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar XXX
+### Crear / Editar XXX
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+### Eliminar XXX
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -440,7 +476,7 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-#### Mails
+## Mails
 
 En esta pantalla podemos crear y administrar los mails que luego se enviaran a los clientes.
 
@@ -468,7 +504,7 @@ Crear uno nuevo presionando en el botón agregar.
 
 O eliminar el mail, tildándolo, seleccionando la acción "Eliminar mails seleccionados/as" y presionando en ejecutar.
 
-##### Crear / Editar Mails
+### Crear / Editar Mails
 
 La pantalla de creación de Mail y de edición son la misma, la diferencia es que en la edición trae los datos del mail que queremos modificar.
 
@@ -489,7 +525,7 @@ En esta pantalla podremos:
 - Modificar cuando se envío el ultimo mail.
 - Cambiar la frecuencia a la que debe enviarse los mails.
 
-##### Eliminar Mails
+### Eliminar Mails
 
 Para eliminar un mail se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar mails seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -507,7 +543,7 @@ Si llega a haber un mail en la cola de envío asociado nos mostrara un mensaje d
 
 [![Eliminar Mail error](img\10_mails_eliminar_error.png "Eliminar Mail error")](img\10_mails_eliminar_error.png "Editar Mail")
 
-##### Preparar Envío
+### Preparar Envío
 
 Para preparar el envío de los mails vamos a seleccionarlos y en el selector de acciones vamos a poner la opción *"Preparar envío"*.
 
@@ -517,17 +553,17 @@ Una vez preparado el envio se creara un registro en Mails to send.
 
 - [Volver al indice](#secciones)
 
-#### Mails to sends
+## Mails to sends
 
 En esta pantalla podemos editar y administrar la cola de envío de mails.
 
-##### Editar Mails to send
+### Editar Mails to send
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+### Eliminar XXX
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -539,17 +575,17 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-#### Social types
+## Social types
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar XXX
+### Crear / Editar XXX
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+### Eliminar XXX
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -561,17 +597,17 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-#### Template filess
+## Template filess
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar XXX
+### Crear / Editar XXX
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+### Eliminar XXX
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -583,17 +619,17 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-#### Templates groups
+## Templates groups
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar XXX
+### Crear / Editar XXX
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+### Eliminar XXX
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -605,17 +641,17 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-#### Web types
+## Web types
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar Web types
+### Crear / Editar Web types
 
 La pantalla de creación de Web types y de edición son la misma, la diferencia es que en la edición trae los datos del Web types que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar Web types
+### Eliminar Web types
 
 Para eliminar un Web types se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar Web types seleccionados/as"* , luego presionar el botón Ejecutar.
 
