@@ -19,14 +19,21 @@ def crear_evento(mail: Mail):
     # user = User.objects.get(id=mail.mail_corp.user.id)
 
     print("Creando evento")
-
-    Event.objects.get_or_create(
-        user=mail.mail_corp.user,
-        title=title,
-        description=description,
-        start_time=start_time,
-        end_time=end_time,
-    )
+                            
+    if Event.objects.filter(user=mail.mail_corp.user, title=title).exists():
+        event = Event.objects.get(user=mail.mail_corp.user, title=title)
+        event.description = description
+        event.start_time = start_time
+        event.end_time = end_time
+        event.save()
+    else:
+        Event.objects.get_or_create(
+            user=mail.mail_corp.user,
+            title=title,
+            description=description,
+            start_time=start_time,
+            end_time=end_time,
+        )
 
     print("Evento creado")
 
@@ -112,12 +119,17 @@ def send_mail(id_mail: int) -> bool:
 
     message.attach(MIMEText(msg_data['content'], "html"))
 
+    # Remplazo en la imagenes de que viene de ckeditor
     inicio = msg_data['content'].find('src="/media/uploads')
     if inicio != -1:
         imagen_url = msg_data['content'].replace('/media/', '/static_media/')
         fin = imagen_url.find('"', inicio+5)
         imagen_url = imagen_url[inicio+6:fin]
+        imagen_url_original = msg_data['content'].replace('/static_media/', '/media/')
         imagen_name = imagen_url[imagen_url.rfind('/')+1:]
+
+        msg_data['content'] = msg_data['content'].replace(imagen_url_original, 'cid:'+imagen_name)
+
         with open(imagen_url, 'rb') as file:
             image = MIMEImage(file.read())
             image.add_header('Content-ID', '<'+imagen_name+'>')
