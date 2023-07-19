@@ -125,14 +125,16 @@ def send_mail(id_mail: int) -> bool:
         imagen_url = msg_data['content'].replace('/media/', '/static_media/')
         fin = imagen_url.find('"', inicio+5)
         imagen_url = imagen_url[inicio+6:fin]
-        imagen_url_original = msg_data['content'].replace('/static_media/', '/media/')
+        imagen_url_original = imagen_url.replace('static_media/', 'media/')
         imagen_name = imagen_url[imagen_url.rfind('/')+1:]
+        msg_data['content'] = msg_data['content'].replace('/'+imagen_url_original, 'cid:'+imagen_name[:imagen_name.find('.')])
 
-        msg_data['content'] = msg_data['content'].replace(imagen_url_original, 'cid:'+imagen_name)
+        print("content:", msg_data['content'])
+        print("nombre:", imagen_name[:imagen_name.find('.')])
 
         with open(imagen_url, 'rb') as file:
             image = MIMEImage(file.read())
-            image.add_header('Content-ID', '<'+imagen_name+'>')
+            image.add_header('Content-ID', '<'+imagen_name[:imagen_name.find('.')]+'>')
             message.attach(image)
 
     with connection.cursor() as cursor:
@@ -144,6 +146,7 @@ def send_mail(id_mail: int) -> bool:
 
         for f in attachment:
             with open('static_media/'+f[5], 'rb') as file:
+                print(f[4])
                 image = MIMEImage(file.read())
                 image.add_header('Content-ID', '<'+f[4]+'>')
                 message.attach(image)

@@ -597,15 +597,21 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-## Template filess
+## Template files
 
 En esta pantalla podemos crear y administrar los XXX
 
-### Crear / Editar XXX
+### Crear / Editar un template file
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
 En esta pantalla podremos:
+
+Al presionar guardar al momento de editar el template file automáticamente propagaremos ese cambio a todos los mails a los que corresponda.
+
+Otra de las acciones que tenemos disponibles es la extracción de la información de un archivo para su utilización. Al crear un template file podemos asociarle un archivo de texto. Si vamos a la opción *"Propagación de plantilla"* el sistema recuperara los datos de este archivo y remplazará lo que haya en el cuadro de texto por la información de este.
+
+> Nota: Recuerde que tanto si propaga los cambios del archivo (remplazando lo del cuadro de texto del registro) como si guarda la información en el registro (pisando el cuerpo del mail) son cambios que no tienen vuelta atrás.
 
 ### Eliminar XXX
 

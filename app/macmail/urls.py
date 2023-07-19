@@ -24,7 +24,7 @@ from reportes.views import ClientesList_APIView, ExcelsList_APIView, ProcessExce
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("admin/", CalendarViewIndex.as_view(), name="calendar"),
-    re_path(r'^$', TemplateView.as_view(template_name='static_pages/index.html'), name='home'),
+    re_path(r'^$', TemplateView.as_view(template_name='/static_pages/index.html'), name='home'),
     re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
     path('clientes/', ClientesList_APIView.as_view(), name='clientes'),
     path('excels/', ExcelsList_APIView.as_view(), name='archivos'),

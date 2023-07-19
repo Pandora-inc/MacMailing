@@ -308,6 +308,8 @@ class TemplateFilesAdmin(admin.ModelAdmin):
 
     actions = [template_file_propague]
 
+
+admin.site.register(Attachment, AttachmentAdmin)
 admin.site.register(Clientes, ClientesAdmin)
 admin.site.register(ClientesAddress, ClientesAddressAdmin)
 admin.site.register(ClientesContact, ClientesContactAdmin)
