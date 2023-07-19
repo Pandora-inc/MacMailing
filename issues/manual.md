@@ -19,7 +19,7 @@ Esta es una guía de uso de la aplicación orientada al usuario final y al admin
 - [Clientes emails](#clientes-emails)
 - [Clientes socials](#clientes-socials)
 - [Clientes utms](#clientes-utms)
-- [Clientes webs](#clientes-webs)
+- [Clientes webs](#al-lado-del-bot%C3%B3n)
 - [Contact types](#contact-types)
 - [Countryss](#countryss)
 - [Email types](#email-types)
@@ -31,6 +31,7 @@ Esta es una guía de uso de la aplicación orientada al usuario final y al admin
 - [Template filess](#template-filess)
 - [Templates groups](#templates-groups)
 - [Web types](#web-types)
+- [Calendario](#calendario)
 
 #### Pantalla de inicio
 
@@ -48,50 +49,86 @@ En la pantalla de inicio vemos un listado con las ultimas acciones que realizo e
 
 [![Pantalla de inicio](img\01.png "Pantalla de inicio")](img\01.png "Pantalla de inicio")
 
+En la esquina superior derecha de la pantalla tenderemos un botón para cerrar la sección. De esta manera podremos salir del sistema. Al presionarlo nos cerrara la sesión y nos mostrara un mensaje por si queremos volver a iniciarla.
+
+[![Cerrar sesión](img\00_cerrar_secion.png "Cerrar sesión")](img\00_cerrar_secion.png "Cerrar sesión")
+
+Al lado del botón de cerrar sesión tenemos otro para cambiar la contraseña.
+
+[![Cambiar password](img\00_cambiar_password.png "Cambiar password")](img\00_cambiar_password.png "Cambiar password")
+
+Si todo sale bien, se mostrara un mensaje de confirmación del cambio de contraseña.
+
+[![Cambiar password confirmación](img\00_cambiar_password_exito.png "Cambiar password confirmación")](img\00_cambiar_password_exito.png "Cambiar password confirmación")
+
+Si se coloca mal la contraseña antigua se mostrara un mensaje de error y no permitirá el cambio.
+
+[![Cambiar password error](img\00_cambiar_password_error.png "Cambiar password error")](img\00_cambiar_password_error.png "Cambiar password error")
+
 - [Volver al indice](#secciones)
 
 #### Grupos
 
-Pantalla para la administración y creación de los grupos de usuarios.
-En esta pantalla podemos crear y administrar los XXX
+Pantalla para la administración y creación de los grupos de usuarios. Estos son una forma de generar grupos de permisos de acceso a la aplicación. De esta forma se puede definir un conjunto de permisos y luego aplicarle los mismos a muchos usuarios distintos.
 
-##### Crear / Editar XXX
+[![Permisos Grupos](img\02_grupo_permisos.png "Permisos Grupos")](img\02_grupo_permisos.png "Permisos Grupos")
 
-La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
+##### Crear / Editar grupos
 
-En esta pantalla podremos:
+La pantalla de creación de grupos y de edición son la misma, la diferencia es que en la edición trae los datos del grupo que queremos modificar.
 
-##### Eliminar XXX
+En esta pantalla podremos ponerle un nombre al grupo y seleccionar los permisos que tendrá cada persona.
 
-Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
+[![Crear Permisos Grupos](img\02_grupo_crear.png "Crear Permisos Grupos")](img\02_grupo_crear.png "Crear Permisos Grupos")
+
+Los permisos se asignan pasándolos de la pantalla de permisos disponibles a permisos seleccionados. Estos permisos se dividen en cuatro tipos:
+
+- **Add**: *agregar un elemento.* Si no se da permisos de Add el usuario no vera el botón de nuevo en esa pantalla y no podrá agregar nuevos elementos.
+- **Change**: *cambiar un elemento.* Si no se dan los permisos de change el usuario no podrá modificar los datos ya existentes.
+- **Delete**: *eliminar un elemento.* Si no se dan permisos de delete no se podrán eliminar los elementos de los listados.
+- **View**: *ver elementos.* Si no se dan permisos de view el usuario no vera ese elemento en el menu, ni podrá acceder al listado de estos.
+
+[![Permisos Grupos](img\02_grupo_permisos.png "Permisos Grupos")](img\02_grupo_permisos.png "Permisos Grupos")
+
+Luego de crear un grupo veremos un mensaje de confirmación y este aparecerá en el listado y en la lista de grupos para agregarles a los usuarios.
+
+[![Confirmación creación Grupos](img\02_grupo_crear_confirmacion.png "Confirmación creación Grupos")](img\02_grupo_crear_confirmacion.png "Confirmación creación Grupos")
+
+##### Eliminar grupos
+
+Para eliminar un grupo se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar grupos seleccionados/as"* , luego presionar el botón Ejecutar.
+
+[![Eliminar Grupos](img\02_grupo_eliminar.png "Eliminar Grupos")](img\02_grupo_eliminar.png "Eliminar Grupos")
 
 Si esta todo correcto se pedirá la confirmación de la eliminación.
 
-Luego de aceptar volveremos al listado y veremos la confirmación del borrado.
+[![Confirmación eliminar Grupos](img\02_grupo_eliminar_confirmar.png "Confirmación eliminar Grupos")](img\02_grupo_eliminar_confirmar.png "Confirmación eliminar Grupos")
 
-Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
+Luego de aceptar volveremos al listado y veremos la confirmación del borrad
+
+Si un grupo llega a estar asociado a algún usuario ese usuario dejara de tenerlo en su listado de grupos asociados.
 
 - [Volver al indice](#secciones)
 
 #### Usuarios
 
-En esta pantalla podemos crear y administrar los XXX
+En esta pantalla podemos crear y administrar los usuarios
 
-##### Crear / Editar XXX
+##### Crear / Editar usuarios
 
-La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
+La pantalla de creación de usuarios y de edición son la misma, la diferencia es que en la edición trae los datos del usuario que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+##### Eliminar usuarios
 
-Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
+Para eliminar un usuario se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar usuarios seleccionados/as"* , luego presionar el botón Ejecutar.
 
 Si esta todo correcto se pedirá la confirmación de la eliminación.
 
 Luego de aceptar volveremos al listado y veremos la confirmación del borrado.
 
-Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
+´´´ Si llega a haber un usuarios asociado nos mostrara un mensaje de error. ´´´
 
 - [Volver al indice](#secciones)
 
@@ -482,9 +519,9 @@ Una vez preparado el envio se creara un registro en Mails to send.
 
 #### Mails to sends
 
-En esta pantalla podemos crear y administrar los XXX
+En esta pantalla podemos editar y administrar la cola de envío de mails.
 
-##### Crear / Editar XXX
+##### Editar Mails to send
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
 
@@ -572,23 +609,29 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 En esta pantalla podemos crear y administrar los XXX
 
-##### Crear / Editar XXX
+##### Crear / Editar Web types
 
-La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
+La pantalla de creación de Web types y de edición son la misma, la diferencia es que en la edición trae los datos del Web types que queremos modificar.
 
 En esta pantalla podremos:
 
-##### Eliminar XXX
+##### Eliminar Web types
 
-Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
+Para eliminar un Web types se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar Web types seleccionados/as"* , luego presionar el botón Ejecutar.
 
 Si esta todo correcto se pedirá la confirmación de la eliminación.
 
 Luego de aceptar volveremos al listado y veremos la confirmación del borrado.
 
-Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
+Si llega a haber un Web types asociado a algún registro nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
+
+### Calendario
+
+[![Calendario](img\12_calendario.png "Calendario")](img\12_calendario.png "Calendario")
+
+[![Listado de eventos](img\12_calendario_listado_eventos.png "Listado de eventos")](img\12_calendario_listado_eventos.png "Listado de eventos")
 
 ## Notas importantes
 
