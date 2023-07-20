@@ -5,11 +5,13 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.utils import formatdate
 import string
-import smtplib, ssl
+import smtplib
+import ssl
 from django.contrib.auth.models import User
 from django.db import connection
 from calendarapp.models import Event
 from reportes.models import Mail, TemplateFiles
+
 
 def crear_evento(mail: Mail):
     title = mail.subject
@@ -19,7 +21,7 @@ def crear_evento(mail: Mail):
     # user = User.objects.get(id=mail.mail_corp.user.id)
 
     print("Creando evento")
-                            
+
     if Event.objects.filter(user=mail.mail_corp.user, title=title).exists():
         event = Event.objects.get(user=mail.mail_corp.user, title=title)
         event.description = description
@@ -46,12 +48,13 @@ def registro_envio_mail(id_mail: int, send_number: int):
 
         mail = Mail.objects.get(id=id_mail)
         crear_evento(mail)
-        
+
 
 def prepare_email_body(text: str, data: dict) -> str:
     for key, value in data.items():
         text = text.replace('{{'+key+'}}', str(value))
     return text
+
 
 def get_mail_data(id_mail: int) -> dict:
     with connection.cursor() as cursor:
@@ -117,8 +120,6 @@ def send_mail(id_mail: int) -> bool:
 
     msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
 
-    message.attach(MIMEText(msg_data['content'], "html"))
-
     # Remplazo en la imagenes de que viene de ckeditor
     inicio = msg_data['content'].find('src="/media/uploads')
     if inicio != -1:
@@ -127,15 +128,19 @@ def send_mail(id_mail: int) -> bool:
         imagen_url = imagen_url[inicio+6:fin]
         imagen_url_original = imagen_url.replace('static_media/', 'media/')
         imagen_name = imagen_url[imagen_url.rfind('/')+1:]
-        msg_data['content'] = msg_data['content'].replace('/'+imagen_url_original, 'cid:'+imagen_name[:imagen_name.find('.')])
+        msg_data['content'] = msg_data['content'].replace(
+            '/'+imagen_url_original, 'cid:'+imagen_name[:imagen_name.find('.')])
 
         print("content:", msg_data['content'])
         print("nombre:", imagen_name[:imagen_name.find('.')])
 
         with open(imagen_url, 'rb') as file:
             image = MIMEImage(file.read())
-            image.add_header('Content-ID', '<'+imagen_name[:imagen_name.find('.')]+'>')
+            image.add_header('Content-ID', '<' +
+                             imagen_name[:imagen_name.find('.')]+'>')
             message.attach(image)
+
+    message.attach(MIMEText(msg_data['content'], "html"))
 
     with connection.cursor() as cursor:
         consulta_attachment = f"SELECT * FROM reportes_mail_attachment \
@@ -146,7 +151,6 @@ def send_mail(id_mail: int) -> bool:
 
         for f in attachment:
             with open('static_media/'+f[5], 'rb') as file:
-                print(f[4])
                 image = MIMEImage(file.read())
                 image.add_header('Content-ID', '<'+f[4]+'>')
                 message.attach(image)
@@ -165,7 +169,6 @@ def send_mail(id_mail: int) -> bool:
             print(e_error)
             server.quit()
             return False
-
 
 
 def get_template_file_and_save(id_template: int):
