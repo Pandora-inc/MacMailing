@@ -117,7 +117,7 @@ def get_mail_data(id_mail: int) -> dict:
             msg['CC'] = ', '.join(emails_cadena(row[15]))
         else:
             msg['CC'] = ''
-            
+
         return msg
 
 
@@ -141,9 +141,6 @@ def send_mail(id_mail: int) -> bool:
         imagen_name = imagen_url[imagen_url.rfind('/')+1:]
         msg_data['content'] = msg_data['content'].replace(
             '/'+imagen_url_original, 'cid:'+imagen_name[:imagen_name.find('.')])
-
-        print("content:", msg_data['content'])
-        print("nombre:", imagen_name[:imagen_name.find('.')])
 
         with open(imagen_url, 'rb') as file:
             image = MIMEImage(file.read())
