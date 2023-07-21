@@ -1,6 +1,6 @@
 ''' Configuraciones particulares para el panel de administración '''
 from django.contrib import admin
-from app.auxiliares.models import ContactType, Country, EmailType, SocialType, Type, WebType
+from auxiliares.models import ContactType, Country, EmailType, SocialType, Type, WebType
 
 
 class TypeAdmin(admin.ModelAdmin):
