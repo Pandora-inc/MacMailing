@@ -1,14 +1,11 @@
 """ Configuraciones del Admin """
-from datetime import date, datetime
-import time
-from django import forms
-from django.utils.html import format_html
+from datetime import date
 from django.utils.safestring import mark_safe
 from django.contrib import admin
 
 from .utils import excelFile
 from .actions import get_template_file_and_save, send_mail
-from .models import (Attachment, Countrys, ContactType, Mail, TemplateFiles, TemplatesGroup, WebType, EmailType, SocialType, Clientes, ClientesContact,
+from .models import (Attachment, Mail, TemplateFiles, TemplatesGroup, Clientes, ClientesContact,
                      ClientesWeb, ClientesEmail, ClientesSocial, ClientesAddress, ClientesUTM, ExcelFiles, Account, MailCorp, MailsToSend)
 
 
@@ -248,7 +245,10 @@ class MailsToSendAdmin(admin.ModelAdmin):
         if not if_admin(request.user):
             accounts = get_response_account(request.user)
             mails = Mail.objects.filter(mail_corp__in=accounts)
-            queryset = queryset.filter(mail__in=mails)
+            queryset = queryset.filter(mail__in=mails, send=False)
+        else:
+            queryset = queryset.filter(send=False)
+
 
         return queryset
     
@@ -317,19 +317,10 @@ admin.site.register(ClientesEmail, ClientesEmailAdmin)
 admin.site.register(ClientesSocial, ClientesSocialAdmin)
 admin.site.register(ClientesUTM, ClientesUTMAdmin)
 admin.site.register(ClientesWeb, ClientesWebAdmin)
-admin.site.register(Countrys)
-admin.site.register(ContactType)
-admin.site.register(WebType)
-admin.site.register(EmailType)
-admin.site.register(SocialType)
 admin.site.register(ExcelFiles, ExcelFilesAdmin)
 admin.site.register(Mail, MailAdmin)
 admin.site.register(MailsToSend, MailsToSendAdmin)
-
-
 admin.site.register(Account, AccountAdmin)
 admin.site.register(MailCorp, MailCorpAdmin)
-
-
 admin.site.register(TemplatesGroup,TemplateGroupAdmin)
 admin.site.register(TemplateFiles,TemplateFilesAdmin)

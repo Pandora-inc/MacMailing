@@ -75,7 +75,10 @@ def get_mail_data(id_mail: int) -> dict:
             clientes.last_name, \
             clientes.lead_name, \
             clientes.source_information, \
-            reportes_clientesemail.data \
+            reportes_clientesemail.data, \
+            clientes.company_name, \
+            clientes.position, \
+            clientes.type \
         FROM \
             reportes_mail \
             INNER JOIN reportes_mailcorp ON reportes_mailcorp.id = reportes_mail.mail_corp_id \
@@ -93,7 +96,6 @@ def get_mail_data(id_mail: int) -> dict:
         msg['From'] = row[5]
         msg['To'] = row[16]
         msg['Date'] = formatdate(localtime=True)
-        msg['CC'] = ', '.join(emails_cadena(row[15]))
         msg['content-type'] = 'text/html'
         msg['content'] = row[1]
         msg['number'] = row[3]
@@ -106,7 +108,16 @@ def get_mail_data(id_mail: int) -> dict:
         msg['middle_name'] = row[12]
         msg['last_name'] = row[13]
         msg['lead_name'] = row[14]
+        msg['data'] = row[16]
+        msg['company_name'] = row[17]
+        msg['position'] = row[18]
+        msg['type'] = row[19]
 
+        if row[15]:
+            msg['CC'] = ', '.join(emails_cadena(row[15]))
+        else:
+            msg['CC'] = ''
+            
         return msg
 
 

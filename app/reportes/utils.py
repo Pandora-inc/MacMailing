@@ -1,7 +1,7 @@
 import openpyxl
 
 from datetime import datetime
-from .models import Clientes, ClientesAddress, ClientesContact, ClientesEmail, ClientesSocial, ClientesWeb, ContactType, Countrys, EmailType, MailCorp, SocialType, WebType
+from .models import Clientes, ClientesAddress, ClientesContact, ClientesEmail, ClientesSocial, ClientesWeb, ContactType, Country, EmailType, MailCorp, SocialType, WebType, Account
 from django.contrib.auth.models import User
 
 
@@ -109,9 +109,9 @@ class excelFile():
             cliente.client = data['client'][i]
             cliente.customer_journey = data['customer_journey'][i]
             cliente.type = data['type'][i]
-            cliente.country = Countrys.objects.get(
+            cliente.country = Country.objects.get(
                 description=data['country'][i])
-            cliente.account = data['account'][i]
+            cliente.account = Account.objects.get(name=data['account'][i])
             cliente.addl_type_details_other = data['addl_type_details_other'][i]
             cliente.industry_sub_type = data['industry_sub_type'][i]
             cliente.last_updated_on = datetime.strptime(

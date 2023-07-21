@@ -21,7 +21,7 @@ Esta es una guía de uso de la aplicación orientada al usuario final y al admin
 - [Clientes utms](#clientes-utms)
 - [Clientes webs](#al-lado-del-bot%C3%B3n)
 - [Contact types](#contact-types)
-- [country's](#countryss)
+- [country's](#Countrys)
 - [Email types](#email-types)
 - [Excel files](#excel-filess)
 - [Mail corps](#mail-corps)
@@ -388,7 +388,7 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-## Countryss
+## Countrys
 
 En esta pantalla podemos crear y administrar los XXX
 
