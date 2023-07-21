@@ -2,7 +2,7 @@ import openpyxl
 
 from datetime import datetime
 
-from auxiliares.models import ContactType, EmailType, SocialType, WebType
+from auxiliares.models import ContactType, EmailType, SocialType, WebType, Country, Type
 from .models import Clientes, ClientesAddress, ClientesContact, ClientesEmail, ClientesSocial, ClientesWeb, MailCorp, Account
 from django.contrib.auth.models import User
 
@@ -110,7 +110,8 @@ class excelFile():
             cliente.repeat_lead = False if data['repeat_lead'][i] == 'N' else True
             cliente.client = data['client'][i]
             cliente.customer_journey = data['customer_journey'][i]
-            cliente.type = data['type'][i]
+            cliente.type = Type.objects.get(
+                name=data['type'][i])
             cliente.country = Country.objects.get(
                 description=data['country'][i])
             cliente.account = Account.objects.get(name=data['account'][i])
