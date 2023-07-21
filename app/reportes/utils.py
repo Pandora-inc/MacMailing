@@ -110,9 +110,9 @@ class excelFile():
             cliente.repeat_lead = False if data['repeat_lead'][i] == 'N' else True
             cliente.client = data['client'][i]
             cliente.customer_journey = data['customer_journey'][i]
-            cliente.type = Type.objects.get_or_create(
+            cliente.type = Type.objects.get(
                 name=data['type'][i])
-            cliente.country = Country.objects.get_or_create(
+            cliente.country = Country.objects.get(
                 description=data['country'][i])
             cliente.account = Account.objects.get(name=data['account'][i])
             cliente.addl_type_details_other = data['addl_type_details_other'][i]
