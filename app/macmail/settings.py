@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # 'admin_reorder',
     'rest_framework',
+    'auxiliares',
     'reportes',
     'ckeditor', # CKEditor config
     'ckeditor_uploader', # CKEditor media uploader
