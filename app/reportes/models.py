@@ -1,7 +1,7 @@
 """ Modelo de datos relacionados a la actividad """
 from django.db import models
 from django.contrib.auth.models import User
-from app.auxiliares.models import ContactType, Country, EmailType, SocialType, WebType, Type
+from auxiliares.models import ContactType, Country, EmailType, SocialType, WebType, Type
 from ckeditor_uploader.fields import RichTextUploadingField
 from django.db.models.signals import post_save
 from django.dispatch import receiver

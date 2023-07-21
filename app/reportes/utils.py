@@ -1,7 +1,9 @@
 import openpyxl
 
 from datetime import datetime
-from .models import Clientes, ClientesAddress, ClientesContact, ClientesEmail, ClientesSocial, ClientesWeb, ContactType, Country, EmailType, MailCorp, SocialType, WebType, Account
+
+from auxiliares.models import ContactType, EmailType, SocialType, WebType
+from .models import Clientes, ClientesAddress, ClientesContact, ClientesEmail, ClientesSocial, ClientesWeb, MailCorp, Account
 from django.contrib.auth.models import User
 
 
