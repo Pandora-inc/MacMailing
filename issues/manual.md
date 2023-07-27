@@ -20,18 +20,22 @@ Esta es una guía de uso de la aplicación orientada al usuario final y al admin
 - [Clientes socials](#clientes-socials)
 - [Clientes utms](#clientes-utms)
 - [Clientes webs](#al-lado-del-bot%C3%B3n)
-- [Contact types](#contact-types)
-- [country's](#Countrys)
-- [Email types](#email-types)
 - [Excel files](#excel-filess)
 - [Mail corps](#mail-corps)
 - [Mails](#mails)
 - [Mails to sends](#mails-to-sends)
-- [Social types](#social-types)
 - [Template files](#template-filess)
 - [Templates groups](#templates-groups)
-- [Web types](#web-types)
 - [Calendario](#calendario)
+
+### Secciones Auxiliares
+
+- [Contact types](#contact-types)
+- [Email types](#email-types)
+- [country's](#Countrys)
+- [Social types](#social-types)
+- [Types](#types)
+- [Web types](#web-types)
 
 ## Pantalla de inicio
 
@@ -170,59 +174,70 @@ Si el usuario llega a estar asociado a algún registro nos mostrara un mensaje d
 
 ## Eventos
 
-En esta pantalla podemos crear y administrar los XXX
+En esta pantalla podemos crear y administrar los eventos del calendario.
 
-### Crear / Editar XXX
+### Crear / Editar eventos
 
-La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
+La pantalla de creación de eventos y de edición son la misma, la diferencia es que en la edición trae los datos del evento que queremos modificar.
 
 En esta pantalla podremos:
 
-### Eliminar XXX
+- definir un evento como activo
+- Marcarlo como eliminado.
+- Seleccionar el usuario al que pertenece
+- Ponerle un titulo al evento
+- Poner una descripción en el evento
+- Seleccionar la fecha y hora de inicio
+- Seleccionar la fecha y hora de finalización
 
-Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
+### Eliminar eventos
+
+Para eliminar un evento se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar events seleccionados/as"* , luego presionar el botón Ejecutar.
 
 Si esta todo correcto se pedirá la confirmación de la eliminación.
 
 Luego de aceptar volveremos al listado y veremos la confirmación del borrado.
 
-Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
+Recuerde que al eliminar un evento este dejara de mostrarse en el calendario y en los historiales.
 
 - [Volver al indice](#secciones)
 
 ## Accounts
 
-En esta pantalla podemos crear y administrar los XXX
+En esta pantalla podemos crear y administrar los datos de las cuentas. Una cuenta puede tener un [supervisor](#usuarios) y multiples [cuentas de mail](#mail-corps) asociadas. Estas cuentas a su vez tendrán una [persona](#usuarios) que las supervisara.  
 
-### Crear / Editar XXX
+### Crear / Editar Account
 
-La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
+La pantalla de creación de cuentas y de edición son la misma, la diferencia es que en la edición trae los datos del account que queremos modificar.
 
 En esta pantalla podremos:
 
-### Eliminar XXX
+- Ponerle un nombre a la cuenta
+- seleccionar el usuario supervisor
 
-Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
+### Eliminar Account
+
+Para eliminar un account se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar account seleccionados/as"* , luego presionar el botón Ejecutar.
 
 Si esta todo correcto se pedirá la confirmación de la eliminación.
 
 Luego de aceptar volveremos al listado y veremos la confirmación del borrado.
 
-Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
+Si llega a haber un [cliente](#clientes) o una [cuenta de mail](#mail-corps) asociados al account se nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
 ## Clientes
 
-En esta pantalla podemos crear y administrar los XXX
+En esta pantalla podemos crear y administrar los datos de los clientes
 
-### Crear / Editar XXX
+### Crear / Editar Clientes
 
-La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
+La pantalla de creación de clientes y de edición son la misma, la diferencia es que en la edición trae los datos del cliente que queremos modificar.
 
-En esta pantalla podremos:
+En esta pantalla podremos agregar/modificar los distintos datos del cliente. Es importante que datos como el [Account](#accounts), el [Country](#clientes), el [Type](#clientes), el [Currency](#clientes) y el [Responsible](#clientes) deben estar cargados de antemano en sus correspondientes tablas.
 
-### Eliminar XXX
+### Eliminar Clientes
 
 Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
 
@@ -629,9 +644,13 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 En esta pantalla podemos crear y administrar los XXX
 
+[![Listar template groups](imgs/13_template_group_list.png "Listar template groups")](imgs/13_template_group_list.png "Listar template groups")
+
 ### Crear / Editar XXX
 
 La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
+
+[![Nuevo template groups](imgs/13_template_group_nuevo.png "Nuevo template groups")](imgs/13_template_group_nuevo.png "Nuevo template groups")
 
 En esta pantalla podremos:
 

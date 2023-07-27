@@ -3,6 +3,8 @@ from datetime import date
 from django.utils.safestring import mark_safe
 from django.contrib import admin
 
+from auxiliares.models import EmailType
+
 from .utils import excelFile
 from .actions import get_template_file_and_save, send_mail
 from .models import (Attachment, Mail, TemplateFiles, TemplatesGroup, Clientes, ClientesContact,
@@ -85,6 +87,12 @@ class AccountAdmin(admin.ModelAdmin):
         return queryset
 
 
+class ClientesEmailInline(admin.TabularInline):
+    '''
+    Tabular Inline View for ClientesEmail
+    '''
+    model = ClientesEmail
+
 class ClientesAdmin(admin.ModelAdmin):
     list_display = ['cliente_id', 'last_name', 'first_name',
                     'middle_name', 'lead_name', 'status', 'responsible']
@@ -93,6 +101,7 @@ class ClientesAdmin(admin.ModelAdmin):
     ordering = ['cliente_id', 'last_name',
                 'lead_name', 'status', 'responsible']
     list_filter = ['responsible', 'lead_name']
+    inlines = [ClientesEmailInline]
 
     def get_queryset(self, request):
         # Obtener el queryset base
@@ -106,6 +115,9 @@ class ClientesAdmin(admin.ModelAdmin):
 
 
 class ClientesAddressAdmin(admin.ModelAdmin):
+    '''
+    Admin View for ClientesAddress
+    '''
     list_display = ['cliente', 'address', 'city', 'postal_code', 'country']
     search_fields = ['cliente', 'address', 'city', 'postal_code', 'country']
     ordering = ['cliente', 'address', 'city', 'postal_code', 'country']
@@ -113,6 +125,9 @@ class ClientesAddressAdmin(admin.ModelAdmin):
 
 
 class ClientesContactAdmin(admin.ModelAdmin):
+    '''
+    Admin View for ClientesContact
+    '''
     list_display = ['cliente', 'type', 'data']
     search_fields = ['cliente', 'type', 'data']
     ordering = ['cliente', 'type']
@@ -120,6 +135,9 @@ class ClientesContactAdmin(admin.ModelAdmin):
 
 
 class ClientesEmailAdmin(admin.ModelAdmin):
+    '''
+    Admin View for ClientesEmail
+    '''
     list_display = ['cliente', 'type', 'data']
     search_fields = ['cliente', 'type', 'data']
     ordering = ['cliente', 'type']
@@ -139,6 +157,9 @@ class ClientesEmailAdmin(admin.ModelAdmin):
 
 
 class ClientesSocialAdmin(admin.ModelAdmin):
+    '''
+    Admin View for ClientesSocial
+    '''
     list_display = ['cliente', 'type', 'data']
     search_fields = ['cliente', 'type', 'data']
     ordering = ['cliente', 'type']
@@ -146,6 +167,9 @@ class ClientesSocialAdmin(admin.ModelAdmin):
 
 
 class ClientesUTMAdmin(admin.ModelAdmin):
+    '''
+    Admin View for ClientesUTM
+    '''
     list_display = ['cliente', 'source', 'campaign', 'content']
     search_fields = ['cliente', 'source', 'campaign', 'content']
     ordering = ['cliente', 'campaign']
@@ -153,6 +177,9 @@ class ClientesUTMAdmin(admin.ModelAdmin):
 
 
 class ClientesWebAdmin(admin.ModelAdmin):
+    '''
+    Admin View for ClientesWeb
+    '''
     list_display = ['cliente', 'type', 'data']
     search_fields = ['cliente', 'type', 'data']
     ordering = ['cliente', 'type']
@@ -160,6 +187,9 @@ class ClientesWebAdmin(admin.ModelAdmin):
 
 
 class MailCorpAdmin(admin.ModelAdmin):
+    '''
+    Admin View for MailCorp
+    '''
     list_display = ['name', 'email', 'account', 'user']
     search_fields = ['name', 'email', 'account', 'user']
     ordering = ['name', 'email', 'account', 'user']
