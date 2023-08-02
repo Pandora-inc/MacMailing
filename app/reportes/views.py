@@ -67,19 +67,29 @@ class ExcelsList_APIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ProcessExcel(APIView):
-    def get(self, request, format=None):
-        # cursor = connection.cursor()
-        # cursor.execute("SELECT * FROM reportes_clientes")
-        # clientes = cursor.fetchall()
+    """
+    This class is responsible for processing Excel files uploaded by users.
+    It provides methods to read data from an Excel file and save it to the database,
+    as well as retrieve data from the database and return it as a response to a POST request.
+    """
 
+    def get(self, request, format=None):
+        """
+        Retrieves an Excel file from the database, reads the data from the file using the 'excelFile' class,
+        and saves the data to the database using the 'print_datos' method of the 'excelFile' class.
+        Returns a success response.
+        """
         file = ExcelFiles.objects.get(id=2)
         excel = excelFile()
         excel.open_file(file.file.path)
         excel.print_datos()
 
         return Response("success")
-    
+
     def post(self, request, format=None):
+        """
+        Retrieves data from the database using a SQL query and returns it as a response.
+        """
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM reportes_clientes")
         clientes = cursor.fetchall()

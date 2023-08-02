@@ -14,7 +14,7 @@ Esta es una guía de uso de la aplicación orientada al usuario final y al admin
 - [Eventos](#eventos)
 - [Accounts](#accounts)
 - [Clientes](#clientes)
-- [Clientes address](#clientes-addresss)
+- [Clientes address](#clientes-address)
 - [Clientes contacts](#clientes-contacts)
 - [Clientes emails](#clientes-emails)
 - [Clientes socials](#clientes-socials)
@@ -60,72 +60,70 @@ En la esquina superior derecha de la pantalla tenderemos un botón para cerrar l
 Al lado del botón de cerrar sesión tenemos otro para cambiar la contraseña.
 
 [![Cambiar password](imgs/00_cambiar_password.png "Cambiar password")](imgs/00_cambiar_password.png "Cambiar password")
+def get_mail_data():
+    """
+    This function provides a comprehensive guide for users and administrators of the MacMailling application.
+    It covers different sections such as groups, users, events, clients, mails, templates, and calendar.
+    The guide includes screenshots and explanations of the different screens and functionalities of the application.
+    It also provides information on how to create and edit groups and users, assign permissions, and manage different types of data such as clients' addresses, contacts, emails, socials, utms, and webs.
+    The guide also includes information on how to create and manage templates, mails, and events, as well as how to use the calendar feature.
+    """
 
-Si todo sale bien, se mostrara un mensaje de confirmación del cambio de contraseña.
+    # Si todo sale bien, se mostrara un mensaje de confirmación del cambio de contraseña.
+    [![Cambiar password confirmación](imgs/00_cambiar_password_exito.png "Cambiar password confirmación")](imgs/00_cambiar_password_exito.png "Cambiar password confirmación")
 
-[![Cambiar password confirmación](imgs/00_cambiar_password_exito.png "Cambiar password confirmación")](imgs/00_cambiar_password_exito.png "Cambiar password confirmación")
+    # Si se coloca mal la contraseña antigua se mostrara un mensaje de error y no permitirá el cambio.
+    [![Cambiar password error](imgs/00_cambiar_password_error.png "Cambiar password error")](imgs/00_cambiar_password_error.png "Cambiar password error")
 
-Si se coloca mal la contraseña antigua se mostrara un mensaje de error y no permitirá el cambio.
+    # [Volver al indice](#secciones)
 
-[![Cambiar password error](imgs/00_cambiar_password_error.png "Cambiar password error")](imgs/00_cambiar_password_error.png "Cambiar password error")
+    ## Grupos
 
-- [Volver al indice](#secciones)
+    # Pantalla para la administración y creación de los grupos de usuarios.
+    # Estos son una forma de generar grupos de permisos de acceso a la aplicación.
+    # De esta forma se puede definir un conjunto de permisos y luego aplicarle los mismos a muchos usuarios distintos.
+    [![Permisos Grupos](imgs/02_grupo_listado.png "Permisos Grupos")](imgs/02_grupo_listado.png "Permisos Grupos")
 
-## Grupos
+    ### Crear / Editar grupos
 
-Pantalla para la administración y creación de los grupos de usuarios. Estos son una forma de generar grupos de permisos de acceso a la aplicación. De esta forma se puede definir un conjunto de permisos y luego aplicarle los mismos a muchos usuarios distintos.
+    # La pantalla de creación de grupos y de edición son la misma, la diferencia es que en la edición trae los datos del grupo que queremos modificar.
+    # En esta pantalla podremos ponerle un nombre al grupo y seleccionar los permisos que tendrá cada persona.
+    [![Crear Permisos Grupos](imgs/02_grupo_crear.png "Crear Permisos Grupos")](imgs/02_grupo_crear.png "Crear Permisos Grupos")
 
-[![Permisos Grupos](imgs/02_grupo_listado.png "Permisos Grupos")](imgs/02_grupo_listado.png "Permisos Grupos")
+    # Los permisos se asignan pasándolos de la pantalla de permisos disponibles a permisos seleccionados.
+    # Estos permisos se dividen en cuatro tipos:
+    # - **Add**: *agregar un elemento.* Si no se da permisos de Add el usuario no vera el botón de nuevo en esa pantalla y no podrá agregar nuevos elementos.
+    # - **Change**: *cambiar un elemento.* Si no se dan los permisos de change el usuario no podrá modificar los datos ya existentes.
+    # - **Delete**: *eliminar un elemento.* Si no se dan permisos de delete no se podrán eliminar los elementos de los listados.
+    # - **View**: *ver elementos.* Si no se dan permisos de view el usuario no vera ese elemento en el menu, ni podrá acceder al listado de estos.
+    [![Permisos Grupos](imgs/02_grupo_permisos.png "Permisos Grupos")](imgs/02_grupo_permisos.png "Permisos Grupos")
 
-### Crear / Editar grupos
+    # Luego de crear un grupo veremos un mensaje de confirmación y este aparecerá en el listado y en la lista de grupos para agregarles a los usuarios.
+    [![Confirmación creación Grupos](imgs/02_grupo_crear_confirmacion.png "Confirmación creación Grupos")](imgs/02_grupo_crear_confirmacion.png "Confirmación creación Grupos")
 
-La pantalla de creación de grupos y de edición son la misma, la diferencia es que en la edición trae los datos del grupo que queremos modificar.
+    ### Eliminar grupos
 
-En esta pantalla podremos ponerle un nombre al grupo y seleccionar los permisos que tendrá cada persona.
+    # Para eliminar un grupo se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar grupos seleccionados/as"* , luego presionar el botón Ejecutar.
+    [![Eliminar Grupos](imgs/02_grupo_eliminar.png "Eliminar Grupos")](imgs/02_grupo_eliminar.png "Eliminar Grupos")
 
-[![Crear Permisos Grupos](imgs/02_grupo_crear.png "Crear Permisos Grupos")](imgs/02_grupo_crear.png "Crear Permisos Grupos")
+    # Si esta todo correcto se pedirá la confirmación de la eliminación.
+    [![Confirmación eliminar Grupos](imgs/02_grupo_eliminar_confirmar.png "Confirmación eliminar Grupos")](imgs/02_grupo_eliminar_confirmar.png "Confirmación eliminar Grupos")
 
-Los permisos se asignan pasándolos de la pantalla de permisos disponibles a permisos seleccionados. Estos permisos se dividen en cuatro tipos:
+    # Luego de aceptar volveremos al listado y veremos la confirmación del borrad
 
-- **Add**: *agregar un elemento.* Si no se da permisos de Add el usuario no vera el botón de nuevo en esa pantalla y no podrá agregar nuevos elementos.
-- **Change**: *cambiar un elemento.* Si no se dan los permisos de change el usuario no podrá modificar los datos ya existentes.
-- **Delete**: *eliminar un elemento.* Si no se dan permisos de delete no se podrán eliminar los elementos de los listados.
-- **View**: *ver elementos.* Si no se dan permisos de view el usuario no vera ese elemento en el menu, ni podrá acceder al listado de estos.
+    # Si un grupo llega a estar asociado a algún usuario ese usuario dejara de tenerlo en su listado de grupos asociados.
 
-[![Permisos Grupos](imgs/02_grupo_permisos.png "Permisos Grupos")](imgs/02_grupo_permisos.png "Permisos Grupos")
+    # [Volver al indice](#secciones)
 
-Luego de crear un grupo veremos un mensaje de confirmación y este aparecerá en el listado y en la lista de grupos para agregarles a los usuarios.
+    ## Usuarios
 
-[![Confirmación creación Grupos](imgs/02_grupo_crear_confirmacion.png "Confirmación creación Grupos")](imgs/02_grupo_crear_confirmacion.png "Confirmación creación Grupos")
+    # En esta pantalla podemos crear y administrar los usuarios que tendrán acceso a la aplicación
+    [![Usuarios Listado](imgs/03_usuarios_listado.png "Usuarios Listado")](imgs/03_usuarios_listado.png "Usuarios Listado")
 
-### Eliminar grupos
+    ### Crear / Editar usuarios
 
-Para eliminar un grupo se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar grupos seleccionados/as"* , luego presionar el botón Ejecutar.
-
-[![Eliminar Grupos](imgs/02_grupo_eliminar.png "Eliminar Grupos")](imgs/02_grupo_eliminar.png "Eliminar Grupos")
-
-Si esta todo correcto se pedirá la confirmación de la eliminación.
-
-[![Confirmación eliminar Grupos](imgs/02_grupo_eliminar_confirmar.png "Confirmación eliminar Grupos")](imgs/02_grupo_eliminar_confirmar.png "Confirmación eliminar Grupos")
-
-Luego de aceptar volveremos al listado y veremos la confirmación del borrad
-
-Si un grupo llega a estar asociado a algún usuario ese usuario dejara de tenerlo en su listado de grupos asociados.
-
-- [Volver al indice](#secciones)
-
-## Usuarios
-
-En esta pantalla podemos crear y administrar los usuarios que tendrán acceso a la aplicación
-
-[![Usuarios Listado](imgs/03_usuarios_listado.png "Usuarios Listado")](imgs/03_usuarios_listado.png "Usuarios Listado")
-
-### Crear / Editar usuarios
-
-En este caso la pantalla de creación de usuarios y de la de edición no son la misma, ya que a diferencia de la de edición para crear un usuario primero deberemos poner el nombre de usuario a utilizar y la contraseña.
-
-[![Usuarios Crear](imgs/03_usuarios_crear.png "Usuarios Crear")](imgs/03_usuarios_crear.png "Usuarios Crear")
-
+    # En este caso la pantalla de creación de usuarios y de la de edición no son la misma, ya que a diferencia de la de edición para crear un usuario primero deberemos poner el nombre de usuario a utilizar y la contraseña.
+    [![Usuarios Crear](imgs/03_usuarios_crear.png "Usuarios Crear")](imgs/03_usuarios_crear.png "Usuarios Crear")
 Al guardar nos llevara a una pantalla donde podemos editar los datos del usuario, esta si igual a la pantalla de edición de los datos del formulario.
 
 [![Usuarios Crear Editar](imgs/03_usuarios_crear_editar.png "Usuarios Crear Editar")](imgs/03_usuarios_crear_editar.png "Usuarios Crear Editar")
@@ -249,7 +247,7 @@ Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
 
 - [Volver al indice](#secciones)
 
-## Clientes addresss
+## Clientes address
 
 En esta pantalla podemos crear y administrar los XXX
 
@@ -697,5 +695,7 @@ Si llega a haber un Web types asociado a algún registro nos mostrara un mensaje
 ## Notas importantes
 
 Es muy importante crear las [cuentas](#accounts) y los [mails corporativos](#mail-corps) asociados antes de procesar el Excel. De otra forma es muy probable que se retorne un mensaje de error.
+
+[![Error al importar](imgs/05_excel_error.png "Error al importar")](imgs/05_excel_error.png "Error al importar")esar el Excel. De otra forma es muy probable que se retorne un mensaje de error.
 
 [![Error al importar](imgs/05_excel_error.png "Error al importar")](imgs/05_excel_error.png "Error al importar")

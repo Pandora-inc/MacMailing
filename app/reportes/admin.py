@@ -12,9 +12,9 @@ from .models import (Attachment, Mail, TemplateFiles, TemplatesGroup, Clientes, 
 
 
 def enviar_email(modeladmin, request, queryset):
-    """ Funcion para enviar email desde el admin """
+    """ Función para enviar email desde el admin """
     for obj in queryset:
-        if obj.approved == True:
+        if obj.approved is True:
             if send_mail(obj.mail_id):
                 obj.send = True
                 obj.save()
@@ -28,6 +28,7 @@ enviar_email.short_description = "Enviar email"
 
 
 def procesar_excel(modeladmin, request, queryset):
+    ''' Función para procesar los archivos excel '''
     for obj in queryset:
         file = ExcelFiles.objects.get(id=obj.id)
         excel = excelFile()
@@ -39,6 +40,7 @@ procesar_excel.short_description = "Procesar Excel"
 
 
 def prepare_to_send(modeladmin, request, queryset):
+    ''' Función para preparar los emails para enviar '''
     for obj in queryset:
         mail = MailsToSend()
         mail.mail = obj
@@ -48,13 +50,15 @@ prepare_to_send.short_description = "Preparar envio"
 
 
 def template_file_propague(modeladmin, request, queryset):
+    ''' Función para propagar las plantillas '''
     for obj in queryset:
         get_template_file_and_save(obj.id)
-        
-template_file_propague.short_description = "Propagacion de plantilla"
+
+template_file_propague.short_description = "Propagación de plantilla"
+
 
 def if_admin(user):
-    """ Funcion para verificar si el usuario es admin """
+    """ Función para verificar si el usuario es admin """
     if user.is_superuser:
         return True
     else:
@@ -66,16 +70,18 @@ def if_admin(user):
 
         return False
 
+
 def get_response_account(user):
+    ''' Obtener las cuentas de respuesta del usuario '''
     return MailCorp.objects.filter(user=user)
 
 
 class AccountAdmin(admin.ModelAdmin):
+    ''' Admin View for Account '''
     list_display = ['name', 'supervisor']
     search_fields = ['name', 'supervisor']
     ordering = ['name', 'supervisor']
     list_filter = ['supervisor']
-    # inlines = [CompaniasInline]
 
     def get_queryset(self, request):
         # Obtener el queryset base
@@ -93,7 +99,9 @@ class ClientesEmailInline(admin.TabularInline):
     '''
     model = ClientesEmail
 
+
 class ClientesAdmin(admin.ModelAdmin):
+    ''' Admin View for Clientes '''
     list_display = ['cliente_id', 'last_name', 'first_name',
                     'middle_name', 'lead_name', 'status', 'responsible']
     search_fields = ['cliente_id', 'last_name',
@@ -104,7 +112,7 @@ class ClientesAdmin(admin.ModelAdmin):
     inlines = [ClientesEmailInline]
 
     def get_queryset(self, request):
-        # Obtener el queryset base
+        ''' Obtener el queryset base '''
         queryset = super().get_queryset(request)
 
         if not if_admin(request.user):
@@ -144,7 +152,7 @@ class ClientesEmailAdmin(admin.ModelAdmin):
     list_filter = ['cliente', 'type']
 
     def get_queryset(self, request):
-        # Obtener el queryset base
+        ''' Obtener el queryset base '''
         queryset = super().get_queryset(request)
 
         if not if_admin(request.user):
@@ -196,7 +204,7 @@ class MailCorpAdmin(admin.ModelAdmin):
     list_filter = ['account', 'user']
 
     def get_queryset(self, request):
-        # Obtener el queryset base
+        ''' Obtener el queryset base '''
         queryset = super().get_queryset(request)
 
         if not if_admin(request.user):
@@ -206,6 +214,9 @@ class MailCorpAdmin(admin.ModelAdmin):
 
 
 class ExcelFilesAdmin(admin.ModelAdmin):
+    '''
+    Admin View for ExcelFiles
+    '''
     list_display = ['name', 'file', 'create_user']
     search_fields = ['name', 'file', 'create_user']
     ordering = ['name', 'file', 'create_user']
@@ -215,7 +226,11 @@ class ExcelFilesAdmin(admin.ModelAdmin):
 
 
 class MailAdmin(admin.ModelAdmin):
+    '''
+    Admin View for Mail
+    '''
     class Media:
+        ''' Media files for admin '''
         js = ('admin/js/admin/admin_script.js',)
 
     list_display = ['mail_corp', 'cliente', 'subject', 'send_number',
@@ -239,9 +254,11 @@ class MailAdmin(admin.ModelAdmin):
             queryset = queryset.filter(mail_corp__in=accounts)
 
         return queryset
-    
-    def proximo(self, obj):
 
+    def proximo(self, obj):
+        '''
+        Calcula los días que faltan para el proximo envío
+        '''
         last_send = obj.last_send
         if last_send:
             today = date.today()
@@ -259,17 +276,25 @@ class MailAdmin(admin.ModelAdmin):
 
 
 class MailInline(admin.TabularInline):
+    '''
+    Tabular Inline View for Mail
+    '''
     model = ClientesEmail
 
-class MailsToSendAdmin(admin.ModelAdmin):
 
+class MailsToSendAdmin(admin.ModelAdmin):
+    '''
+    Admin View for MailsToSend
+    '''
     list_display = ['mail', 'approved', 'send', 'mail_to', 'mail_from']
-    readonly_fields = ('mail_from','mail_subject', 'mail_body')
+    readonly_fields = ('mail_from', 'mail_subject', 'mail_body')
     search_fields = ['mail', 'approved', 'send']
     ordering = ['mail', 'approved', 'send']
 
     def get_queryset(self, request):
-        # Obtener el queryset base
+        '''
+        Filtra los mails que se van a enviar
+        '''
         queryset = super().get_queryset(request)
 
         if not if_admin(request.user):
@@ -279,21 +304,33 @@ class MailsToSendAdmin(admin.ModelAdmin):
         else:
             queryset = queryset.filter(send=False)
 
-
         return queryset
-    
+
     def mail_body(self, obj):
+        '''
+        Muestra el cuerpo del mail
+        '''
         return mark_safe(obj.mail.body)
 
     def mail_subject(self, obj):
+        '''
+        Muestra el asunto del mail
+        '''
         return obj.mail.subject
 
     def mail_from(self, obj):
+        '''
+        Muestra el mail del remitente
+        '''
         return obj.mail.mail_corp.email
 
     def mail_to(self, obj):
-        # FIXME: Esto deberia mostrar el mail principar del cliente
-        email = ClientesEmail.objects.get(cliente=obj.mail.cliente, type=EmailType.objects.get(id=1))
+        '''
+        Muestra el mail del destinatario
+        '''
+        # FIXME: Esto debería mostrar el mail principar del cliente
+        email = ClientesEmail.objects.get(
+            cliente=obj.mail.cliente, type=EmailType.objects.get(id=1))
         return email
 
     mail_body.short_description = 'Cuerpo del Email'
@@ -303,16 +340,26 @@ class MailsToSendAdmin(admin.ModelAdmin):
 
 
 class AttachmentAdmin(admin.ModelAdmin):
+    '''
+    Admin View for Attachment
+    '''
     list_display = ['name', 'file', 'created']
     search_fields = ['name', 'file', 'created']
     ordering = ['name', 'file', 'created']
 
+
 class TemplateGroupAdmin(admin.ModelAdmin):
+    '''
+    Admin View for TemplateGroup
+    '''
     list_display = ['name', 'mail_corp']
     search_fields = ['name', 'mail_corp']
     ordering = ['name', 'mail_corp']
-    
+
     def get_queryset(self, request):
+        '''
+        Filtra los grupos de templates por la cuenta del usuario
+        '''
         queryset = super().get_queryset(request)
 
         if not if_admin(request.user):
@@ -320,19 +367,26 @@ class TemplateGroupAdmin(admin.ModelAdmin):
             queryset = queryset.filter(mail_corp__in=accounts)
 
         return queryset
-    
+
+
 class TemplateFilesAdmin(admin.ModelAdmin):
+    '''
+    Admin View for TemplateFiles
+    '''
     list_display = ['name', 'orden', 'template_group']
     search_fields = ['name', 'orden', 'template_group']
     ordering = ['name', 'orden', 'template_group']
 
     def get_queryset(self, request):
+        '''
+        Filtra los templates por la cuenta del usuario
+        '''
         queryset = super().get_queryset(request)
 
         if not if_admin(request.user):
             accounts = get_response_account(request.user)
-            goups = TemplatesGroup.objects.filter(mail_corp__in=accounts)
-            queryset = queryset.filter(template_group__in=goups)
+            groups = TemplatesGroup.objects.filter(mail_corp__in=accounts)
+            queryset = queryset.filter(template_group__in=groups)
 
         return queryset
 
@@ -352,5 +406,5 @@ admin.site.register(Mail, MailAdmin)
 admin.site.register(MailsToSend, MailsToSendAdmin)
 admin.site.register(Account, AccountAdmin)
 admin.site.register(MailCorp, MailCorpAdmin)
-admin.site.register(TemplatesGroup,TemplateGroupAdmin)
-admin.site.register(TemplateFiles,TemplateFilesAdmin)
+admin.site.register(TemplatesGroup, TemplateGroupAdmin)
+admin.site.register(TemplateFiles, TemplateFilesAdmin)

@@ -273,6 +273,16 @@ class UserAcount(models.Model):
 
 
 class ExcelFiles(models.Model):
+    """
+    A Django model that represents an Excel file uploaded by a user.
+
+    Fields:
+    - name: The name of the file.
+    - file: The actual Excel file.
+    - created: The date and time the file was created.
+    - create_user: The user who created the file.
+    """
+
     name = models.CharField(max_length=64, blank=True, null=True)
     file = models.FileField(upload_to='excel_files/', blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
@@ -280,6 +290,9 @@ class ExcelFiles(models.Model):
         User, models.RESTRICT, blank=True, null=True)
 
     def __str__(self):
+        """
+        Returns the name of the file as a string.
+        """
         return str(self.name)
 
 

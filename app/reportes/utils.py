@@ -7,17 +7,43 @@ from .models import Clientes, ClientesAddress, ClientesContact, ClientesEmail, C
 from django.contrib.auth.models import User
 
 
+''' 
+Class for reading and manipulating Excel files.
+
+Methods:
+- __init__: Initializes the class with an empty workbook and active worksheet.
+- open_file: Opens an Excel file and sets the workbook and active worksheet.
+- clean_name: Cleans the name of a column by removing spaces, dashes, periods, commas, parentheses, and slashes.
+- get_structure: Returns a dictionary with the structure of the Excel file and a dictionary with the indices.
+- get_data: Returns a dictionary with the data of the Excel file and a dictionary with the indices.
+- print_datos: Prints the data of the Excel file to the console and creates and saves instances of various models in a Django project based on the data.
+- add_sheet: Adds a sheet to the Excel file.
+- add_row: Adds a row to the active worksheet.
+- save: Saves the Excel file.
+
+Fields:
+- file_name: The name of the Excel file.
+- wb: The openpyxl workbook object.
+- ws: The openpyxl worksheet object.
+'''
 class excelFile():
+    ''' Clase para leer archivos excel '''
+    file_name = None
+    wb = None
+    ws = None
+
     def __init__(self):
         self.wb = openpyxl.Workbook()
         self.ws = self.wb.active
 
     def open_file(self, file_name):
+        ''' Abre un archivo excel '''
         self.file_name = file_name
         self.wb = openpyxl.load_workbook(file_name)
         self.ws = self.wb.active
 
     def clean_name(self, name):
+        ''' Limpia el nombre de los campos '''
         name = str(name).lower()
         name = name.replace(" ", "_")
         name = name.replace("-", "_")
@@ -29,6 +55,7 @@ class excelFile():
         return name
 
     def get_structure(self):
+        ''' Devuelve un diccionario con la estructura del excel y un diccionario con los indices '''
         response = {}
         indice = {}
         for row in self.ws.iter_rows(min_row=1, max_row=1):
@@ -50,7 +77,8 @@ class excelFile():
 
         return response, indice
 
-    def get_data(self):
+    def get_data(self) -> tuple:
+        ''' Devuelve un diccionario con los datos del excel y un diccionario con los indices '''
         estructura, indice = self.get_structure()
 
         for row in self.ws.iter_rows(min_row=2):
@@ -69,6 +97,7 @@ class excelFile():
         return estructura, indice
 
     def print_datos(self):
+        ''' Imprime los datos del excel '''
         data, indice = self.get_data()
         for i in range(len(data[list(data.keys())[0]])):
 
@@ -186,10 +215,13 @@ class excelFile():
                   cliente.first_name, cliente.last_name)
 
     def add_sheet(self, sheet_name):
+        ''' Agrega una hoja al archivo'''
         self.ws = self.wb.create_sheet(sheet_name)
 
     def add_row(self, row):
+        ''' Agrega una fila al archivo '''
         self.ws.append(row)
 
     def save(self):
+        ''' Guarda el archivo '''
         self.wb.save(self.file_name)

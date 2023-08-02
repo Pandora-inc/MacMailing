@@ -14,6 +14,19 @@ from reportes.models import Mail, TemplateFiles
 
 
 def crear_evento(mail: Mail):
+    """
+    Creates or updates an event in the calendar app based on the information provided in a 'Mail' object.
+
+    Args:
+        mail (Mail): The 'Mail' object containing information about the email sent.
+
+    Returns:
+        None
+
+    Raises:
+        None
+
+    """
     title = mail.subject
     description = "Recordatorio envio de mail Nro "+str(mail.send_number)
     start_time = mail.last_send+timedelta(days=mail.reminder_days)
@@ -41,6 +54,20 @@ def crear_evento(mail: Mail):
 
 
 def registro_envio_mail(id_mail: int, send_number: int):
+    """
+    Update the status of a sent email in the database and create or update an event in the calendar app.
+
+    Args:
+        id_mail (int): The id of the email to be updated in the database.
+        send_number (int): The number of times the email has been sent.
+
+    Returns:
+        None
+
+    Additional aspects:
+        - This function requires the 'crear_evento' function to be defined and imported in the module.
+        - The function uses the Django ORM to retrieve the 'Mail' object associated with the 'id_mail' input.
+    """
     with connection.cursor() as cursor:
         consulta = f"UPDATE reportes_mail SET status = 1, send_number = {send_number}, last_send = NOW() WHERE id = {id_mail}"
         cursor.execute(consulta)
@@ -51,12 +78,19 @@ def registro_envio_mail(id_mail: int, send_number: int):
 
 
 def prepare_email_body(text: str, data: dict) -> str:
+    ''' 
+    Prepara el cuerpo del mail con los datos del cliente.
+    Reemplaza las variables {{}} por los datos del cliente.
+    '''
     for key, value in data.items():
         text = text.replace('{{'+key+'}}', str(value))
     return text
 
 
 def get_mail_data(id_mail: int) -> dict:
+    '''
+    Obtiene los datos del mail a enviar.
+    '''
     with connection.cursor() as cursor:
         consulta = f"SELECT \
             reportes_mail.subject, \
@@ -122,6 +156,15 @@ def get_mail_data(id_mail: int) -> dict:
 
 
 def send_mail(id_mail: int) -> bool:
+    """
+    Sends an email with the given id_mail.
+
+    Args:
+        id_mail (int): The id of the email to be sent.
+
+    Returns:
+        bool: True if the email was sent successfully, False otherwise.
+    """
     msg_data = get_mail_data(id_mail)
 
     message = MIMEMultipart()
@@ -130,8 +173,9 @@ def send_mail(id_mail: int) -> bool:
     message['Subject'] = msg_data['Subject']
 
     msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
+        
 
-    # Remplazo en la imagenes de que viene de ckeditor
+    # Replace the images that come from ckeditor
     inicio = msg_data['content'].find('src="/media/uploads')
     if inicio != -1:
         imagen_url = msg_data['content'].replace('/media/', '/static_media/')
@@ -180,6 +224,15 @@ def send_mail(id_mail: int) -> bool:
 
 
 def get_template_file_and_save(id_template: int):
+    """
+    Retrieves a template file from the database, reads its contents, and saves the contents as text in the same template object.
+
+    Args:
+        id_template (int): The ID of the template file to retrieve from the database.
+
+    Returns:
+        None
+    """
     template = TemplateFiles.objects.get(id=id_template)
     filename = template.file.path
 
