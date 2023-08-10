@@ -66,7 +66,7 @@ class Clientes(models.Model):
     modified_by = models.ForeignKey(
         MailCorp, models.RESTRICT, blank=True, null=True, related_name='modificado_por')
     company_name = models.CharField(max_length=64, blank=True, null=True)
-    position = models.CharField(max_length=32, blank=True, null=True)
+    position = models.CharField(max_length=64, blank=True, null=True)
     comment = models.TextField(blank=True, null=True)
     total = models.DecimalField(
         max_digits=11, decimal_places=2, blank=True, null=True)
@@ -168,7 +168,7 @@ class ClientesSocial(models.Model):
 class ClientesAddress(models.Model):
     cliente = models.ForeignKey(
         Clientes, models.RESTRICT, blank=True, null=True)
-    address = models.CharField(max_length=64, blank=True, null=True)
+    address = models.CharField(max_length=128, blank=True, null=True)
     street_house_no = models.CharField(max_length=32, blank=True, null=True)
     apartment_office_room_floor = models.CharField(
         max_length=128, blank=True, null=True)

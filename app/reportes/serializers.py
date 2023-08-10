@@ -3,6 +3,7 @@ from .models import Clientes, ExcelFiles
 
 
 class ClientesSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = Clientes
         fields = '__all__'
@@ -15,7 +16,7 @@ class ExcelSerializer(serializers.ModelSerializer):
 
 
 class CompleteExcelSerializer(serializers.ModelSerializer):
-    
+     
     
     class Meta:
         model = ExcelFiles
@@ -25,3 +26,4 @@ class CompleteExcelSerializer(serializers.ModelSerializer):
         response = super().to_representation(instance)
         response['clientes'] = ClientesSerializer(instance.clientes.all(), many=True).data
         return response
+    
