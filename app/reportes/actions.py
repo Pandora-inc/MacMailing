@@ -209,6 +209,7 @@ def send_mail(id_mail: int) -> bool:
                 message.attach(image)
 
     context = ssl.create_default_context()
+    print(msg_data['from_smtp'], msg_data['from_port'])
     with smtplib.SMTP(msg_data['from_smtp'], msg_data['from_port']) as server:
         server.starttls(context=context)
 
