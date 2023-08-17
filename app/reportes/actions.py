@@ -211,6 +211,7 @@ def send_mail(id_mail: int) -> bool:
     context = ssl.create_default_context()
     print(msg_data['from_smtp'], msg_data['from_port'])
     with smtplib.SMTP(msg_data['from_smtp'], msg_data['from_port']) as server:
+        print("Conectando al servidor de correo")
         server.starttls(context=context)
 
         try:
