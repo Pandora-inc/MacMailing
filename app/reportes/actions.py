@@ -169,7 +169,7 @@ def send_mail(id_mail: int) -> bool:
     msg_data = get_mail_data(id_mail)
 
     message = MIMEMultipart()
-    message['From'] = msg_data['From']
+    message['From'] = msg_data['from_email']
     message['To'] = msg_data['To']
     message['Subject'] = msg_data['Subject']
 
