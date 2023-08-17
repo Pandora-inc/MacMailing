@@ -222,12 +222,14 @@ def send_mail(id_mail: int) -> bool:
                 print("Error en el loggeo y envio del mail")
                 print(e_error)
                 server.quit()
+                raise e_error
                 return False
     except Exception as e_error:
         print("Error en la conexión con el servidor")
         print("from_smtp: "+msg_data['from_smtp'])
         print("from_port: "+str(msg_data['from_port']))
         print(e_error)
+        raise e_error
 
 
 def get_template_file_and_save(id_template: int):

@@ -1,7 +1,7 @@
 """ Configuraciones del Admin """
 from datetime import date
 from django.utils.safestring import mark_safe
-from django.contrib import admin
+from django.contrib import admin, messages
 
 from auxiliares.models import EmailType
 
@@ -13,16 +13,17 @@ from .models import (Attachment, Mail, TemplateFiles, TemplatesGroup, Clientes, 
 
 def enviar_email(modeladmin, request, queryset):
     """ Función para enviar email desde el admin """
-    for obj in queryset:
-        if obj.approved is True:
-            if send_mail(obj.mail_id):
-                obj.send = True
-                obj.save()
+    try:
+        for obj in queryset:
+            if obj.approved is True:
+                if send_mail(obj.mail_id):
+                    obj.send = True
+                    obj.save()
             else:
-                print("Error al enviar email")
-        else:
-            print("Email no aprobado")
-
+                messages.warning(request, "Email no aprobado")
+                print("Email no aprobado")
+    except Exception as e:
+         messages.error(request, f"Error al enviar: {e}")
 
 enviar_email.short_description = "Enviar email"
 
