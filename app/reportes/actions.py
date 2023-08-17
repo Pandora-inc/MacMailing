@@ -209,21 +209,21 @@ def send_mail(id_mail: int) -> bool:
                 message.attach(image)
 
     context = ssl.create_default_context()
-    print(msg_data['from_smtp'], msg_data['from_port'])
-    with smtplib.SMTP(msg_data['from_smtp'], msg_data['from_port']) as server:
-        print("Conectando al servidor de correo")
-        server.starttls(context=context)
-
-        try:
-            server.login(msg_data['from_email'], msg_data['from_pass'])
-            server.send_message(message)
-            server.quit()
-            registro_envio_mail(id_mail, msg_data['number']+1)
-            return True
-        except Exception as e_error:
-            print(e_error)
-            server.quit()
-            return False
+    try:
+        with smtplib.SMTP(msg_data['from_smtp'], msg_data['from_port']) as server:
+            server.starttls(context=context)
+            try:
+                server.login(msg_data['from_email'], msg_data['from_pass'])
+                server.send_message(message)
+                server.quit()
+                registro_envio_mail(id_mail, msg_data['number']+1)
+                return True
+            except Exception as e_error:
+                print(e_error)
+                server.quit()
+                return False
+    except Exception as e_error:
+        print(e_error)
 
 
 def get_template_file_and_save(id_template: int):
