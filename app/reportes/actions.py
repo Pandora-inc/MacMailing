@@ -219,10 +219,14 @@ def send_mail(id_mail: int) -> bool:
                 registro_envio_mail(id_mail, msg_data['number']+1)
                 return True
             except Exception as e_error:
+                print("Error en el loggeo y envio del mail")
                 print(e_error)
                 server.quit()
                 return False
     except Exception as e_error:
+        print("Error en la conexión con el servidor")
+        print("from_smtp: "+msg_data['from_smtp'])
+        print("from_port: "+str(msg_data['from_port']))
         print(e_error)
 
 
