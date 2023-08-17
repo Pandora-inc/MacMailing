@@ -214,6 +214,7 @@ def send_mail(id_mail: int) -> bool:
             server.starttls(context=context)
             try:
                 server.login(msg_data['from_email'], msg_data['from_pass'])
+                print(message.as_string())
                 server.send_message(message)
                 server.quit()
                 registro_envio_mail(id_mail, msg_data['number']+1)
