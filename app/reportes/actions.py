@@ -112,12 +112,13 @@ def get_mail_data(id_mail: int) -> dict:
             reportes_clientesemail.data, \
             clientes.company_name, \
             clientes.position, \
-            clientes.type \
+            auxiliares_type.name \
         FROM \
             reportes_mail \
             INNER JOIN reportes_mailcorp ON reportes_mailcorp.id = reportes_mail.mail_corp_id \
             INNER JOIN clientes ON clientes.id = reportes_mail.cliente_id \
             INNER JOIN reportes_clientesemail ON reportes_clientesemail.cliente_id = reportes_mail.cliente_id \
+            INNER JOIN auxiliares_type ON auxiliares_type.id = clientes.type_id \
         WHERE \
             reportes_mail.id = {id_mail} \
             AND reportes_clientesemail.type_id = 1"
