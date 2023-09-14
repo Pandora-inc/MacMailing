@@ -118,8 +118,8 @@ class Clientes(models.Model):
         """ Meta data del modelo """
         # managed = False
         db_table = 'clientes'
-        verbose_name = 'cliente'
-        verbose_name_plural = 'clientes'
+        verbose_name = 'customer'
+        verbose_name_plural = 'customers'
         ordering = ('cliente_id',)
 
 
