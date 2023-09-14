@@ -134,3 +134,9 @@ app/env/*
 data/db/*
 *.ibt
 app/static_media/excel_files/*
+*/migrations/
+*/migrations/*
+app/reportes/migrations/
+app/auxiliares/migrations/
+keys/
+data/db/
