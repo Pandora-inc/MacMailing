@@ -4,6 +4,7 @@ version: '3.8'
 
 services:
   macmail_web_app:
+    # image: iberlot/macmailling
     build:
       context: ./
       dockerfile: Dockerfile
@@ -43,3 +44,4 @@ services:
 volumes:
   macmail_db_volume:
   macmail_pgadmin-data:
+  macmail_repo_data:

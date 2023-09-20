@@ -1,0 +1,10 @@
+@startuml
+!theme bluegray
+:Grupos;
+:usuarios;
+:Accounts;
+:Mail Corps;
+:Clientes;
+:Mails;
+:Mails to send;
+@enduml

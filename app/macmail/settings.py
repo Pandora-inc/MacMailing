@@ -39,8 +39,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'admin_reorder',
+    # 'admin_reorder',
+    'rest_framework',
+    'auxiliares',
     'reportes',
+    'ckeditor', # CKEditor config
+    'ckeditor_uploader', # CKEditor media uploader
+    "calendarapp.apps.CalendarappConfig",
 ]
 
 MIDDLEWARE = [
@@ -51,7 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'admin_reorder.middleware.ModelAdminReorder',
+    # 'admin_reorder.middleware.ModelAdminReorder',
 ]
 
 ROOT_URLCONF = 'macmail.urls'
@@ -80,10 +85,10 @@ WSGI_APPLICATION = 'macmail.wsgi.application'
 DATABASES = {
     'default': {
         "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.mysql"),
-        "NAME": os.environ.get("SQL_NAME", "db_name"),
-        "USER": os.environ.get("SQL_USER", "db_user"),
-        "PASSWORD": os.environ.get("SQL_PASSWORD", "db_password"),
-        "HOST": os.environ.get("SQL_HOST", "db"),
+        "NAME": os.environ.get("SQL_NAME", "macmail_db"),
+        "USER": os.environ.get("SQL_USER", "iberlot"),
+        "PASSWORD": os.environ.get("SQL_PASSWORD", "Macmail_pass"),
+        "HOST": os.environ.get("SQL_HOST", "macmail-db-host.mysql.database.azure.com"),
         "PORT": os.environ.get("SQL_PORT", "3306"),
         'OPTIONS': {
             "init_command": "SET sql_mode='STRICT_TRANS_TABLES'"
@@ -130,6 +135,8 @@ ADMIN_MEDIA_PREFIX = 'static_files/admin/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "static_media")
 
+#ckeditor upload path
+CKEDITOR_UPLOAD_PATH="uploads/"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -137,6 +144,29 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # ADMIN_SITE = 'reportes.admin.my_admin_site'
 
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'filters': {
+#         'require_debug_false': {
+#             '()': 'django.utils.log.RequireDebugFalse'
+#         }
+#     },
+#     'handlers': {
+#         'mail_admins': {
+#             'level': 'ERROR',
+#             'filters': ['require_debug_false'],
+#             'class': 'django.utils.log.AdminEmailHandler'
+#         }
+#     },
+#     'loggers': {
+#         'django.request': {
+#             'handlers': ['mail_admins'],
+#             'level': 'ERROR',
+#             'propagate': True,
+#         },
+#     }
+# }
 
 
 # ADMIN_REORDER = (

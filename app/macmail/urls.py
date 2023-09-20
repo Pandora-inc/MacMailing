@@ -14,29 +14,22 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import include, path, re_path #, include
-# from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.urls import include, path, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic.base import TemplateView
-
-from actividad import views as views_actividad
-from reportes import actions
-# from modeladmin_reorder import reorder
-# from reportes import admin as admin_reportes
+from calendarapp.views.other_views import CalendarViewIndex
+from reportes.views import ClientesList_APIView, ExcelsList_APIView, ProcessExcel
 
 urlpatterns = [
-    # re_path(r'^admin/polizas/reporte/$', polizas.admin_views.vencimiento_polizas, name='reporte'),
     path('admin/', admin.site.urls),
-    # path('myadmin/', admin_reportes.my_admin_site.urls),
-    # path('admin/reorder/', reorder),
-    # re_path(r'^actividad/clientes/$', views_actividad.ClientesListView.as_view(), name='clientes'),
-    # re_path(r'^actividad/polizas/reporte/vto/$', views_actividad.vencimiento_polizas),
-    # re_path(r'^actividad/polizas/reporte/cliente/$', views_actividad.cliente_polizas),
-    # re_path(r'^actividad/polizas/reporte/libros/$', views_actividad.libros_rubricados),
-    # re_path(r'^actividad/polizas/reporte/libros_2/$', actions.colect_libro),
-    # re_path(r'^actividad/$', include('actividad.urls')),
-    re_path(r'^$', TemplateView.as_view(template_name='static_pages/index.html'), name='home'),
+    path("admin/", CalendarViewIndex.as_view(), name="calendar"),
+    re_path(r'^$', TemplateView.as_view(template_name='/static_pages/index.html'), name='home'),
+    re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
+    path('clientes/', ClientesList_APIView.as_view(), name='clientes'),
+    path('excels/', ExcelsList_APIView.as_view(), name='archivos'),
+    path('excels_work/', ProcessExcel.as_view(), name='excels_work'),
+    path("", include("calendarapp.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) 
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

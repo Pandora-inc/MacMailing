@@ -1,0 +1,37 @@
+/* Estilos para resaltar el campo "status" */
+.field-proximo [value="Estamos atrasados"] {
+    border: #FF0000; /* Color rojo para el valor "inactivo" */
+}
+
+
+.field-proximo [data-value="7"] {
+    border: #00FF00; /* Color verde para el valor "activo" */
+}
+
+.field-proximo [data-value="6"] {
+    border: #00FF00; /* Color verde para el valor "activo" */
+}
+
+.field-proximo [value="5"] {
+    border: #00FF00; /* Color verde para el valor "activo" */
+}
+
+.field-proximo {
+    border: #FFA500; /* Color naranja para el valor "inactivo" */
+}
+
+.field-proximo [value="3"] {
+    border: #FFA500; /* Color naranja para el valor "inactivo" */
+}
+
+.field-proximo [value="2"] {
+    border: #FFA500; /* Color naranja para el valor "inactivo" */
+}
+
+.field-proximo [value="1"] {
+    border: #FF0000; /* Color rojo para el valor "inactivo" */
+}
+
+.field-proximo [value="Today is a great day"] {
+    border: #00FFFF; /* Color cian para el valor "activo" */
+}

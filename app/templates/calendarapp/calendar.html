@@ -1,0 +1,124 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block extrahead %}{{ block.super }}
+<script src="{% url 'admin:jsi18n' %}"></script>
+<script src="{% static 'calender/main.js' %}"></script>
+<script>
+    console.log('hello')
+      document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        var today = new Date();
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+          headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,list'
+          },
+          initialDate: today,
+          navLinks: true, // can click day/week names to navigate views
+          selectable: true,
+          selectMirror: true,
+          select: function(arg) {
+            console.log('clicked')
+            var modal = document.getElementById('eventModal')
+            modal.style.display = 'block'
+            calendar.unselect()
+          },
+          // THIS KEY WON'T WORK IN PRODUCTION!!!
+          // To make your own Google API key, follow the directions here:
+          // http://fullcalendar.io/docs/google_calendar/
+          // googleCalendarApiKey: 'AIzaSyCqCxjjLtjbtkX37aOtWB8OfwBLy_6QuYk',
+
+          // bangladesh Holidays
+          // events: 'bn.bd#holiday@group.v.calendar.google.com',
+          eventClick: function(arg) {
+            if (confirm('Are you sure you want to delete this event?')) {
+              arg.event.remove()
+            }
+          },
+          editable: true,
+          dayMaxEvents: true, // allow "more" link when too many events
+          events: {{ events|safe }},
+        });
+
+        calendar.render();
+      });
+      const closeBtn1 = document.getElementById('modalClose1');
+      const closeBtn2 = document.getElementById('modalClose2');
+      closeBtn1.addEventListener('click',()=>{
+        const eventModal = document.getElementById('eventModal')
+        eventModal.style.display = 'none';
+      });
+      closeBtn2.addEventListener('click',()=>{
+        const eventModal = document.getElementById('eventModal')
+        eventModal.style.display = 'none';
+      });
+</script>
+{{ media }}
+{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" href="{% static "admin/css/forms.css" %}">
+<link href="{% static 'calender/main.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block coltype %}colM{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-form{% endblock %}
+
+{% if not is_popup %}
+  {% block breadcrumbs %}
+    <div class="breadcrumbs">
+      <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+      &rsaquo; {% if has_view_permission %}<a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>{% else %}{{ opts.verbose_name_plural|capfirst }}{% endif %}
+      &rsaquo; {% if add %}{% blocktranslate with name=opts.verbose_name %}Add {{ name }}{% endblocktranslate %}{% else %}{{ original|truncatewords:"18" }}{% endif %}
+    </div>
+  {% endblock %}
+{% endif %}
+
+{% block content_title %}
+  {% if title %}
+    <h1>{{ opts.verbose_name|capfirst }}</h1>
+  {% endif %}
+{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<div id="content-main">
+  {% if change %}{% if not is_popup %}
+    <ul class="object-tools">
+      {% block object-tools-items %}
+        {% change_form_object_tools %}
+      {% endblock %}
+    </ul>
+  {% endif %}{% endif %}
+  <div class="row">
+      <div class="col-md-12">
+          <div class="tile row">
+              <div class="col-md-3">
+                  <div id="external-events">
+                      <h4 class="mb-4">Running Events</h4>
+                      {% for event in events_month %}
+                        <div class="fc-event">
+                            <h3>{{ event.title }}</h3>
+                            <p>From: {{ event.start_time }}</p>
+                            <p>To: {{ event.end_time }}</p>
+                        </div>
+                      {% empty %}
+                        <p>No Running Events Found</p>
+                      {% endfor %}
+                  </div>
+              </div>
+              <div class="col-md-9">
+                  <div id="calendar"></div>
+              </div>
+
+              
+          </div>
+      </div>
+  </div>
+  </div>
+{% endblock content %}
