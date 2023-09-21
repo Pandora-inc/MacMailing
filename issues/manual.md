@@ -37,6 +37,10 @@ Esta es una guía de uso de la aplicación orientada al usuario final y al admin
 - [Types](#types)
 - [Web types](#web-types)
 
+### Otros
+
+- [Variables en mails](#Variables-en-mails)
+
 ## Pantalla de inicio
 
 El acceso a esta es por medio de la direccion de administración del sitio [url del sitio]:8000/admin.
@@ -692,6 +696,28 @@ Si llega a haber un Web types asociado a algún registro nos mostrara un mensaje
 
 [![Listado de eventos](imgs/12_calendario_listado_eventos.png "Listado de eventos")](imgs/12_calendario_listado_eventos.png "Listado de eventos")
 
+## Otros
+
+### Variables en mails
+
+Las siguientes son el listado de palabras reservadas que se pueden utilizar para recuperar los datos de la base y usarlos en los cuerpos de los mensajes.
+
+- {{Subject}} : Asunto del mail.
+- {{From}} : Mail desde el que se envía.
+- {{To}} : Mail al que se envía.
+- {{Date}} : Fecha del envío.
+- {{number}} : Numero de mail.
+- {{salutation}} : Saludo.
+- {{first_name}} : Primer nombre.
+- {{middle_name}} : Nombre medio.
+- {{last_name}} : Apellido.
+- {{lead_name}} : lead name.
+- {{data}} : Cliente.
+- {{company_name}} : Nombre de la compañía.
+- {{position}} : Cargo.
+- {{type}} : Corresponde a cliente tipo.
+- {{firma}} : Firma del mail.
+
 ## Notas importantes
 
 Es muy importante crear las [cuentas](#accounts) y los [mails corporativos](#mail-corps) asociados antes de procesar el Excel. De otra forma es muy probable que se retorne un mensaje de error.
@@ -699,3 +725,4 @@ Es muy importante crear las [cuentas](#accounts) y los [mails corporativos](#mai
 [![Error al importar](imgs/05_excel_error.png "Error al importar")](imgs/05_excel_error.png "Error al importar")esar el Excel. De otra forma es muy probable que se retorne un mensaje de error.
 
 [![Error al importar](imgs/05_excel_error.png "Error al importar")](imgs/05_excel_error.png "Error al importar")
+
