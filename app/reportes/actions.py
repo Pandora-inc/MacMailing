@@ -34,21 +34,26 @@ def crear_evento(mail: Mail):
     # user = User.objects.get(id=mail.mail_corp.user.id)
 
     print("Creando evento")
-
-    if Event.objects.filter(user=mail.mail_corp.user, title=title).exists():
-        event = Event.objects.get(user=mail.mail_corp.user, title=title)
-        event.description = description
-        event.start_time = start_time
-        event.end_time = end_time
-        event.save()
-    else:
-        Event.objects.get_or_create(
-            user=mail.mail_corp.user,
-            title=title,
-            description=description,
-            start_time=start_time,
-            end_time=end_time,
-        )
+    try:
+        if Event.objects.filter(user=mail.mail_corp.user, title=title).exists():
+            print("Evento existe")
+            event = Event.objects.get(user=mail.mail_corp.user, title=title)
+            event.description = description
+            event.start_time = start_time
+            event.end_time = end_time
+            event.save()
+        else:
+            print("Evento no existe")
+            Event.objects.get_or_create(
+                user=mail.mail_corp.user,
+                title=title,
+                description=description,
+                start_time=start_time,
+                end_time=end_time,
+            )
+    except Exception as e_error:
+        print("Error al crear el evento")
+        raise e_error
 
     print("Evento creado")
 
@@ -214,17 +219,22 @@ def send_mail(id_mail: int) -> bool:
             server.starttls(context=context)
             try:
                 server.login(msg_data['from_email'], msg_data['from_pass'])
-                print(message.as_string())
+            except Exception as e_error:
+                print("Error en el loggeo")
+                server.quit()
+                raise e_error
+            try:
                 server.send_message(message)
                 server.quit()
                 registro_envio_mail(id_mail, msg_data['number']+1)
                 return True
             except Exception as e_error:
-                print("Error en el loggeo y envio del mail")
+                print("Error en el envio del mail")
                 server.quit()
                 raise e_error
     except Exception as e_error:
         print("Error en la conexión con el servidor")
+        print(e_error)
         raise e_error
 
 
