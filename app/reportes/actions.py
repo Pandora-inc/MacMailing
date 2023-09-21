@@ -116,7 +116,8 @@ def get_mail_data(id_mail: int) -> dict:
             reportes_clientesemail.data, \
             clientes.company_name, \
             clientes.position, \
-            auxiliares_type.name \
+            auxiliares_type.name, \
+            reportes_mailcorp.firma \
         FROM \
             reportes_mail \
             INNER JOIN reportes_mailcorp ON reportes_mailcorp.id = reportes_mail.mail_corp_id \
@@ -151,6 +152,7 @@ def get_mail_data(id_mail: int) -> dict:
         msg['company_name'] = row[17]
         msg['position'] = row[18]
         msg['type'] = row[19]
+        msg['firma'] = row[20]
 
         if row[15]:
             msg['CC'] = ', '.join(emails_cadena(row[15]))
@@ -159,6 +161,24 @@ def get_mail_data(id_mail: int) -> dict:
 
         return msg
 
+def add_image_to_email(content: str, message: MIMEMultipart) -> str:
+    """ Función que localiza y formatea las imágenes que se encuentran en el contenido del mail. """
+    inicio = content.find('src="/media/uploads')
+    if inicio != -1:
+        imagen_url = content.replace('/media/', '/static_media/')
+        fin = imagen_url.find('"', inicio+5)
+        imagen_url = imagen_url[inicio+6:fin]
+        imagen_url_original = imagen_url.replace('static_media/', 'media/')
+        imagen_name = imagen_url[imagen_url.rfind('/')+1:]
+        content = content.replace(
+            '/'+imagen_url_original, 'cid:'+imagen_name[:imagen_name.find('.')])
+
+        with open(imagen_url, 'rb') as file:
+            image = MIMEImage(file.read())
+            image.add_header('Content-ID', '<' +
+                             imagen_name[:imagen_name.find('.')]+'>')
+            message.attach(image)
+    return content
 
 def send_mail(id_mail: int) -> bool:
     """
@@ -178,26 +198,14 @@ def send_mail(id_mail: int) -> bool:
     message['Subject'] = msg_data['Subject']
 
     msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
-        
+    msg_data['firma'] = prepare_email_body(msg_data['firma'], msg_data)
 
-    # Replace the images that come from ckeditor
-    inicio = msg_data['content'].find('src="/media/uploads')
-    if inicio != -1:
-        imagen_url = msg_data['content'].replace('/media/', '/static_media/')
-        fin = imagen_url.find('"', inicio+5)
-        imagen_url = imagen_url[inicio+6:fin]
-        imagen_url_original = imagen_url.replace('static_media/', 'media/')
-        imagen_name = imagen_url[imagen_url.rfind('/')+1:]
-        msg_data['content'] = msg_data['content'].replace(
-            '/'+imagen_url_original, 'cid:'+imagen_name[:imagen_name.find('.')])
+    msg_data['content'] = add_image_to_email(msg_data['content'], message)
+    msg_data['firma'] = add_image_to_email(msg_data['firma'], message)
 
-        with open(imagen_url, 'rb') as file:
-            image = MIMEImage(file.read())
-            image.add_header('Content-ID', '<' +
-                             imagen_name[:imagen_name.find('.')]+'>')
-            message.attach(image)
+    content = msg_data['content']+msg_data['firma']
 
-    message.attach(MIMEText(msg_data['content'], "html"))
+    message.attach(MIMEText(content, "html"))
 
     with connection.cursor() as cursor:
         consulta_attachment = f"SELECT * FROM reportes_mail_attachment \
@@ -235,8 +243,7 @@ def send_mail(id_mail: int) -> bool:
         print("Error en la conexión con el servidor")
         print(e_error)
         raise e_error
-
-
+    
 def get_template_file_and_save(id_template: int):
     """
     Retrieves a template file from the database, reads its contents, and saves the contents as text in the same template object.
