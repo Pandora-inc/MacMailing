@@ -34,7 +34,7 @@ class MailCorp(models.Model):
     created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     account = models.ForeignKey(
         Account, models.RESTRICT, blank=True, null=True)
-    user = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
+    user = models.ForeignKey(User, models.RESTRICT)
     firma = RichTextUploadingField(
         blank=True, null=True)  # CKEditor Rich Text Field
 

@@ -32,19 +32,17 @@ def crear_evento(mail: Mail):
     start_time = mail.last_send+timedelta(days=mail.reminder_days)
     end_time = start_time+timedelta(hours=1)
     # user = User.objects.get(id=mail.mail_corp.user.id)
+    connection.cursor()
 
-    print("Creando evento")
     try:
         if Event.objects.filter(user=mail.mail_corp.user, title=title).exists():
-            print("Evento existe")
             event = Event.objects.get(user=mail.mail_corp.user, title=title)
             event.description = description
             event.start_time = start_time
             event.end_time = end_time
             event.save()
         else:
-            print("Evento no existe")
-            Event.objects.get_or_create(
+            Event.objects.create(
                 user=mail.mail_corp.user,
                 title=title,
                 description=description,
@@ -53,6 +51,7 @@ def crear_evento(mail: Mail):
             )
     except Exception as e_error:
         print("Error al crear el evento")
+        print(e_error)
         raise e_error
 
     print("Evento creado")
