@@ -1,6 +1,7 @@
 """ Configuraciones del Admin """
-from datetime import date, timezone
+from datetime import date
 from django.utils.safestring import mark_safe
+from django.utils import timezone
 from django.contrib import admin, messages
 
 from auxiliares.models import EmailType
