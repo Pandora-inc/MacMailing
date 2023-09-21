@@ -241,7 +241,7 @@ class MailAdmin(admin.ModelAdmin):
                      'send_number', 'status', 'last_send']
     ordering = ['mail_corp', 'cliente', 'subject',
                 'send_number', 'status', 'last_send', 'proximo']
-    list_filter = ['mail_corp', 'send_number', 'status', 'proximo']
+    list_filter = ['mail_corp', 'send_number', 'status']
 
     actions = [prepare_to_send]
 
