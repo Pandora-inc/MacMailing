@@ -1,6 +1,7 @@
 """ Configuraciones del Admin """
 from datetime import date
 from django.utils.safestring import mark_safe
+from django.utils import timezone
 from django.contrib import admin, messages
 
 from auxiliares.models import EmailType
@@ -288,7 +289,7 @@ class MailsToSendAdmin(admin.ModelAdmin):
     Admin View for MailsToSend
     '''
     list_display = ['mail', 'approved', 'send', 'mail_to', 'mail_from']
-    readonly_fields = ('mail_from', 'mail_subject', 'mail_body')
+    readonly_fields = ('mail_from', 'mail_subject', 'mail_body', 'user_approved', 'date_approved')
     search_fields = ['mail', 'approved', 'send']
     ordering = ['mail', 'approved', 'send']
 
@@ -333,6 +334,15 @@ class MailsToSendAdmin(admin.ModelAdmin):
         email = ClientesEmail.objects.get(
             cliente=obj.mail.cliente, type=EmailType.objects.get(id=1))
         return email
+
+    def save_model(self, request, obj, form, change):
+        # Verifica si el campo 'approved' cambió a True y 'user_approved' aún no está establecido
+        if obj.approved and not obj.user_approved:
+            # Asigna el usuario actual
+            obj.user_approved = request.user
+            # Asigna la fecha y hora actual
+            obj.date_approved = timezone.now()
+        super().save_model(request, obj, form, change)
 
     mail_body.short_description = 'Cuerpo del Email'
     mail_subject.short_description = 'Asunto del Email'
