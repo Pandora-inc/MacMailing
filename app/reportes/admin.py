@@ -289,7 +289,7 @@ class MailsToSendAdmin(admin.ModelAdmin):
     Admin View for MailsToSend
     '''
     list_display = ['mail', 'approved', 'send', 'mail_to', 'mail_from']
-    readonly_fields = ('mail_from', 'mail_subject', 'mail_body')
+    readonly_fields = ('mail_from', 'mail_subject', 'mail_body', 'user_approved', 'date_approved')
     search_fields = ['mail', 'approved', 'send']
     ordering = ['mail', 'approved', 'send']
 
