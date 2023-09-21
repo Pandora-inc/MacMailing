@@ -236,12 +236,12 @@ class MailAdmin(admin.ModelAdmin):
         js = ('admin/js/admin/admin_script.js',)
 
     list_display = ['mail_corp', 'cliente', 'subject', 'send_number',
-                    'status', 'status_response', 'last_send', 'proximo']
+                    'status', 'status_response', 'last_send']
     search_fields = ['mail_corp', 'cliente', 'subject',
                      'send_number', 'status', 'last_send']
     ordering = ['mail_corp', 'cliente', 'subject',
                 'send_number', 'status', 'last_send', 'proximo']
-    list_filter = ['mail_corp', 'send_number', 'status']
+    list_filter = ['mail_corp', 'send_number', 'status', 'proximo']
 
     actions = [prepare_to_send]
 
