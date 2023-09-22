@@ -172,6 +172,11 @@ def add_image_to_email(content: str, message: MIMEMultipart) -> str:
         imagen_name = imagen_url[imagen_url.rfind('/')+1:]
         content = content.replace(
             '/'+imagen_url_original, 'cid:'+imagen_name[:imagen_name.find('.')])
+        
+        # FIXME: Esto es un parche para que funcione en el servidor de producción 
+        # Hay que buscar una solución más elegante 
+        # Por alguna razón, en el servidor de producción, la ruta de la aplicación no es tomada como la raíz
+        imagen_url = 'projets/MacMailing/app/'+imagen_url
 
         with open(imagen_url, 'rb') as file:
             image = MIMEImage(file.read())
