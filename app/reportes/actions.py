@@ -1,5 +1,6 @@
 
 from datetime import timedelta
+from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
@@ -221,9 +222,10 @@ def send_mail(id_mail: int) -> bool:
 
         for f in attachment:
             with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
-                image = MIMEImage(file.read())
-                image.add_header('Content-ID', '<'+f[4]+'>')
-                message.attach(image)
+                adjunto = MIMEBase('application', 'octet-stream')
+                adjunto.set_payload(file.read())
+                adjunto.add_header('Content-Disposition', 'attachment', filename=f[5])
+                message.attach(adjunto)
 
     context = ssl.create_default_context()
     try:
