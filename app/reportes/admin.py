@@ -7,7 +7,7 @@ from django.contrib import admin, messages
 from auxiliares.models import EmailType
 
 from .utils import excelFile
-from .actions import get_template_file_and_save, send_mail
+from .actions import get_mail_data, get_template_file_and_save, prepare_email_body, send_mail
 from .models import (Attachment, Mail, TemplateFiles, TemplatesGroup, Clientes, ClientesContact,
                      ClientesWeb, ClientesEmail, ClientesSocial, ClientesAddress, ClientesUTM, ExcelFiles, Account, MailCorp, MailsToSend)
 
@@ -312,7 +312,11 @@ class MailsToSendAdmin(admin.ModelAdmin):
         '''
         Muestra el cuerpo del mail
         '''
-        return mark_safe(obj.mail.body)
+        body = obj.mail.body
+        msg_data = get_mail_data(obj.mail.id)
+        body = prepare_email_body(body, msg_data)
+        
+        return mark_safe(body)
 
     def mail_subject(self, obj):
         '''
