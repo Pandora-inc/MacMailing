@@ -224,7 +224,7 @@ def send_mail(id_mail: int) -> bool:
             with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
           
                 image = MIMEApplication(file.read())
-                image.add_header('Content-ID', '<'+f[4]+'>')
+                image.add_header('Content-ID', '<'+f[5]+'>')
                 message.attach(image)
 
     context = ssl.create_default_context()
