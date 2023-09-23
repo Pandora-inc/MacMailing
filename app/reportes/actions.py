@@ -227,7 +227,7 @@ def send_mail(id_mail: int) -> bool:
                 part = MIMEBase('application', 'octet-stream')
                 part.set_payload(file.read())
                 encoders.encode_base64(part)
-                part.add_header('Content-Disposition', f'attachment; filename={f[4]}')
+                part.add_header('Content-Disposition', f'attachment; filename={f[4]+"."+f[5].split(".")[-1]}')
                 message.attach(part)
 
     context = ssl.create_default_context()
