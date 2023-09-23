@@ -223,7 +223,7 @@ def send_mail(id_mail: int) -> bool:
         attachment = cursor.fetchall()
 
         for f in attachment:
-            with open(PRE_URL+'static_media/attachments/'+f[5], 'rb') as file:
+            with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
                 part = MIMEBase('application', 'octet-stream')
                 part.set_payload(file.read())
                 encoders.encode_base64(part)
