@@ -223,13 +223,11 @@ def send_mail(id_mail: int) -> bool:
         attachment = cursor.fetchall()
 
         for f in attachment:
-            with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
-                print(f)
-
+            with open(PRE_URL+'static_media/attachments/'+f[5], 'rb') as file:
                 part = MIMEBase('application', 'octet-stream')
-                part.set_payload(attachment.read())
+                part.set_payload(file.read())
                 encoders.encode_base64(part)
-                part.add_header('Content-Disposition', f'attachment; filename={f[5]}')
+                part.add_header('Content-Disposition', f'attachment; filename={f[4]}')
                 message.attach(part)
 
     context = ssl.create_default_context()
