@@ -1,9 +1,12 @@
 
 from datetime import timedelta
+from email.mime.application import MIMEApplication
+from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.utils import formatdate
+from email import encoders
 import string
 import smtplib
 import ssl
@@ -12,7 +15,7 @@ from django.db import connection
 from calendarapp.models import Event
 from reportes.models import Mail, TemplateFiles
 
-
+PRE_URL = 'projets/MacMailing/app/'
 def crear_evento(mail: Mail):
     """
     Creates or updates an event in the calendar app based on the information provided in a 'Mail' object.
@@ -176,7 +179,7 @@ def add_image_to_email(content: str, message: MIMEMultipart) -> str:
         # FIXME: Esto es un parche para que funcione en el servidor de producción 
         # Hay que buscar una solución más elegante 
         # Por alguna razón, en el servidor de producción, la ruta de la aplicación no es tomada como la raíz
-        imagen_url = 'projets/MacMailing/app/'+imagen_url
+        imagen_url = PRE_URL+imagen_url
 
         with open(imagen_url, 'rb') as file:
             image = MIMEImage(file.read())
@@ -220,10 +223,12 @@ def send_mail(id_mail: int) -> bool:
         attachment = cursor.fetchall()
 
         for f in attachment:
-            with open('static_media/'+f[5], 'rb') as file:
-                image = MIMEImage(file.read())
-                image.add_header('Content-ID', '<'+f[4]+'>')
-                message.attach(image)
+            with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
+                part = MIMEBase('application', 'octet-stream')
+                part.set_payload(file.read())
+                encoders.encode_base64(part)
+                part.add_header('Content-Disposition', f'attachment; filename={f[4]+"."+f[5].split(".")[-1]}')
+                message.attach(part)
 
     context = ssl.create_default_context()
     try:
