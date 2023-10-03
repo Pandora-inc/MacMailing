@@ -267,9 +267,9 @@ def get_template_file_and_save(id_template: int):
     template = TemplateFiles.objects.get(id=id_template)
     filename = template.file.path
 
-    archivo = open(filename, "r")
-    template.text = archivo.read()
-    template.save()
+    with open(filename, "r", encoding="utf-8") as archivo:
+        template.text = archivo.read()
+        template.save()
 
 
 def emails_cadena(cadena):

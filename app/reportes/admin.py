@@ -370,6 +370,7 @@ class TemplateGroupAdmin(admin.ModelAdmin):
     '''
     list_display = ['name', 'mail_corp']
     search_fields = ['name', 'mail_corp']
+    readonly_fields = ('create_user',)
     ordering = ['name', 'mail_corp']
 
     def get_queryset(self, request):
@@ -383,6 +384,12 @@ class TemplateGroupAdmin(admin.ModelAdmin):
             queryset = queryset.filter(mail_corp__in=accounts)
 
         return queryset
+    
+    def save_model(self, request, obj, form, change):
+        if not obj.create_user:
+            # Asigna el usuario actual
+            obj.create_user = request.user
+        super().save_model(request, obj, form, change)
 
 
 class TemplateFilesAdmin(admin.ModelAdmin):
@@ -391,6 +398,7 @@ class TemplateFilesAdmin(admin.ModelAdmin):
     '''
     list_display = ['name', 'orden', 'template_group']
     search_fields = ['name', 'orden', 'template_group']
+    readonly_fields = ('create_user',)
     ordering = ['name', 'orden', 'template_group']
 
     def get_queryset(self, request):
@@ -405,6 +413,12 @@ class TemplateFilesAdmin(admin.ModelAdmin):
             queryset = queryset.filter(template_group__in=groups)
 
         return queryset
+        
+    def save_model(self, request, obj, form, change):
+        if not obj.create_user:
+            # Asigna el usuario actual
+            obj.create_user = request.user
+        super().save_model(request, obj, form, change)
 
     actions = [template_file_propague]
 

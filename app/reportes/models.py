@@ -296,6 +296,10 @@ class ExcelFiles(models.Model):
         return str(self.name)
 
 
+""" 
+Lo siguiente se ejecuta al guardar las plantillas. 
+"""
+
 def propague_template(id_template: int):
     template = TemplateFiles.objects.get(id=id_template)
     orden = template.orden-1
@@ -304,14 +308,12 @@ def propague_template(id_template: int):
 
     for mail in mails:
         texto = template.text
-
+        mail.subject = template.name
         mail.body = texto
         mail.save()
-
 
 @receiver(post_save, sender=TemplateFiles)
 def mi_funcion_al_guardar(sender, instance, **kwargs):
     propague_template(instance.id)
-
 
 post_save.connect(mi_funcion_al_guardar, sender=TemplateFiles)
