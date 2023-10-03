@@ -212,7 +212,7 @@ class TemplatesGroup(models.Model):
 
 
 class TemplateFiles(models.Model):
-    name = models.CharField(max_length=64)
+    name = models.CharField(max_length=64, default="Sudject")
     orden = models.PositiveIntegerField(default=1)
     file = models.FileField(upload_to='template_files/', blank=True, null=True)
     text = RichTextUploadingField(blank=True, null=True)
