@@ -265,12 +265,18 @@ def get_template_file_and_save(id_template: int):
         None
     """
     template = TemplateFiles.objects.get(id=id_template)
-    filename = template.file.path
+    try:
+        filename = template.file.path
 
-    with open(filename, "r", encoding="utf-8") as archivo:
-        template.text = archivo.read()
-        template.save()
-
+        with open(filename, "r", encoding="utf-8") as archivo:
+            template.text = archivo.read()
+            template.save()
+    except Exception as e_error:
+        print("Error al leer el archivo")
+        print(e_error)
+        raise e_error
+        
+        
 
 def emails_cadena(cadena):
     """ Función que nos servirá para extraer todos los email válidos de una cadena de texto. """
