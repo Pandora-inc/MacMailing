@@ -212,8 +212,8 @@ class TemplatesGroup(models.Model):
 
 
 class TemplateFiles(models.Model):
-    name = models.CharField(max_length=64, blank=True, null=True)
-    orden = models.IntegerField(blank=True, null=True)
+    name = models.CharField(max_length=64)
+    orden = models.PositiveIntegerField(default=1)
     file = models.FileField(upload_to='template_files/', blank=True, null=True)
     text = RichTextUploadingField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
