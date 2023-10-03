@@ -54,7 +54,10 @@ prepare_to_send.short_description = "Preparar envio"
 def template_file_propague(modeladmin, request, queryset):
     ''' Función para propagar las plantillas '''
     for obj in queryset:
-        get_template_file_and_save(obj.id)
+        try:
+            get_template_file_and_save(obj.id)
+        except Exception as e:
+            messages.error(request, f"Error al propagar: {e}")
 
 template_file_propague.short_description = "Propagación de plantilla"
 
