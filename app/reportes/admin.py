@@ -57,9 +57,9 @@ def template_file_propague(modeladmin, request, queryset):
         try:
             get_template_file_and_save(obj.id)
         except Exception as e:
-            messages.error(request, f"Error al propagar: {e}")
+            messages.error(request, f"Error propagating: {e}")
 
-template_file_propague.short_description = "Propagación de plantilla"
+template_file_propague.short_description = "Template Propagation"
 
 
 def if_admin(user):
