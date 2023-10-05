@@ -44,9 +44,10 @@ procesar_excel.short_description = "Procesar Excel"
 def prepare_to_send(modeladmin, request, queryset):
     ''' Función para preparar los emails para enviar '''
     for obj in queryset:
-        mail = MailsToSend()
-        mail.mail = obj
-        mail.save()
+        if obj.status_response is False:
+            mail = MailsToSend()
+            mail.mail = obj
+            mail.save()
 
 prepare_to_send.short_description = "Preparar envio"
 
@@ -249,8 +250,6 @@ class MailAdmin(admin.ModelAdmin):
 
     actions = [prepare_to_send]
     
-    list_display_links = None
-
     def get_queryset(self, request):
         # Obtener el queryset base
         queryset = super().get_queryset(request)
