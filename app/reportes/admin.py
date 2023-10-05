@@ -245,7 +245,7 @@ class MailAdmin(admin.ModelAdmin):
                      'send_number', 'status', 'last_send']
     ordering = ['mail_corp', 'cliente', 'subject',
                 'send_number', 'status', 'last_send']
-    list_filter = ['mail_corp', 'send_number', 'status', 'status_response']
+    list_filter = ['mail_corp', 'send_number', 'status', ('status_response', admin.BooleanFieldListFilter)]
     readonly_fields = ('last_send', 'send_number', 'created')
 
     actions = [prepare_to_send]
