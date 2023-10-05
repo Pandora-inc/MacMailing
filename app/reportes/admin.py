@@ -266,9 +266,14 @@ class MailAdmin(admin.ModelAdmin):
         if obj and obj.status_response:
             return self.readonly_fields + ('mail_corp', 'cliente', 'subject', 'body',
                                            'attachment', 'status', 'status_response',
-                                           'template_group', 'reminder_days',) 
+                                           'template_group', 'reminder_days', 'use_template',) 
         return self.readonly_fields
     
+    def actions_on_top(self, request, queryset):
+        # Desactiva las acciones en la parte superior cuando 'fin' es True
+        if queryset.filter(status_response=True).exists():
+            return None
+        return super().actions_on_top(request, queryset)
 
     def proximo(self, obj):
         '''
