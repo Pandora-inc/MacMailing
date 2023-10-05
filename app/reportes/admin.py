@@ -244,7 +244,8 @@ class MailAdmin(admin.ModelAdmin):
                      'send_number', 'status', 'last_send']
     ordering = ['mail_corp', 'cliente', 'subject',
                 'send_number', 'status', 'last_send']
-    list_filter = ['mail_corp', 'send_number', 'status']
+    list_filter = ['mail_corp', 'send_number', 'status', 'status_response']
+    readonly_fields = ('last_send', 'send_number', 'created')
 
     actions = [prepare_to_send]
 
@@ -259,6 +260,15 @@ class MailAdmin(admin.ModelAdmin):
             queryset = queryset.filter(mail_corp__in=accounts)
 
         return queryset
+
+    def get_readonly_fields(self, request, obj=None):
+        # Si 'fin' es True, establece los campos como readonly
+        if obj and obj.status_response:
+            return self.readonly_fields + ('mail_corp', 'cliente', 'subject', 'body',
+                                           'attachment', 'status', 'status_response',
+                                           'template_group', 'reminder_days',) 
+        return self.readonly_fields
+    
 
     def proximo(self, obj):
         '''

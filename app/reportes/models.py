@@ -251,11 +251,11 @@ class Mail(models.Model):
 
 class MailsToSend (models.Model):
     mail = models.ForeignKey(Mail, models.RESTRICT, blank=True, null=True)
-    approved = models.BooleanField(default=False)
     send = models.BooleanField(default=False)
     user_approved = models.ForeignKey(
         User, models.RESTRICT, blank=True, null=True)
     date_approved = models.DateTimeField(blank=True, null=True)
+    approved = models.BooleanField(default=False)
 
 
 class UserAcount(models.Model):
