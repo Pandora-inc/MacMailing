@@ -44,9 +44,10 @@ procesar_excel.short_description = "Procesar Excel"
 def prepare_to_send(modeladmin, request, queryset):
     ''' Función para preparar los emails para enviar '''
     for obj in queryset:
-        mail = MailsToSend()
-        mail.mail = obj
-        mail.save()
+        if obj.status_response is False:
+            mail = MailsToSend()
+            mail.mail = obj
+            mail.save()
 
 prepare_to_send.short_description = "Preparar envio"
 
@@ -244,10 +245,11 @@ class MailAdmin(admin.ModelAdmin):
                      'send_number', 'status', 'last_send']
     ordering = ['mail_corp', 'cliente', 'subject',
                 'send_number', 'status', 'last_send']
-    list_filter = ['mail_corp', 'send_number', 'status']
+    list_filter = ['mail_corp', 'send_number', 'status', 'status_response']
+    readonly_fields = ('last_send', 'send_number', 'created')
 
     actions = [prepare_to_send]
-
+    
     def get_queryset(self, request):
         # Obtener el queryset base
         queryset = super().get_queryset(request)
@@ -259,6 +261,15 @@ class MailAdmin(admin.ModelAdmin):
             queryset = queryset.filter(mail_corp__in=accounts)
 
         return queryset
+
+    def get_readonly_fields(self, request, obj=None):
+        # Si 'fin' es True, establece los campos como readonly
+        if obj and obj.status_response:
+            return self.readonly_fields + ('mail_corp', 'cliente', 'subject', 'body',
+                                           'attachment', 'status', 'status_response',
+                                           'template_group', 'reminder_days', 'use_template',) 
+        return self.readonly_fields
+    
 
     def proximo(self, obj):
         '''
