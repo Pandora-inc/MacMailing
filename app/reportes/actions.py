@@ -76,12 +76,18 @@ def registro_envio_mail(id_mail: int, send_number: int):
         - The function uses the Django ORM to retrieve the 'Mail' object associated with the 'id_mail' input.
     """
     with connection.cursor() as cursor:
+
         consulta = f"UPDATE reportes_mail SET status = 1, send_number = {send_number}, last_send = NOW() WHERE id = {id_mail}"
         cursor.execute(consulta)
         connection.commit()
 
         mail = Mail.objects.get(id=id_mail)
         crear_evento(mail)
+        
+        template = TemplateFiles.objects.get(template_group_id=mail.template_group, orden=send_number+1)
+        mail.body = template.text
+        mail.subject = template.name
+        mail.save()
 
 
 def prepare_email_body(text: str, data: dict) -> str:
@@ -275,8 +281,7 @@ def get_template_file_and_save(id_template: int):
         print("Error al leer el archivo")
         print(e_error)
         raise e_error
-        
-        
+
 
 def emails_cadena(cadena):
     """ Función que nos servirá para extraer todos los email válidos de una cadena de texto. """
