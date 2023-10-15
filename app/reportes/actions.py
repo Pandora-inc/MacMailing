@@ -108,10 +108,7 @@ def registro_envio_mail(id_mail: int, send_number: int):
         mail = Mail.objects.get(id=id_mail)
         crear_evento(mail)
         
-        template = TemplateFiles.objects.get(template_group_id=mail.template_group, orden=send_number+1)
-        mail.body = template.text
-        mail.subject = template.name
-        mail.save()
+        actualizar_con_template(id_mail)
         print("Registro de envio de mail actualizado")
 
 
