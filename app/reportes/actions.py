@@ -93,6 +93,7 @@ def registro_envio_mail(id_mail: int, send_number: int):
         mail.body = template.text
         mail.subject = template.name
         mail.save()
+        print("Registro de envio de mail actualizado")
 
 
 def prepare_email_body(text: str, data: dict) -> str:
