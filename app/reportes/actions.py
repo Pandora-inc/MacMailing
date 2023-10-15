@@ -67,17 +67,14 @@ def crear_evento(mail: Mail):
 def actualizar_con_template(id_mail: int):
     try:
         mail = Mail.objects.get(id=id_mail)
-        template = TemplateFiles.objects.get(template_group_id=mail.template_group, orden=mail.send_number+1)
-        mail.body = template.text
-        mail.subject = template.name
-        mail.save()
+        if TemplateFiles.objects.filter(template_group_id=mail.template_group, orden=mail.send_number+1).exists():
+            template = TemplateFiles.objects.get(template_group_id=mail.template_group, orden=mail.send_number+1)
+            mail.body = template.text
+            mail.subject = template.name
+            mail.save()
     except Mail.DoesNotExist:
         print("Error al actualizar el mail con el template")
         print("No existe el mail")
-        raise Http404
-    except TemplateFiles.DoesNotExist:
-        print("Error al actualizar el mail con el template")
-        print("No existe el template")
         raise Http404
     except Exception as e_error:
         print("Error al actualizar el mail con el template")
