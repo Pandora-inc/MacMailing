@@ -124,39 +124,6 @@ def get_mail_data(id_mail: int) -> dict:
     Obtiene los datos del mail a enviar.
     '''
     with connection.cursor() as cursor:
-        consulta = f"SELECT \
-            reportes_mail.subject, \
-            reportes_mail.body, \
-            reportes_mail.status, \
-            reportes_mail.send_number, \
-            reportes_mail.last_send, \
-            reportes_mailcorp.name, \
-            reportes_mailcorp.email, \
-            reportes_mailcorp.password, \
-            reportes_mailcorp.smtp, \
-            reportes_mailcorp.smtp_port, \
-            clientes.salutation, \
-            clientes.first_name, \
-            clientes.middle_name, \
-            clientes.last_name, \
-            clientes.lead_name, \
-            clientes.source_information, \
-            reportes_clientesemail.data, \
-            clientes.company_name, \
-            clientes.position, \
-            auxiliares_type.name, \
-            reportes_mailcorp.firma \
-        FROM \
-            reportes_mail \
-            INNER JOIN reportes_mailcorp ON reportes_mailcorp.id = reportes_mail.mail_corp_id \
-            INNER JOIN clientes ON clientes.id = reportes_mail.cliente_id \
-            INNER JOIN reportes_clientesemail ON reportes_clientesemail.cliente_id = reportes_mail.cliente_id \
-            INNER JOIN auxiliares_type ON auxiliares_type.id = clientes.type_id \
-        WHERE \
-            reportes_mail.id = {id_mail} \
-            AND reportes_clientesemail.type_id = 1"
-
-        # cursor.execute(consulta)
         cursor.callproc("get_mail_data", [id_mail])
         row = cursor.fetchone()
 
@@ -430,4 +397,12 @@ class Email_API(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def post(self, request, format=None):
+        serializer = MailSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
