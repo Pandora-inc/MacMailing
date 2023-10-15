@@ -10,7 +10,7 @@ from email import encoders
 import string
 import smtplib
 import ssl
-from app.reportes.serializers import MailSerializer
+from reportes.serializers import MailSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
