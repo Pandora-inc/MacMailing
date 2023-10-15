@@ -10,6 +10,11 @@ from email import encoders
 import string
 import smtplib
 import ssl
+from app.reportes.serializers import MailSerializer
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.http import Http404
 from django.contrib.auth.models import User
 from django.db import connection
 from calendarapp.models import Event
@@ -137,7 +142,8 @@ def get_mail_data(id_mail: int) -> dict:
             reportes_mail.id = {id_mail} \
             AND reportes_clientesemail.type_id = 1"
 
-        cursor.execute(consulta)
+        # cursor.execute(consulta)
+        cursor.callproc("get_mail_data", [id_mail])
         row = cursor.fetchone()
 
         msg = {}
@@ -353,3 +359,61 @@ def emails_cadena(cadena):
     except Exception as e_error:
         print(e_error)
         print("Ha ocurrido un error inesperado al procesar la cadena.")
+
+
+
+class Email_API(APIView):
+    """
+    API endpoint that allows emails to be sent.
+    """
+    def get_object(self, pk):
+        try:
+            with connection.cursor() as cursor:
+                cursor.callproc("get_mail_data", [pk])
+                # data = dictfetchall(cursor)
+                row = cursor.fetchone()
+
+                msg = {}
+                msg['Subject'] = row[0]
+                msg['From'] = row[5]
+                msg['To'] = row[16]
+                msg['Date'] = formatdate(localtime=True)
+                msg['content-type'] = 'text/html'
+                msg['content'] = row[1]
+                msg['number'] = row[3]
+                msg['from_email'] = row[6]
+                msg['from_pass'] = row[7]
+                msg['from_smtp'] = row[8]
+                msg['from_port'] = row[9]
+                msg['salutation'] = row[10]
+                msg['first_name'] = row[11]
+                msg['middle_name'] = row[12]
+                msg['last_name'] = row[13]
+                msg['lead_name'] = row[14]
+                msg['data'] = row[16]
+                msg['company_name'] = row[17]
+                msg['position'] = row[18]
+                msg['type'] = row[19]
+                msg['firma'] = row[20]
+
+                if row[15]:
+                    msg['CC'] = ', '.join(emails_cadena(row[15]))
+                else:
+                    msg['CC'] = ''
+
+                return msg
+        except Mail.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        mail = self.get_object(pk)
+        serializer = MailSerializer(mail)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        mail = self.get_object(pk)
+        serializer = MailSerializer(mail, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
