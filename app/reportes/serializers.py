@@ -33,7 +33,7 @@ class MailSerializer(serializers.Serializer):
     from_name = serializers.CharField(max_length=100)
     from_email = serializers.EmailField()
     to = serializers.EmailField()
-    cc = serializers.list_field(child=serializers.EmailField())
+    cc = serializers.ListField(child=serializers.EmailField())
     date = serializers.DateTimeField()
     content = serializers.CharField()
     number = serializers.IntegerField()
