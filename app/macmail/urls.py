@@ -20,7 +20,7 @@ from django.conf.urls.static import static
 from django.views.generic.base import TemplateView
 from calendarapp.views.other_views import CalendarViewIndex
 from reportes.views import ClientesList_APIView, ExcelsList_APIView, ProcessExcel
-from reportes.actions import send_email
+import reportes.actions as actions
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,7 +31,7 @@ urlpatterns = [
     path('excels/', ExcelsList_APIView.as_view(), name='archivos'),
     path('excels_work/', ProcessExcel.as_view(), name='excels_work'),
     path("", include("calendarapp.urls")),
-    path("send_email/<int:mail_id>", send_email, name="send_email")
+    path("send_email/<int:mail_id>", actions.send_mail, name="send_email")
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
