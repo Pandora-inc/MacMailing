@@ -18,7 +18,7 @@ from django.http import Http404
 from django.contrib.auth.models import User
 from django.db import connection
 from calendarapp.models import Event
-from reportes.models import Mail, TemplateFiles
+from reportes.models import Mail, TemplateFiles, MailsToSend
 
 PRE_URL = 'projets/MacMailing/app/'
 def crear_evento(mail: Mail):
@@ -513,10 +513,10 @@ class Email_API(APIView):
                     server.quit()
                     registro_envio_mail(msg_data['mail_id'], msg_data['number']+1)
 
-                    mail_to_send = Mail.objects.get(id=msg_data['mail_to_send_id'])
+                    mail_to_send = MailsToSend.objects.get(id=msg_data['mail_to_send_id'])
                     mail_to_send.send = True
                     mail_to_send.save()
-                except Mail.DoesNotExist as e_error:
+                except MailsToSend.DoesNotExist as e_error:
                     print("Error al actualizar el estado del mail a enviar")
                     print("ID del mail a enviar: "+str(msg_data['mail_to_send_id']))
                     server.quit()
