@@ -512,16 +512,23 @@ class Email_API(APIView):
                     server.send_message(message)
                     server.quit()
                     registro_envio_mail(msg_data['mail_id'], msg_data['number']+1)
+
                     mail_to_send = Mail.objects.get(id=msg_data['mail_to_send_id'])
                     mail_to_send.send = True
                     mail_to_send.save()
-                    respuesta = Response(status=status.HTTP_200_OK)
-                    print(respuesta)
-                    return respuesta
+                except Mail.DoesNotExist as e_error:
+                    print("Error al actualizar el estado del mail a enviar")
+                    print("ID del mail a enviar: "+str(msg_data['mail_to_send_id']))
+                    server.quit()
+                    raise e_error
                 except Exception as e_error:
                     print("Error en el envio del mail")
                     server.quit()
                     raise e_error
+                else:
+                    respuesta = Response(status=status.HTTP_200_OK)
+                    print(respuesta)
+                    return respuesta
         except Exception as e_error:
             print("Error en la conexión con el servidor")
             print(e_error)
