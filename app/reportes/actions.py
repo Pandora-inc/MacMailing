@@ -452,7 +452,7 @@ class Email_API(APIView):
 
             return msg
         
-    def send_next_mail(self, request) -> bool:
+    def send_next_mail(self) -> bool:
         """
         Sends an email with the given id_mail.
 
