@@ -407,50 +407,50 @@ def emails_cadena(cadena):
         print(e_error)
         print("Ha ocurrido un error inesperado al procesar la cadena.")
 
+def get_next_email_data() -> dict:
+    '''
+    Obtiene los datos del mail a enviar.
+    '''
+    with connection.cursor() as cursor:
+        cursor.callproc("get_next_mail_to_send", [])
+        row = cursor.fetchone()
 
+        msg = {}
+        msg['mail_id'] = row[21]
+        msg['Subject'] = row[0]
+        msg['From'] = row[5]
+        msg['To'] = row[16]
+        msg['Date'] = formatdate(localtime=True)
+        msg['content-type'] = 'text/html'
+        msg['content'] = row[1]
+        msg['number'] = row[3]
+        msg['from_email'] = row[6]
+        msg['from_pass'] = row[7]
+        msg['from_smtp'] = row[8]
+        msg['from_port'] = row[9]
+        msg['salutation'] = row[10]
+        msg['first_name'] = row[11]
+        msg['middle_name'] = row[12]
+        msg['last_name'] = row[13]
+        msg['lead_name'] = row[14]
+        msg['data'] = row[16]
+        msg['company_name'] = row[17]
+        msg['position'] = row[18]
+        msg['type'] = row[19]
+        msg['firma'] = row[20]
+
+        if row[15]:
+            msg['CC'] = ', '.join(emails_cadena(row[15]))
+        else:
+            msg['CC'] = ''
+
+        return msg
 
 class Email_API(APIView):
     """
     API endpoint that allows emails to be sent.
     """
-    def get_next_email_data(self, request) -> dict:
-        '''
-        Obtiene los datos del mail a enviar.
-        '''
-        with connection.cursor() as cursor:
-            cursor.callproc("get_next_mail_to_send", [])
-            row = cursor.fetchone()
-
-            msg = {}
-            msg['mail_id'] = row[21]
-            msg['Subject'] = row[0]
-            msg['From'] = row[5]
-            msg['To'] = row[16]
-            msg['Date'] = formatdate(localtime=True)
-            msg['content-type'] = 'text/html'
-            msg['content'] = row[1]
-            msg['number'] = row[3]
-            msg['from_email'] = row[6]
-            msg['from_pass'] = row[7]
-            msg['from_smtp'] = row[8]
-            msg['from_port'] = row[9]
-            msg['salutation'] = row[10]
-            msg['first_name'] = row[11]
-            msg['middle_name'] = row[12]
-            msg['last_name'] = row[13]
-            msg['lead_name'] = row[14]
-            msg['data'] = row[16]
-            msg['company_name'] = row[17]
-            msg['position'] = row[18]
-            msg['type'] = row[19]
-            msg['firma'] = row[20]
-
-            if row[15]:
-                msg['CC'] = ', '.join(emails_cadena(row[15]))
-            else:
-                msg['CC'] = ''
-
-            return msg
+    
         
     def send_next_mail(self) -> bool:
         """
@@ -462,7 +462,7 @@ class Email_API(APIView):
         Returns:
             bool: True if the email was sent successfully, False otherwise.
         """
-        msg_data = self.get_next_email_data()
+        msg_data = get_next_email_data()
 
         message = MIMEMultipart()
         message['From'] = msg_data['from_email']
