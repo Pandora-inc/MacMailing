@@ -413,7 +413,7 @@ class Email_API(APIView):
     """
     API endpoint that allows emails to be sent.
     """
-    def get_next_email_data(self) -> dict:
+    def get_next_email_data(self, request) -> dict:
         '''
         Obtiene los datos del mail a enviar.
         '''
