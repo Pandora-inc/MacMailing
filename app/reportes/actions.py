@@ -415,9 +415,11 @@ def get_next_email_data() -> dict:
     with connection.cursor() as cursor:
         cursor.callproc("get_next_mail_to_send", [])
         row = cursor.fetchone()
-
+        
+        if row is None:
+            return None
+        
         msg = {}
-        msg['mail_id'] = row[21]
         msg['Subject'] = row[0]
         msg['From'] = row[5]
         msg['To'] = row[16]
@@ -439,6 +441,7 @@ def get_next_email_data() -> dict:
         msg['position'] = row[18]
         msg['type'] = row[19]
         msg['firma'] = row[20]
+        msg['mail_id'] = row[21]
         msg['mail_to_send_id'] = row[22]
 
         if row[15]:
@@ -464,6 +467,9 @@ class Email_API(APIView):
             bool: True if the email was sent successfully, False otherwise.
         """
         msg_data = get_next_email_data()
+
+        if msg_data is None:
+            return Response(status=status.HTTP_208_ALREADY_REPORTED)
 
         message = MIMEMultipart()
         message['From'] = msg_data['from_email']
