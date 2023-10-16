@@ -14,6 +14,7 @@ from reportes.serializers import MailSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 from django.http import Http404
 from django.contrib.auth.models import User
 from django.db import connection
@@ -455,7 +456,7 @@ class Email_API(APIView):
     """
     API endpoint that allows emails to be sent.
     """
-    
+    @api_view(['POST'])
     def send_next_mail(self) -> bool:
         """
         Sends an email with the given id_mail.
