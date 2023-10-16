@@ -99,6 +99,7 @@ def registro_envio_mail(id_mail: int, send_number: int):
     with connection.cursor() as cursor:
 
         consulta = f"UPDATE reportes_mail SET status = 1, send_number = {send_number}, last_send = NOW() WHERE id = {id_mail}"
+
         cursor.execute(consulta)
         connection.commit()
 
@@ -438,6 +439,7 @@ def get_next_email_data() -> dict:
         msg['position'] = row[18]
         msg['type'] = row[19]
         msg['firma'] = row[20]
+        msg['mail_to_send_id'] = row[22]
 
         if row[15]:
             msg['CC'] = ', '.join(emails_cadena(row[15]))
@@ -451,7 +453,6 @@ class Email_API(APIView):
     API endpoint that allows emails to be sent.
     """
     
-        
     def send_next_mail(self) -> bool:
         """
         Sends an email with the given id_mail.
@@ -505,7 +506,12 @@ class Email_API(APIView):
                     server.send_message(message)
                     server.quit()
                     registro_envio_mail(msg_data['mail_id'], msg_data['number']+1)
-                    return Response(status=status.HTTP_200_OK)
+                    mail_to_send = Mail.objects.get(id=msg_data['mail_to_send_id'])
+                    mail_to_send.send = True
+                    mail_to_send.save()
+                    respuesta = Response(status=status.HTTP_200_OK)
+                    print(respuesta)
+                    return respuesta
                 except Exception as e_error:
                     print("Error en el envio del mail")
                     server.quit()

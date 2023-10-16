@@ -18,6 +18,7 @@ def enviar_email(modeladmin, request, queryset):
         for obj in queryset:
             if obj.approved is True:
                 if send_mail(obj.mail_id):
+                    # TODO esto es lo que hay que agregar para que registre el mail enviado
                     obj.send = True
                     obj.save()
             else:
