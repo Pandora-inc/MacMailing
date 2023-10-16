@@ -312,6 +312,7 @@ def send_mail_api(request, id_mail: int) -> bool:
         print("Error en la conexión con el servidor")
         print(e_error)
         raise e_error
+    
 def get_template_file_and_save(id_template: int):
     """
     Retrieves a template file from the database, reads its contents, and saves the contents as text in the same template object.
@@ -412,6 +413,108 @@ class Email_API(APIView):
     """
     API endpoint that allows emails to be sent.
     """
+    def get_next_email_data(self) -> dict:
+        '''
+        Obtiene los datos del mail a enviar.
+        '''
+        with connection.cursor() as cursor:
+            cursor.callproc("get_next_mail_to_send", [])
+            row = cursor.fetchone()
+
+            msg = {}
+            msg['mail_id'] = row[21]
+            msg['Subject'] = row[0]
+            msg['From'] = row[5]
+            msg['To'] = row[16]
+            msg['Date'] = formatdate(localtime=True)
+            msg['content-type'] = 'text/html'
+            msg['content'] = row[1]
+            msg['number'] = row[3]
+            msg['from_email'] = row[6]
+            msg['from_pass'] = row[7]
+            msg['from_smtp'] = row[8]
+            msg['from_port'] = row[9]
+            msg['salutation'] = row[10]
+            msg['first_name'] = row[11]
+            msg['middle_name'] = row[12]
+            msg['last_name'] = row[13]
+            msg['lead_name'] = row[14]
+            msg['data'] = row[16]
+            msg['company_name'] = row[17]
+            msg['position'] = row[18]
+            msg['type'] = row[19]
+            msg['firma'] = row[20]
+
+            if row[15]:
+                msg['CC'] = ', '.join(emails_cadena(row[15]))
+            else:
+                msg['CC'] = ''
+
+            return msg
+        
+    def send_next_mail(self, request) -> bool:
+        """
+        Sends an email with the given id_mail.
+
+        Args:
+            id_mail (int): The id of the email to be sent.
+
+        Returns:
+            bool: True if the email was sent successfully, False otherwise.
+        """
+        msg_data = self.get_next_email_data()
+
+        message = MIMEMultipart()
+        message['From'] = msg_data['from_email']
+        message['To'] = msg_data['To']
+        message['Subject'] = msg_data['Subject']
+
+        msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
+        msg_data['firma'] = prepare_email_body(msg_data['firma'], msg_data)
+
+        msg_data['content'] = add_image_to_email(msg_data['content'], message)
+        msg_data['firma'] = add_image_to_email(msg_data['firma'], message)
+
+        content = msg_data['content']+msg_data['firma']
+
+        message.attach(MIMEText(content, "html"))
+
+        with connection.cursor() as cursor:
+            cursor.callproc("get_mail_attachment", [msg_data['mail_id']])
+            attachment = cursor.fetchall()
+
+            for f in attachment:
+                with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
+                    part = MIMEBase('application', 'octet-stream')
+                    part.set_payload(file.read())
+                    encoders.encode_base64(part)
+                    part.add_header('Content-Disposition', f'attachment; filename={f[4]+"."+f[5].split(".")[-1]}')
+                    message.attach(part)
+
+        context = ssl.create_default_context()
+        try:
+            with smtplib.SMTP(msg_data['from_smtp'], msg_data['from_port']) as server:
+                server.starttls(context=context)
+                try:
+                    server.login(msg_data['from_email'], msg_data['from_pass'])
+                except Exception as e_error:
+                    print("Error en el loggeo")
+                    server.quit()
+                    raise e_error
+                try:
+                    server.send_message(message)
+                    server.quit()
+                    registro_envio_mail(msg_data['mail_id'], msg_data['number']+1)
+                    return Response(status=status.HTTP_200_OK)
+                except Exception as e_error:
+                    print("Error en el envio del mail")
+                    server.quit()
+                    raise e_error
+        except Exception as e_error:
+            print("Error en la conexión con el servidor")
+            print(e_error)
+            raise e_error
+        
     def get_object(self, pk):
         try:
             with connection.cursor() as cursor:
