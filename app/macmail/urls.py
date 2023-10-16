@@ -31,7 +31,7 @@ urlpatterns = [
     path('excels/', ExcelsList_APIView.as_view(), name='archivos'),
     path('excels_work/', ProcessExcel.as_view(), name='excels_work'),
     path("", include("calendarapp.urls")),
-    path("send_email/<int:id_mail>", actions.send_mail, name="send_email")
+    path("send_email/<int:id_mail>", actions.send_mail_api, name="send_email")
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

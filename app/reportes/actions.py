@@ -247,6 +247,71 @@ def send_mail(id_mail: int) -> bool:
         print(e_error)
         raise e_error
     
+def send_mail_api(request, id_mail: int) -> bool:
+    """
+    Sends an email with the given id_mail.
+
+    Args:
+        id_mail (int): The id of the email to be sent.
+
+    Returns:
+        bool: True if the email was sent successfully, False otherwise.
+    """
+    msg_data = get_mail_data(id_mail)
+
+    message = MIMEMultipart()
+    message['From'] = msg_data['from_email']
+    message['To'] = msg_data['To']
+    message['Subject'] = msg_data['Subject']
+
+    msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
+    msg_data['firma'] = prepare_email_body(msg_data['firma'], msg_data)
+
+    msg_data['content'] = add_image_to_email(msg_data['content'], message)
+    msg_data['firma'] = add_image_to_email(msg_data['firma'], message)
+
+    content = msg_data['content']+msg_data['firma']
+
+    message.attach(MIMEText(content, "html"))
+
+    with connection.cursor() as cursor:
+        consulta_attachment = f"SELECT * FROM reportes_mail_attachment \
+                                    INNER JOIN reportes_attachment ON reportes_attachment.id = reportes_mail_attachment.attachment_id \
+                                    WHERE mail_id = {id_mail}"
+        cursor.execute(consulta_attachment)
+        attachment = cursor.fetchall()
+
+        for f in attachment:
+            with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
+                part = MIMEBase('application', 'octet-stream')
+                part.set_payload(file.read())
+                encoders.encode_base64(part)
+                part.add_header('Content-Disposition', f'attachment; filename={f[4]+"."+f[5].split(".")[-1]}')
+                message.attach(part)
+
+    context = ssl.create_default_context()
+    try:
+        with smtplib.SMTP(msg_data['from_smtp'], msg_data['from_port']) as server:
+            server.starttls(context=context)
+            try:
+                server.login(msg_data['from_email'], msg_data['from_pass'])
+            except Exception as e_error:
+                print("Error en el loggeo")
+                server.quit()
+                raise e_error
+            try:
+                server.send_message(message)
+                server.quit()
+                registro_envio_mail(id_mail, msg_data['number']+1)
+                return True
+            except Exception as e_error:
+                print("Error en el envio del mail")
+                server.quit()
+                raise e_error
+    except Exception as e_error:
+        print("Error en la conexión con el servidor")
+        print(e_error)
+        raise e_error
 def get_template_file_and_save(id_template: int):
     """
     Retrieves a template file from the database, reads its contents, and saves the contents as text in the same template object.
