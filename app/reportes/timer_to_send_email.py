@@ -15,6 +15,6 @@ def timer_to_send_email(request):
          logging.info('Error en la solicitud POST: response.status_code')
          logging.info(response.status)
    except Exception as e:
-      print('Error en la solicitud POST: response.status_code')
+      print('Error en la solicitud POST')
       print(e)
    logging.info('Python timer trigger function executed.')
