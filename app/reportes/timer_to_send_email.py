@@ -7,7 +7,7 @@ def timer_to_send_email(request):
       api_path = "/send_next_email/"
       conn = http.client.HTTPSConnection(api_host)
       print(conn)
-      conn.request("POST", api_path)
+      conn.request("POST", api_path, headers={"Host": api_host})
       print(conn)
       response = conn.getresponse()
       if response.status == 200 or response.status == 208:
