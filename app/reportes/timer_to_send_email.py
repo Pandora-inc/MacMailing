@@ -8,6 +8,7 @@ def timer_to_send_email(request):
       conn = http.client.HTTPSConnection(api_host)
       print(conn)
       conn.request("POST", api_path)
+      print(conn)
       response = conn.getresponse()
       if response.status == 200 or response.status == 208:
          logging.info('Solicitud POST exitosa')
