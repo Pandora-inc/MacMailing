@@ -1,7 +1,7 @@
 import http.client
 import logging
 
-def timer_to_send_email():
+def timer_to_send_email(request):
    api_host = "http://macmailling.eastus.cloudapp.azure.com:8000"
    api_path = "send_next_email/"
    conn = http.client.HTTPSConnection(api_host)
