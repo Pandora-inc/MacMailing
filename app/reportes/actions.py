@@ -527,7 +527,8 @@ class Email_API(APIView):
                     server.quit()
                     raise e_error
                 else:
-                    respuesta = Response(status=status.HTTP_200_OK)
+                    # respuesta = Response(status=status.HTTP_200_OK)
+                    respuesta = Response(status=status.HTTP_200_OK, data={'mail_id': msg_data['mail_id']} )
                     print(respuesta)
                     return respuesta
         except Exception as e_error:
