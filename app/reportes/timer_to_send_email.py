@@ -7,17 +7,17 @@ def timer_to_send_email(request):
    try:
       api_host = "http://macmailling.eastus.cloudapp.azure.com:8000"
       api_path = "send_next_email"
-
+      api_url = "http://macmailling.eastus.cloudapp.azure.com:8000/send_next_email/"
          
       # Realiza la solicitud POST
-      response = requests.post(api_host+'/'+api_path)
+      response = requests.post(api_url)
 
       if response.status_code == 200:
          print(f'Solicitud POST exitosa a las ')
       else:
          print(f'Error en la solicitud POST: {response.status_code} a las ')
 
-      req = urllib.request.Request(api_host+'/'+api_path, method='POST')
+      req = urllib.request.Request(api_url, method='POST')
     
       try:
          with urllib.request.urlopen(req) as response:
