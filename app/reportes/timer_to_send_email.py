@@ -37,6 +37,7 @@ def timer_to_send_email(request):
       else:
          logging.info('Error en la solicitud POST: response.status_code')
          logging.info(response.status)
+      return http.client.responses[response.status]
    except Exception as e:
       print('Error en la solicitud POST')
       print(e)
