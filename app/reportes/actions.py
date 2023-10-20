@@ -10,10 +10,16 @@ from email import encoders
 import string
 import smtplib
 import ssl
+from reportes.serializers import MailSerializer
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.decorators import api_view
+from django.http import Http404
 from django.contrib.auth.models import User
 from django.db import connection
 from calendarapp.models import Event
-from reportes.models import Mail, TemplateFiles
+from reportes.models import Mail, TemplateFiles, MailsToSend
 
 PRE_URL = 'projets/MacMailing/app/'
 def crear_evento(mail: Mail):
@@ -59,6 +65,22 @@ def crear_evento(mail: Mail):
 
     print("Evento creado")
 
+def actualizar_con_template(id_mail: int):
+    try:
+        mail = Mail.objects.get(id=id_mail)
+        if TemplateFiles.objects.filter(template_group_id=mail.template_group, orden=mail.send_number+1).exists():
+            template = TemplateFiles.objects.get(template_group_id=mail.template_group, orden=mail.send_number+1)
+            mail.body = template.text
+            mail.subject = template.name
+            mail.save()
+    except Mail.DoesNotExist:
+        print("Error al actualizar el mail con el template")
+        print("No existe el mail")
+        raise Http404
+    except Exception as e_error:
+        print("Error al actualizar el mail con el template")
+        print(e_error)
+        raise e_error
 
 def registro_envio_mail(id_mail: int, send_number: int):
     """
@@ -78,16 +100,15 @@ def registro_envio_mail(id_mail: int, send_number: int):
     with connection.cursor() as cursor:
 
         consulta = f"UPDATE reportes_mail SET status = 1, send_number = {send_number}, last_send = NOW() WHERE id = {id_mail}"
+
         cursor.execute(consulta)
         connection.commit()
 
         mail = Mail.objects.get(id=id_mail)
         crear_evento(mail)
         
-        template = TemplateFiles.objects.get(template_group_id=mail.template_group, orden=send_number+1)
-        mail.body = template.text
-        mail.subject = template.name
-        mail.save()
+        actualizar_con_template(id_mail)
+        print("Registro de envio de mail actualizado")
 
 
 def prepare_email_body(text: str, data: dict) -> str:
@@ -105,39 +126,7 @@ def get_mail_data(id_mail: int) -> dict:
     Obtiene los datos del mail a enviar.
     '''
     with connection.cursor() as cursor:
-        consulta = f"SELECT \
-            reportes_mail.subject, \
-            reportes_mail.body, \
-            reportes_mail.status, \
-            reportes_mail.send_number, \
-            reportes_mail.last_send, \
-            reportes_mailcorp.name, \
-            reportes_mailcorp.email, \
-            reportes_mailcorp.password, \
-            reportes_mailcorp.smtp, \
-            reportes_mailcorp.smtp_port, \
-            clientes.salutation, \
-            clientes.first_name, \
-            clientes.middle_name, \
-            clientes.last_name, \
-            clientes.lead_name, \
-            clientes.source_information, \
-            reportes_clientesemail.data, \
-            clientes.company_name, \
-            clientes.position, \
-            auxiliares_type.name, \
-            reportes_mailcorp.firma \
-        FROM \
-            reportes_mail \
-            INNER JOIN reportes_mailcorp ON reportes_mailcorp.id = reportes_mail.mail_corp_id \
-            INNER JOIN clientes ON clientes.id = reportes_mail.cliente_id \
-            INNER JOIN reportes_clientesemail ON reportes_clientesemail.cliente_id = reportes_mail.cliente_id \
-            INNER JOIN auxiliares_type ON auxiliares_type.id = clientes.type_id \
-        WHERE \
-            reportes_mail.id = {id_mail} \
-            AND reportes_clientesemail.type_id = 1"
-
-        cursor.execute(consulta)
+        cursor.callproc("get_mail_data", [id_mail])
         row = cursor.fetchone()
 
         msg = {}
@@ -195,6 +184,72 @@ def add_image_to_email(content: str, message: MIMEMultipart) -> str:
     return content
 
 def send_mail(id_mail: int) -> bool:
+    """
+    Sends an email with the given id_mail.
+
+    Args:
+        id_mail (int): The id of the email to be sent.
+
+    Returns:
+        bool: True if the email was sent successfully, False otherwise.
+    """
+    msg_data = get_mail_data(id_mail)
+
+    message = MIMEMultipart()
+    message['From'] = msg_data['from_email']
+    message['To'] = msg_data['To']
+    message['Subject'] = msg_data['Subject']
+
+    msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
+    msg_data['firma'] = prepare_email_body(msg_data['firma'], msg_data)
+
+    msg_data['content'] = add_image_to_email(msg_data['content'], message)
+    msg_data['firma'] = add_image_to_email(msg_data['firma'], message)
+
+    content = msg_data['content']+msg_data['firma']
+
+    message.attach(MIMEText(content, "html"))
+
+    with connection.cursor() as cursor:
+        consulta_attachment = f"SELECT * FROM reportes_mail_attachment \
+                                    INNER JOIN reportes_attachment ON reportes_attachment.id = reportes_mail_attachment.attachment_id \
+                                    WHERE mail_id = {id_mail}"
+        cursor.execute(consulta_attachment)
+        attachment = cursor.fetchall()
+
+        for f in attachment:
+            with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
+                part = MIMEBase('application', 'octet-stream')
+                part.set_payload(file.read())
+                encoders.encode_base64(part)
+                part.add_header('Content-Disposition', f'attachment; filename={f[4]+"."+f[5].split(".")[-1]}')
+                message.attach(part)
+
+    context = ssl.create_default_context()
+    try:
+        with smtplib.SMTP(msg_data['from_smtp'], msg_data['from_port']) as server:
+            server.starttls(context=context)
+            try:
+                server.login(msg_data['from_email'], msg_data['from_pass'])
+            except Exception as e_error:
+                print("Error en el loggeo")
+                server.quit()
+                raise e_error
+            try:
+                server.send_message(message)
+                server.quit()
+                registro_envio_mail(id_mail, msg_data['number']+1)
+                return True
+            except Exception as e_error:
+                print("Error en el envio del mail")
+                server.quit()
+                raise e_error
+    except Exception as e_error:
+        print("Error en la conexión con el servidor")
+        print(e_error)
+        raise e_error
+    
+def send_mail_api(request, id_mail: int) -> bool:
     """
     Sends an email with the given id_mail.
 
@@ -353,3 +408,190 @@ def emails_cadena(cadena):
     except Exception as e_error:
         print(e_error)
         print("Ha ocurrido un error inesperado al procesar la cadena.")
+
+def get_next_email_data() -> dict:
+    '''
+    Obtiene los datos del mail a enviar.
+    '''
+    with connection.cursor() as cursor:
+        cursor.callproc("get_next_mail_to_send", [])
+        row = cursor.fetchone()
+        
+        if row is None:
+            return None
+        
+        msg = {}
+        msg['Subject'] = row[0]
+        msg['From'] = row[5]
+        msg['To'] = row[16]
+        msg['Date'] = formatdate(localtime=True)
+        msg['content-type'] = 'text/html'
+        msg['content'] = row[1]
+        msg['number'] = row[3]
+        msg['from_email'] = row[6]
+        msg['from_pass'] = row[7]
+        msg['from_smtp'] = row[8]
+        msg['from_port'] = row[9]
+        msg['salutation'] = row[10]
+        msg['first_name'] = row[11]
+        msg['middle_name'] = row[12]
+        msg['last_name'] = row[13]
+        msg['lead_name'] = row[14]
+        msg['data'] = row[16]
+        msg['company_name'] = row[17]
+        msg['position'] = row[18]
+        msg['type'] = row[19]
+        msg['firma'] = row[20]
+        msg['mail_id'] = row[21]
+        msg['mail_to_send_id'] = row[22]
+
+        if row[15]:
+            msg['CC'] = ', '.join(emails_cadena(row[15]))
+        else:
+            msg['CC'] = ''
+
+        return msg
+
+class Email_API(APIView):
+    """
+    API endpoint that allows emails to be sent.
+    """
+    @api_view(['POST'])
+    def send_next_mail(self) -> bool:
+        """
+        Sends an email with the given id_mail.
+
+        Args:
+            id_mail (int): The id of the email to be sent.
+
+        Returns:
+            bool: True if the email was sent successfully, False otherwise.
+        """
+        msg_data = get_next_email_data()
+
+        if msg_data is None:
+            return Response(status=status.HTTP_208_ALREADY_REPORTED)
+
+        message = MIMEMultipart()
+        message['From'] = msg_data['from_email']
+        message['To'] = msg_data['To']
+        message['Subject'] = msg_data['Subject']
+
+        msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
+        msg_data['firma'] = prepare_email_body(msg_data['firma'], msg_data)
+
+        msg_data['content'] = add_image_to_email(msg_data['content'], message)
+        msg_data['firma'] = add_image_to_email(msg_data['firma'], message)
+
+        content = msg_data['content']+msg_data['firma']
+
+        message.attach(MIMEText(content, "html"))
+
+        with connection.cursor() as cursor:
+            cursor.callproc("get_mail_attachment", [msg_data['mail_id']])
+            attachment = cursor.fetchall()
+
+            for f in attachment:
+                with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
+                    part = MIMEBase('application', 'octet-stream')
+                    part.set_payload(file.read())
+                    encoders.encode_base64(part)
+                    part.add_header('Content-Disposition', f'attachment; filename={f[4]+"."+f[5].split(".")[-1]}')
+                    message.attach(part)
+
+        context = ssl.create_default_context()
+        try:
+            with smtplib.SMTP(msg_data['from_smtp'], msg_data['from_port']) as server:
+                server.starttls(context=context)
+                try:
+                    server.login(msg_data['from_email'], msg_data['from_pass'])
+                except Exception as e_error:
+                    print("Error en el loggeo")
+                    server.quit()
+                    raise e_error
+                try:
+                    server.send_message(message)
+                    server.quit()
+                    registro_envio_mail(msg_data['mail_id'], msg_data['number']+1)
+
+                    mail_to_send = MailsToSend.objects.get(id=msg_data['mail_to_send_id'])
+                    mail_to_send.send = True
+                    mail_to_send.save()
+                except MailsToSend.DoesNotExist as e_error:
+                    print("Error al actualizar el estado del mail a enviar")
+                    print("ID del mail a enviar: "+str(msg_data['mail_to_send_id']))
+                    server.quit()
+                    raise e_error
+                except Exception as e_error:
+                    print("Error en el envio del mail")
+                    server.quit()
+                    raise e_error
+                else:
+                    # respuesta = Response(status=status.HTTP_200_OK)
+                    respuesta = Response(status=status.HTTP_200_OK, data={'mail_id': msg_data['mail_id']} )
+                    print(respuesta)
+                    return respuesta
+        except Exception as e_error:
+            print("Error en la conexión con el servidor")
+            print(e_error)
+            raise e_error
+        
+    def get_object(self, pk):
+        try:
+            with connection.cursor() as cursor:
+                cursor.callproc("get_mail_data", [pk])
+                # data = dictfetchall(cursor)
+                row = cursor.fetchone()
+
+                msg = {}
+                msg['Subject'] = row[0]
+                msg['From'] = row[5]
+                msg['To'] = row[16]
+                msg['Date'] = formatdate(localtime=True)
+                msg['content-type'] = 'text/html'
+                msg['content'] = row[1]
+                msg['number'] = row[3]
+                msg['from_email'] = row[6]
+                msg['from_pass'] = row[7]
+                msg['from_smtp'] = row[8]
+                msg['from_port'] = row[9]
+                msg['salutation'] = row[10]
+                msg['first_name'] = row[11]
+                msg['middle_name'] = row[12]
+                msg['last_name'] = row[13]
+                msg['lead_name'] = row[14]
+                msg['data'] = row[16]
+                msg['company_name'] = row[17]
+                msg['position'] = row[18]
+                msg['type'] = row[19]
+                msg['firma'] = row[20]
+
+                if row[15]:
+                    msg['CC'] = ', '.join(emails_cadena(row[15]))
+                else:
+                    msg['CC'] = ''
+
+                return msg
+        except Mail.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        mail = self.get_object(pk)
+        serializer = MailSerializer(mail)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        mail = self.get_object(pk)
+        serializer = MailSerializer(mail, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def post(self, request, format=None):
+        serializer = MailSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        print(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
