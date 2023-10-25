@@ -45,6 +45,7 @@ class excelFile():
             self.wb = openpyxl.load_workbook(file_name)
             print("Archivo abierto")
             print(self.wb.sheetnames)
+            print(self.wb)
             self.ws = self.wb.active
         except FileNotFoundError:
             print("El archivo no existe")
