@@ -39,10 +39,16 @@ class excelFile():
 
     def open_file(self, file_name):
         ''' Abre un archivo excel '''
-        print("Abriendo archivo: " + file_name)
-        self.file_name = file_name
-        self.wb = openpyxl.load_workbook(file_name)
-        self.ws = self.wb.active
+        try:
+            print("Abriendo archivo: " + file_name)
+            self.file_name = file_name
+            self.wb = openpyxl.load_workbook(file_name)
+            self.ws = self.wb.active
+        except FileNotFoundError:
+            print("El archivo no existe")
+        except Exception as e:
+            print("Error al abrir el archivo: " + str(e))
+            
 
     def clean_name(self, name):
         ''' Limpia el nombre de los campos '''
