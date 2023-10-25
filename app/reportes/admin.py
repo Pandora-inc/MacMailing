@@ -41,6 +41,8 @@ def procesar_excel(modeladmin, request, queryset):
         excel = excelFile()
         print(excel)
         excel.open_file(file.file.path)
+        print(excel)
+
         excel.print_datos()
 
 

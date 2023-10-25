@@ -48,7 +48,7 @@ class excelFile():
             print("El archivo no existe")
         except Exception as e:
             print("Error al abrir el archivo: " + str(e))
-            
+
 
     def clean_name(self, name):
         ''' Limpia el nombre de los campos '''
@@ -115,21 +115,26 @@ class excelFile():
 
     def get_data(self) -> tuple:
         ''' Devuelve un diccionario con los datos del excel y un diccionario con los indices '''
-        estructura, indice = self.get_structure()
-        for row in self.ws.iter_rows(min_row=2):
-            for i in range(len(row)):
-                if indice[i]:
-                    indio = self.clean_name(indice[i])
-                    indio = self.traducir_claves_dict(indio, INDICE_TRADUCCION)
+        try:
+            estructura, indice = self.get_structure()
+        
+            for row in self.ws.iter_rows(min_row=2):
+                for i in range(len(row)):
+                    if indice[i]:
+                        indio = self.clean_name(indice[i])
+                        indio = self.traducir_claves_dict(indio, INDICE_TRADUCCION)
 
-                    # TODO: Este if es una excepcion, hay que ver como solucionarlo
-                    if i == 58:
-                        indio = indio+"_dire"
-                else:
-                    indio = i
-                dato = row[i].value
-                estructura[indio].append(dato)
-
+                        # TODO: Este if es una excepcion, hay que ver como solucionarlo
+                        if i == 58:
+                            indio = indio+"_dire"
+                    else:
+                        indio = i
+                    dato = row[i].value
+                    estructura[indio].append(dato)
+        except KeyError as e:
+            print("Error de key error: " + str(e))
+        except Exception as e:
+            print("Error al obtener los datos: " + str(e))
         return estructura, indice
 
     def print_datos(self):
