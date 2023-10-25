@@ -39,6 +39,7 @@ class excelFile():
 
     def open_file(self, file_name):
         ''' Abre un archivo excel '''
+        print("Abriendo archivo: " + file_name)
         self.file_name = file_name
         self.wb = openpyxl.load_workbook(file_name)
         self.ws = self.wb.active
