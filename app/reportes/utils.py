@@ -40,12 +40,8 @@ class excelFile():
     def open_file(self, file_name):
         ''' Abre un archivo excel '''
         try:
-            print("Abriendo archivo: " + file_name)
             self.file_name = file_name
             self.wb = openpyxl.load_workbook(file_name)
-            print("Archivo abierto")
-            print(self.wb.sheetnames)
-            print(self.wb.properties)
             self.ws = self.wb.active
         except FileNotFoundError:
             print("El archivo no existe")
@@ -136,8 +132,12 @@ class excelFile():
                     estructura[indio].append(dato)
         except KeyError as e:
             print("Error de key error: " + str(e))
+            raise ValueError(str(e))
         except Exception as e:
             print("Error al obtener los datos: " + str(e))
+            raise ValueError(str(e))
+
+
         return estructura, indice
 
     def print_datos(self):

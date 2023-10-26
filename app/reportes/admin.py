@@ -36,7 +36,6 @@ def procesar_excel(modeladmin, request, queryset):
         file = ExcelFiles.objects.get(id=obj.id)
         excel = excelFile()
         excel.open_file(file.file.path)
-        print(excel)
 
         excel.print_datos()
 
