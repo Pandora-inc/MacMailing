@@ -33,11 +33,14 @@ enviar_email.short_description = "Enviar email"
 def procesar_excel(modeladmin, request, queryset):
     ''' Función para procesar los archivos excel '''
     for obj in queryset:
-        file = ExcelFiles.objects.get(id=obj.id)
-        excel = excelFile()
-        excel.open_file(file.file.path)
+        try:
+            file = ExcelFiles.objects.get(id=obj.id)
+            excel = excelFile()
+            excel.open_file(file.file.path)
 
-        excel.print_datos()
+            excel.print_datos()
+        except Exception as e:
+            messages.error(request, f"Error in excel: {e}")
 
 
 procesar_excel.short_description = "Procesar Excel"
