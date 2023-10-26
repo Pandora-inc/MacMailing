@@ -27,7 +27,7 @@ def enviar_email(modeladmin, request, queryset):
     except Exception as e:
          messages.error(request, f"Error al enviar: {e}")
 
-enviar_email.short_description = "Enviar email"
+enviar_email.short_description = "Send email"
 
 
 def procesar_excel(modeladmin, request, queryset):
@@ -40,10 +40,10 @@ def procesar_excel(modeladmin, request, queryset):
 
             excel.print_datos()
         except Exception as e:
-            messages.error(request, f"Error in excel: {e}")
+            messages.error(request, f"Error in excel, The format must be Excel Workbook (xlsx): {e}")
 
 
-procesar_excel.short_description = "Procesar Excel"
+procesar_excel.short_description = "Process Excel"
 
 
 def prepare_to_send(modeladmin, request, queryset):
@@ -54,7 +54,7 @@ def prepare_to_send(modeladmin, request, queryset):
             mail.mail = obj
             mail.save()
 
-prepare_to_send.short_description = "Preparar envio"
+prepare_to_send.short_description = "Prepare shipment"
 
 
 def template_file_propague(modeladmin, request, queryset):
@@ -281,6 +281,9 @@ class MailAdmin(admin.ModelAdmin):
         Calcula los días que faltan para el proximo envío
         '''
         last_send = obj.last_send
+        if obj.status_response:
+            return " - "
+        
         if last_send:
             today = date.today()
             pass_days = (today - last_send.date()).days
