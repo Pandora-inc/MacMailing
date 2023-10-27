@@ -299,9 +299,9 @@ class MailAdmin(admin.ModelAdmin):
             return "Today is a great day"
         
     def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
         if obj.use_template and obj.template_group and obj.send_number == 0:
             actualizar_con_template(obj.id)
-        super().save_model(request, obj, form, change)
 
 
 class MailInline(admin.TabularInline):
