@@ -7,7 +7,7 @@ from django.contrib import admin, messages
 from auxiliares.models import EmailType
 
 from .utils import excelFile
-from .actions import get_mail_data, get_template_file_and_save, prepare_email_body, send_mail
+from .actions import actualizar_con_template, get_mail_data, get_template_file_and_save, prepare_email_body, send_mail
 from .models import (Attachment, Mail, TemplateFiles, TemplatesGroup, Clientes, ClientesContact,
                      ClientesWeb, ClientesEmail, ClientesSocial, ClientesAddress, ClientesUTM, ExcelFiles, Account, MailCorp, MailsToSend)
 
@@ -297,6 +297,10 @@ class MailAdmin(admin.ModelAdmin):
                 return "Estamos atrasados"
         else:
             return "Today is a great day"
+        
+    def save_model(self, request, obj, form):
+        if obj.use_template and obj.template_group and obj.send_number == 0:
+            actualizar_con_template(obj.id)
 
 
 class MailInline(admin.TabularInline):
