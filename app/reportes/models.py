@@ -92,7 +92,7 @@ class Clientes(models.Model):
     last_updated_on = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
-        return str(self.cliente_id) + " - " + str(self.first_name) + " " + str(self.last_name) + " - " + str(self.company_name)
+        return str(self.cliente_id) + " - " + str(self.first_name) + " " + str(self.last_name) + " - " + str(self.lead_name)
 
     def add_contact(self, type, data):
         contact = ClientesContact(cliente=self, type=type, data=data)

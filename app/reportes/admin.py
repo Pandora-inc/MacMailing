@@ -275,6 +275,16 @@ class MailAdmin(admin.ModelAdmin):
                                            'template_group', 'reminder_days', 'use_template',) 
         return self.readonly_fields
     
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        # Define una función para filtrar los clientes basados en el campo 'responsable'
+        if db_field.name == "cliente":
+            if not if_admin(request.user):
+                accounts = get_response_account(request.user)
+                # clientes = Clientes.objects.filter(responsible__in=accounts)
+                # Filtra los clientes cuyo 'responsable' coincide con un ID particular
+                kwargs["queryset"] = Clientes.objects.filter(responsible__in=accounts)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
     def proximo(self, obj):
         '''
