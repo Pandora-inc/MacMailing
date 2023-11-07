@@ -58,8 +58,7 @@ class Clientes(models.Model):
     responsible = models.ForeignKey(
         MailCorp, models.RESTRICT, blank=True, null=True, related_name='responsable')
     status_information = models.CharField(max_length=32, blank=True, null=True)
-    source_information = models.CharField(
-        max_length=256, blank=True, null=True)
+    source_information = models.TextField(blank=True, null=True)
     created_by = models.ForeignKey(
         MailCorp, models.RESTRICT, blank=True, null=True, related_name='creado_por')
     modified = models.DateTimeField(blank=True, null=True)
