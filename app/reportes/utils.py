@@ -586,26 +586,34 @@ class excelFile():
         ''' 
         This method is used to get the country from the data
         '''
-        if 'country' in data:
-            return Country.objects.get(
-                description=data['country'][indice])
-        elif 'pais' in data:
-            return Country.objects.get(
-                description=data['pais'][indice])
-        else:
-            return None
-            
+        try:
+            if 'country' in data:
+                pais = data['country'][indice]
+            elif 'pais' in data:
+                pais = data['country'][indice]
+            else:
+                return None
+
+            return Country.objects.get(description=pais)
+        except Country.DoesNotExist as exc:
+            raise ValueError('The country does not exist: ' + pais) from exc
+
     def get_account(self, data: list, indice: int)-> str:
         ''' 
         This method is used to get the account from the data
         '''
-        if 'account' in data:
-            return Account.objects.get(name=data['account'][indice])
-        elif 'cuenta' in data:
-            return Account.objects.get(name=data['cuenta'][indice])
-        else:
-            return None
+        try:
+            if 'account' in data:
+                cuenta = data['account'][indice]
+            elif 'cuenta' in data:
+                cuenta = data['cuenta'][indice]
+            else:
+                return None
 
+            return Account.objects.get(name=cuenta)
+        except Account.DoesNotExist as exc:
+            raise ValueError('The account does not exist: ' + cuenta) from exc
+        
     def get_addl_type_details_other(self, data: list, indice: int)-> str:
         ''' 
         This method is used to get the addl_type_details_other from the data
