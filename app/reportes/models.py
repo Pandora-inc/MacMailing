@@ -168,7 +168,7 @@ class ClientesAddress(models.Model):
     cliente = models.ForeignKey(
         Clientes, models.RESTRICT, blank=True, null=True)
     address = models.CharField(max_length=128, blank=True, null=True)
-    street_house_no = models.CharField(max_length=32, blank=True, null=True)
+    street_house_no = models.TextField(blank=True, null=True)
     apartment_office_room_floor = models.CharField(
         max_length=128, blank=True, null=True)
     city = models.CharField(max_length=32, blank=True, null=True)
