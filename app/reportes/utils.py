@@ -373,14 +373,17 @@ class excelFile():
         '''
         This method is used to get the responsible from the data
         '''
-        if 'responsible' in data:
-            return MailCorp.objects.get(
-                name=data['responsible'][indice])
-        elif 'responsable' in data:
-            return MailCorp.objects.get(
-                name=data['responsable'][indice])
-        else:
-            return None
+        try:
+            if 'responsible' in data:
+                responsible = data['responsible'][indice]
+            elif 'responsable' in data:
+                responsible = data['responsable'][indice]
+            else:
+                return None
+        
+            return MailCorp.objects.get(name=responsible)
+        except MailCorp.DoesNotExist as exc:
+            raise ValueError('The responsible does not exist: ' + responsible) from exc
 
     def get_status_information(self, data: list, indice: int)-> str:
         '''
@@ -408,14 +411,17 @@ class excelFile():
         ''' 
         This method is used to get the created by from the data
         '''
-        if 'created_by' in data:
-            return MailCorp.objects.get(
-                name=data['created_by'][indice])
-        elif 'creado_por' in data:
-            return MailCorp.objects.get(
-                name=data['creado_por'][indice])
-        else:
-            return None
+        try:
+            if 'created_by' in data:
+                created_by = data['created_by'][indice]
+            elif 'creado_por' in data:
+                created_by = data['creado_por'][indice]
+            else:
+                return None
+
+            return MailCorp.objects.get(name=created_by)
+        except MailCorp.DoesNotExist as exc:
+            raise ValueError('The created_by does not exist: ' + created_by) from exc
 
     def get_modified(self, data: list, indice: int)-> str:
         '''
@@ -432,13 +438,18 @@ class excelFile():
         '''
         This method is used to get the modified by from the data
         '''
-        if 'modified_by' in data:
-            return MailCorp.objects.get(name=data['modified_by'][indice])
-        elif 'modificado_por' in data:
-            return MailCorp.objects.get(name=data['modificado_por'][indice])
-        else:
-            return None
+        try:
+            if 'modified_by' in data:
+                modified_by = data['modified_by'][indice]
+            elif 'modificado_por' in data:
+                modified_by = data['modificado_por'][indice]
+            else:
+                return None
 
+            return MailCorp.objects.get(name=modified_by)
+        except MailCorp.DoesNotExist as exc:
+            raise ValueError('The modified_by does not exist: ' + modified_by) from exc
+    
     def get_company_name(self, data: list, indice: int)-> str:
         '''
         This method is used to get the company name from the data

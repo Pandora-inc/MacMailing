@@ -36,14 +36,14 @@ def crear_evento(mail: Mail):
         None
 
     """
-    title = mail.subject
-    description = "Recordatorio envio de mail Nro "+str(mail.send_number)
-    start_time = mail.last_send+timedelta(days=mail.reminder_days)
-    end_time = start_time+timedelta(hours=1)
-    # user = User.objects.get(id=mail.mail_corp.user.id)
-    connection.cursor()
-
     try:
+        title = mail.send_number + ' - ' + mail.subject
+        description = "Recordatorio envio de mail Nro "+str(mail.send_number)
+        start_time = mail.last_send+timedelta(days=mail.reminder_days)
+        end_time = start_time+timedelta(hours=1)
+        # user = User.objects.get(id=mail.mail_corp.user.id)
+        connection.cursor()
+
         if Event.objects.filter(user=mail.mail_corp.user, title=title).exists():
             event = Event.objects.get(user=mail.mail_corp.user, title=title)
             event.description = description
@@ -98,18 +98,25 @@ def registro_envio_mail(id_mail: int, send_number: int):
         - The function uses the Django ORM to retrieve the 'Mail' object associated with the 'id_mail' input.
     """
     with connection.cursor() as cursor:
+        try:
+            consulta = f"UPDATE reportes_mail SET status = 1, send_number = {send_number}, last_send = NOW() WHERE id = {id_mail}"
 
-        consulta = f"UPDATE reportes_mail SET status = 1, send_number = {send_number}, last_send = NOW() WHERE id = {id_mail}"
+            cursor.execute(consulta)
+            connection.commit()
 
-        cursor.execute(consulta)
-        connection.commit()
-
-        mail = Mail.objects.get(id=id_mail)
-        crear_evento(mail)
-        
-        actualizar_con_template(id_mail)
-        print("Registro de envio de mail actualizado")
-
+            mail = Mail.objects.get(id=id_mail)
+            crear_evento(mail)
+            
+            actualizar_con_template(id_mail)
+            print("Registro de envio de mail actualizado")
+        except Mail.DoesNotExist as e_error:
+            print("Error al actualizar el registro de envio de mail")
+            print("No existe el mail")
+            raise e_error
+        except Exception as e_error:
+            print("Error al actualizar el registro de envio de mail")
+            print(e_error)
+            raise e_error
 
 def prepare_email_body(text: str, data: dict) -> str:
     ''' 
