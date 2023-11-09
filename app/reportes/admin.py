@@ -114,12 +114,12 @@ class ClientesEmailInline(admin.TabularInline):
 class ClientesAdmin(admin.ModelAdmin):
     ''' Admin View for Clientes '''
     list_display = ['cliente_id', 'last_name', 'first_name',
-                    'middle_name', 'lead_name', 'status', 'responsible']
+                    'middle_name', 'lead_name', 'status', 'responsible', 'contacted']
     search_fields = ['cliente_id', 'last_name',
-                     'lead_name', 'status', 'responsible']
+                     'lead_name', 'status', 'responsible', 'contacted']
     ordering = ['cliente_id', 'last_name',
-                'lead_name', 'status', 'responsible']
-    list_filter = ['responsible', 'lead_name']
+                'lead_name', 'status', 'responsible', 'contacted']
+    list_filter = ['contacted', 'responsible', 'lead_name']
     inlines = [ClientesEmailInline]
 
     def get_queryset(self, request):

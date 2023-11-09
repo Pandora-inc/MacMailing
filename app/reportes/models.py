@@ -89,9 +89,11 @@ class Clientes(models.Model):
         max_length=32, blank=True, null=True)
     industry_sub_type = models.CharField(max_length=32, blank=True, null=True)
     last_updated_on = models.DateTimeField(blank=True, null=True)
+    contacted = models.BooleanField(blank=True, null=True, default=False)
+    contacted_on = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
-        return str(self.cliente_id) + " - " + str(self.first_name) + " " + str(self.last_name) + " - " + str(self.lead_name)
+        return str(self.lead_name) + " - " + str(self.first_name) + " " + str(self.last_name) + " - " + str(self.cliente_id)
 
     def add_contact(self, type, data):
         contact = ClientesContact(cliente=self, type=type, data=data)
@@ -137,7 +139,7 @@ class ClientesWeb(models.Model):
     cliente = models.ForeignKey(
         Clientes, models.RESTRICT, blank=True, null=True)
     type = models.ForeignKey(WebType, models.RESTRICT, blank=True, null=True)
-    data = models.CharField(max_length=64, blank=True, null=True)
+    data = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return str(self.data)
@@ -147,7 +149,7 @@ class ClientesEmail(models.Model):
     cliente = models.ForeignKey(
         Clientes, models.RESTRICT, blank=True, null=True)
     type = models.ForeignKey(EmailType, models.RESTRICT, blank=True, null=True)
-    data = models.CharField(max_length=64, blank=True, null=True)
+    data = models.CharField(max_length=250, blank=True, null=True)
 
     def __str__(self):
         return str(self.data)
@@ -158,7 +160,7 @@ class ClientesSocial(models.Model):
         Clientes, models.RESTRICT, blank=True, null=True)
     type = models.ForeignKey(
         SocialType, models.RESTRICT, blank=True, null=True)
-    data = models.CharField(max_length=64, blank=True, null=True)
+    data = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return str(self.data)
@@ -167,7 +169,7 @@ class ClientesSocial(models.Model):
 class ClientesAddress(models.Model):
     cliente = models.ForeignKey(
         Clientes, models.RESTRICT, blank=True, null=True)
-    address = models.CharField(max_length=128, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
     street_house_no = models.TextField(blank=True, null=True)
     apartment_office_room_floor = models.CharField(
         max_length=128, blank=True, null=True)
@@ -246,6 +248,9 @@ class Mail(models.Model):
 
     def __str__(self):
         return str(self.subject)
+    
+    class Meta:
+        unique_together = ('cliente', 'mail_corp')
 
 
 class MailsToSend (models.Model):

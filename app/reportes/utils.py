@@ -8,7 +8,7 @@ from .models import Clientes, ClientesAddress, ClientesContact, ClientesEmail, C
 from django.contrib.auth.models import User
 
 
-''' 
+'''
 Class for reading and manipulating Excel files.
 
 Methods:
@@ -84,7 +84,7 @@ class excelFile():
                 return fecha_datetime
             except ValueError:
                 pass
-        
+
         raise ValueError(f"No se pudo encontrar un formato válido para la fecha: {fecha_str}")
 
 
@@ -116,7 +116,7 @@ class excelFile():
         ''' Devuelve un diccionario con los datos del excel y un diccionario con los indices '''
         try:
             estructura, indice = self.get_structure()
-        
+
             for row in self.ws.iter_rows(min_row=2):
                 for i in range(len(row)):
                     if indice[i]:
@@ -190,7 +190,6 @@ class excelFile():
             cliente.industry_sub_type = self.get_industry_sub_type(data, i)
             cliente.last_updated_on = self.get_last_updated_on(data, i)
 
-            print(cliente)
             cliente.save()
 
             direccion = ClientesAddress()
@@ -209,9 +208,7 @@ class excelFile():
             e = 0
             for clave, item in data.items():
                 if item[i]:
-                    print(indice[e])
                     nombre = self.traducir_claves_dict(indice[e], INDICE_TRADUCCION_CONTACT)
-                    print(nombre)
                     if nombre and ContactType.objects.filter(name=nombre):
                         if not ClientesContact.objects.filter(cliente=cliente, type=ContactType.objects.get(name=nombre)).exists():
                             cliente.add_contact(
@@ -380,7 +377,7 @@ class excelFile():
                 responsible = data['responsable'][indice]
             else:
                 return None
-        
+
             return MailCorp.objects.get(name=responsible)
         except MailCorp.DoesNotExist as exc:
             raise ValueError('The responsible does not exist: ' + responsible) from exc
@@ -406,9 +403,9 @@ class excelFile():
             return data['información_de_origen'][indice]
         else:
             return None
-            
+
     def get_created_by(self, data: list, indice: int)-> str:
-        ''' 
+        '''
         This method is used to get the created by from the data
         '''
         try:
@@ -449,7 +446,7 @@ class excelFile():
             return MailCorp.objects.get(name=modified_by)
         except MailCorp.DoesNotExist as exc:
             raise ValueError('The modified_by does not exist: ' + modified_by) from exc
-    
+
     def get_company_name(self, data: list, indice: int)-> str:
         '''
         This method is used to get the company name from the data
@@ -504,7 +501,7 @@ class excelFile():
             return None
 
     def get_product(self, data: list, indice: int)-> str:
-        ''' 
+        '''
         This method is used to get the product from the data
         '''
         if 'product' in data:
@@ -570,7 +567,7 @@ class excelFile():
             return None
 
     def get_customer_journey(self, data: list, indice: int)-> str:
-        ''' 
+        '''
         This method is used to get the customer journey from the data
         '''
         if 'customer_journey' in data:
@@ -584,17 +581,23 @@ class excelFile():
         '''
         This method is used to get the type from the data
         '''
-        if 'type' in data:
-            return Type.objects.get(
-                name=data['type'][indice])
-        elif 'tipo' in data:
-            return Type.objects.get(
-                name=data['tipo'][indice])
-        else:
-            return None
-            
+        try:
+            if 'type' in data:
+                type = data['type'][indice]
+            elif 'tipo' in data:
+                type = data['tipo'][indice]
+            else:
+                return None
+
+            return Type.objects.get(name=type)
+        except Type.DoesNotExist:
+            tipo = Type(name=type)
+            tipo.save()
+            return tipo
+            # raise ValueError('The type does not exist: ' + type) from exc
+
     def get_country(self, data: list, indice: int)-> str:
-        ''' 
+        '''
         This method is used to get the country from the data
         '''
         try:
@@ -606,11 +609,14 @@ class excelFile():
                 return None
 
             return Country.objects.get(description=pais)
-        except Country.DoesNotExist as exc:
-            raise ValueError('The country does not exist: ' + pais) from exc
+        except Country.DoesNotExist:
+            # raise ValueError('The country does not exist: ' + pais) from exc
+            coutry = Country(description=pais)
+            coutry.save()
+            return coutry
 
     def get_account(self, data: list, indice: int)-> str:
-        ''' 
+        '''
         This method is used to get the account from the data
         '''
         try:
@@ -624,9 +630,9 @@ class excelFile():
             return Account.objects.get(name=cuenta)
         except Account.DoesNotExist as exc:
             raise ValueError('The account does not exist: ' + cuenta) from exc
-        
+
     def get_addl_type_details_other(self, data: list, indice: int)-> str:
-        ''' 
+        '''
         This method is used to get the addl_type_details_other from the data
         '''
         if 'addl_type_details_other' in data:
@@ -688,7 +694,7 @@ class excelFile():
             return data['dirección'][indice]
         else:
             return None
-        
+
     def get_street_house_no(self, data: list, indice: int)-> str:
         if 'street_house_no' in data:
             return data['street_house_no'][indice]
