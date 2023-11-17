@@ -5,7 +5,6 @@ from .constants import INDICE_TRADUCCION, INDICE_TRADUCCION_CONTACT
 
 from auxiliares.models import ContactType, EmailType, SocialType, WebType, Country, Type
 from .models import Clientes, ClientesAddress, ClientesContact, ClientesEmail, ClientesSocial, ClientesWeb, MailCorp, Account
-from django.contrib.auth.models import User
 
 
 '''
@@ -65,8 +64,6 @@ class excelFile():
         '''
         Diccionario de traducción
         '''
-        diccionario_ingles = {}
-
         if clave in diccionario:
             return diccionario[clave]
         else:
@@ -204,7 +201,6 @@ class excelFile():
             direccion.country = self.get_country_dire(data, i)
 
             direccion.save()
-            cliente_id = int(cliente.cliente_id)
             e = 0
             for clave, item in data.items():
                 if item[i]:

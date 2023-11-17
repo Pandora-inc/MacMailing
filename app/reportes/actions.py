@@ -1,6 +1,5 @@
 
 from datetime import timedelta, datetime
-from email.mime.application import MIMEApplication
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -16,7 +15,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from django.http import Http404
-from django.contrib.auth.models import User
 from django.db import connection
 from calendarapp.models import Event
 from reportes.models import Clientes, Mail, TemplateFiles, MailsToSend
@@ -44,7 +42,7 @@ def crear_evento(mail: Mail):
         # user = User.objects.get(id=mail.mail_corp.user.id)
         connection.cursor()
 
-        if Event.objects.filter(user=mail.mail_corp.user, title=title).exists():
+        if Event.objects.filter(title=title).exists():
             event = Event.objects.get(user=mail.mail_corp.user, title=title)
             event.description = description
             event.start_time = start_time
@@ -98,7 +96,7 @@ def registro_envio_mail(id_mail: int, send_number: int):
         - This function requires the 'crear_evento' function to be defined and imported in the module.
         - The function uses the Django ORM to retrieve the 'Mail' object associated with the 'id_mail' input.
     """
-    with connection.cursor() as cursor:
+    with connection.cursor():
         try:
             mail = Mail.objects.get(id=id_mail)
             mail.status = 1

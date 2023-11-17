@@ -13,7 +13,7 @@ def timer_to_send_email(request):
       response = requests.post(api_url)
 
       if response.status_code == 200:
-         print(f'Solicitud POST exitosa a las ')
+         print('Solicitud POST exitosa')
       else:
          print(f'Error en la solicitud POST: {response.status_code} a las ')
 
