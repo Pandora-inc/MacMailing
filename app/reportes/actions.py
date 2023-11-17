@@ -1,5 +1,5 @@
 
-from datetime import timedelta
+from datetime import timedelta, datetime
 from email.mime.application import MIMEApplication
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
@@ -19,7 +19,7 @@ from django.http import Http404
 from django.contrib.auth.models import User
 from django.db import connection
 from calendarapp.models import Event
-from reportes.models import Mail, TemplateFiles, MailsToSend
+from reportes.models import Clientes, Mail, TemplateFiles, MailsToSend
 
 PRE_URL = 'projets/MacMailing/app/'
 def crear_evento(mail: Mail):
@@ -36,14 +36,14 @@ def crear_evento(mail: Mail):
         None
 
     """
-    title = mail.subject
-    description = "Recordatorio envio de mail Nro "+str(mail.send_number)
-    start_time = mail.last_send+timedelta(days=mail.reminder_days)
-    end_time = start_time+timedelta(hours=1)
-    # user = User.objects.get(id=mail.mail_corp.user.id)
-    connection.cursor()
-
     try:
+        title = str(mail.send_number) + ' - ' + str(mail.subject)
+        description = "Recordatorio envio de mail Nro "+str(mail.send_number)
+        start_time = mail.last_send+timedelta(days=mail.reminder_days)
+        end_time = start_time+timedelta(hours=1)
+        # user = User.objects.get(id=mail.mail_corp.user.id)
+        connection.cursor()
+
         if Event.objects.filter(user=mail.mail_corp.user, title=title).exists():
             event = Event.objects.get(user=mail.mail_corp.user, title=title)
             event.description = description
@@ -59,6 +59,7 @@ def crear_evento(mail: Mail):
                 end_time=end_time,
             )
     except Exception as e_error:
+        print(type(e_error))
         print("Error al crear el evento")
         print(e_error)
         raise e_error
@@ -98,18 +99,25 @@ def registro_envio_mail(id_mail: int, send_number: int):
         - The function uses the Django ORM to retrieve the 'Mail' object associated with the 'id_mail' input.
     """
     with connection.cursor() as cursor:
-
-        consulta = f"UPDATE reportes_mail SET status = 1, send_number = {send_number}, last_send = NOW() WHERE id = {id_mail}"
-
-        cursor.execute(consulta)
-        connection.commit()
-
-        mail = Mail.objects.get(id=id_mail)
-        crear_evento(mail)
-        
-        actualizar_con_template(id_mail)
-        print("Registro de envio de mail actualizado")
-
+        try:
+            mail = Mail.objects.get(id=id_mail)
+            mail.status = 1
+            mail.send_number = send_number
+            mail.last_send = datetime.now()
+            mail.save()
+            
+            crear_evento(mail)
+            
+            actualizar_con_template(id_mail)
+            print("Registro de envio de mail actualizado")
+        except Mail.DoesNotExist as e_error:
+            print("Error al actualizar el registro de envio de mail")
+            print("No existe el mail")
+            raise e_error
+        except Exception as e_error:
+            print("Error al actualizar el registro de envio de mail")
+            print(e_error)
+            raise e_error
 
 def prepare_email_body(text: str, data: dict) -> str:
     ''' 
@@ -183,6 +191,14 @@ def add_image_to_email(content: str, message: MIMEMultipart) -> str:
             message.attach(image)
     return content
 
+def register_first_email(id_mail: int) -> bool:
+
+    mail = Mail.objects.get(id=id_mail)
+    cliente = Clientes.objects.get(id=mail.cliente.id)
+    cliente.contacted = True
+    cliente.contacted_on = datetime.now()
+    cliente.save()
+
 def send_mail(id_mail: int) -> bool:
     """
     Sends an email with the given id_mail.
@@ -239,6 +255,7 @@ def send_mail(id_mail: int) -> bool:
                 server.send_message(message)
                 server.quit()
                 registro_envio_mail(id_mail, msg_data['number']+1)
+                register_first_email(id_mail)
                 return True
             except Exception as e_error:
                 print("Error en el envio del mail")

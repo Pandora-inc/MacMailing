@@ -8,7 +8,7 @@ from .models import Clientes, ClientesAddress, ClientesContact, ClientesEmail, C
 from django.contrib.auth.models import User
 
 
-''' 
+'''
 Class for reading and manipulating Excel files.
 
 Methods:
@@ -39,9 +39,15 @@ class excelFile():
 
     def open_file(self, file_name):
         ''' Abre un archivo excel '''
-        self.file_name = file_name
-        self.wb = openpyxl.load_workbook(file_name)
-        self.ws = self.wb.active
+        try:
+            self.file_name = file_name
+            self.wb = openpyxl.load_workbook(file_name)
+            self.ws = self.wb.active
+        except FileNotFoundError:
+            print("El archivo no existe")
+        except Exception as e:
+            print("Error al abrir el archivo: " + str(e))
+
 
     def clean_name(self, name):
         ''' Limpia el nombre de los campos '''
@@ -78,7 +84,7 @@ class excelFile():
                 return fecha_datetime
             except ValueError:
                 pass
-        
+
         raise ValueError(f"No se pudo encontrar un formato válido para la fecha: {fecha_str}")
 
 
@@ -108,20 +114,29 @@ class excelFile():
 
     def get_data(self) -> tuple:
         ''' Devuelve un diccionario con los datos del excel y un diccionario con los indices '''
-        estructura, indice = self.get_structure()
-        for row in self.ws.iter_rows(min_row=2):
-            for i in range(len(row)):
-                if indice[i]:
-                    indio = self.clean_name(indice[i])
-                    indio = self.traducir_claves_dict(indio, INDICE_TRADUCCION)
+        try:
+            estructura, indice = self.get_structure()
 
-                    # TODO: Este if es una excepcion, hay que ver como solucionarlo
-                    if i == 58:
-                        indio = indio+"_dire"
-                else:
-                    indio = i
-                dato = row[i].value
-                estructura[indio].append(dato)
+            for row in self.ws.iter_rows(min_row=2):
+                for i in range(len(row)):
+                    if indice[i]:
+                        indio = self.clean_name(indice[i])
+                        indio = self.traducir_claves_dict(indio, INDICE_TRADUCCION)
+
+                        # TODO: Este if es una excepcion, hay que ver como solucionarlo
+                        if i == 58:
+                            indio = indio+"_dire"
+                    else:
+                        indio = i
+                    dato = row[i].value
+                    estructura[indio].append(dato)
+        except KeyError as e:
+            print("Error de key error: " + str(e))
+            raise ValueError(str(e))
+        except Exception as e:
+            print("Error al obtener los datos: " + str(e))
+            raise ValueError(str(e))
+
 
         return estructura, indice
 
@@ -175,7 +190,6 @@ class excelFile():
             cliente.industry_sub_type = self.get_industry_sub_type(data, i)
             cliente.last_updated_on = self.get_last_updated_on(data, i)
 
-            print(cliente)
             cliente.save()
 
             direccion = ClientesAddress()
@@ -194,9 +208,7 @@ class excelFile():
             e = 0
             for clave, item in data.items():
                 if item[i]:
-                    print(indice[e])
                     nombre = self.traducir_claves_dict(indice[e], INDICE_TRADUCCION_CONTACT)
-                    print(nombre)
                     if nombre and ContactType.objects.filter(name=nombre):
                         if not ClientesContact.objects.filter(cliente=cliente, type=ContactType.objects.get(name=nombre)).exists():
                             cliente.add_contact(
@@ -358,14 +370,17 @@ class excelFile():
         '''
         This method is used to get the responsible from the data
         '''
-        if 'responsible' in data:
-            return MailCorp.objects.get(
-                name=data['responsible'][indice])
-        elif 'responsable' in data:
-            return MailCorp.objects.get(
-                name=data['responsable'][indice])
-        else:
-            return None
+        try:
+            if 'responsible' in data:
+                responsible = data['responsible'][indice]
+            elif 'responsable' in data:
+                responsible = data['responsable'][indice]
+            else:
+                return None
+
+            return MailCorp.objects.get(name=responsible)
+        except MailCorp.DoesNotExist as exc:
+            raise ValueError('The responsible does not exist: ' + responsible) from exc
 
     def get_status_information(self, data: list, indice: int)-> str:
         '''
@@ -388,19 +403,22 @@ class excelFile():
             return data['información_de_origen'][indice]
         else:
             return None
-            
+
     def get_created_by(self, data: list, indice: int)-> str:
-        ''' 
+        '''
         This method is used to get the created by from the data
         '''
-        if 'created_by' in data:
-            return MailCorp.objects.get(
-                name=data['created_by'][indice])
-        elif 'creado_por' in data:
-            return MailCorp.objects.get(
-                name=data['creado_por'][indice])
-        else:
-            return None
+        try:
+            if 'created_by' in data:
+                created_by = data['created_by'][indice]
+            elif 'creado_por' in data:
+                created_by = data['creado_por'][indice]
+            else:
+                return None
+
+            return MailCorp.objects.get(name=created_by)
+        except MailCorp.DoesNotExist as exc:
+            raise ValueError('The created_by does not exist: ' + created_by) from exc
 
     def get_modified(self, data: list, indice: int)-> str:
         '''
@@ -417,12 +435,17 @@ class excelFile():
         '''
         This method is used to get the modified by from the data
         '''
-        if 'modified_by' in data:
-            return MailCorp.objects.get(name=data['modified_by'][indice])
-        elif 'modificado_por' in data:
-            return MailCorp.objects.get(name=data['modificado_por'][indice])
-        else:
-            return None
+        try:
+            if 'modified_by' in data:
+                modified_by = data['modified_by'][indice]
+            elif 'modificado_por' in data:
+                modified_by = data['modificado_por'][indice]
+            else:
+                return None
+
+            return MailCorp.objects.get(name=modified_by)
+        except MailCorp.DoesNotExist as exc:
+            raise ValueError('The modified_by does not exist: ' + modified_by) from exc
 
     def get_company_name(self, data: list, indice: int)-> str:
         '''
@@ -478,7 +501,7 @@ class excelFile():
             return None
 
     def get_product(self, data: list, indice: int)-> str:
-        ''' 
+        '''
         This method is used to get the product from the data
         '''
         if 'product' in data:
@@ -544,7 +567,7 @@ class excelFile():
             return None
 
     def get_customer_journey(self, data: list, indice: int)-> str:
-        ''' 
+        '''
         This method is used to get the customer journey from the data
         '''
         if 'customer_journey' in data:
@@ -558,41 +581,58 @@ class excelFile():
         '''
         This method is used to get the type from the data
         '''
-        if 'type' in data:
-            return Type.objects.get(
-                name=data['type'][indice])
-        elif 'tipo' in data:
-            return Type.objects.get(
-                name=data['tipo'][indice])
-        else:
-            return None
-            
+        try:
+            if 'type' in data:
+                type = data['type'][indice]
+            elif 'tipo' in data:
+                type = data['tipo'][indice]
+            else:
+                return None
+
+            return Type.objects.get(name=type)
+        except Type.DoesNotExist:
+            tipo = Type(name=type)
+            tipo.save()
+            return tipo
+            # raise ValueError('The type does not exist: ' + type) from exc
+
     def get_country(self, data: list, indice: int)-> str:
-        ''' 
+        '''
         This method is used to get the country from the data
         '''
-        if 'country' in data:
-            return Country.objects.get(
-                description=data['country'][indice])
-        elif 'pais' in data:
-            return Country.objects.get(
-                description=data['pais'][indice])
-        else:
-            return None
-            
+        try:
+            if 'country' in data:
+                pais = data['country'][indice]
+            elif 'pais' in data:
+                pais = data['country'][indice]
+            else:
+                return None
+
+            return Country.objects.get(description=pais)
+        except Country.DoesNotExist:
+            # raise ValueError('The country does not exist: ' + pais) from exc
+            coutry = Country(description=pais)
+            coutry.save()
+            return coutry
+
     def get_account(self, data: list, indice: int)-> str:
-        ''' 
+        '''
         This method is used to get the account from the data
         '''
-        if 'account' in data:
-            return Account.objects.get(name=data['account'][indice])
-        elif 'cuenta' in data:
-            return Account.objects.get(name=data['cuenta'][indice])
-        else:
-            return None
+        try:
+            if 'account' in data:
+                cuenta = data['account'][indice]
+            elif 'cuenta' in data:
+                cuenta = data['cuenta'][indice]
+            else:
+                return None
+
+            return Account.objects.get(name=cuenta)
+        except Account.DoesNotExist as exc:
+            raise ValueError('The account does not exist: ' + cuenta) from exc
 
     def get_addl_type_details_other(self, data: list, indice: int)-> str:
-        ''' 
+        '''
         This method is used to get the addl_type_details_other from the data
         '''
         if 'addl_type_details_other' in data:
@@ -654,7 +694,7 @@ class excelFile():
             return data['dirección'][indice]
         else:
             return None
-        
+
     def get_street_house_no(self, data: list, indice: int)-> str:
         if 'street_house_no' in data:
             return data['street_house_no'][indice]

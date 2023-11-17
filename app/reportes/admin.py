@@ -7,7 +7,7 @@ from django.contrib import admin, messages
 from auxiliares.models import EmailType
 
 from .utils import excelFile
-from .actions import get_mail_data, get_template_file_and_save, prepare_email_body, send_mail
+from .actions import actualizar_con_template, get_mail_data, get_template_file_and_save, prepare_email_body, send_mail
 from .models import (Attachment, Mail, TemplateFiles, TemplatesGroup, Clientes, ClientesContact,
                      ClientesWeb, ClientesEmail, ClientesSocial, ClientesAddress, ClientesUTM, ExcelFiles, Account, MailCorp, MailsToSend)
 
@@ -27,19 +27,23 @@ def enviar_email(modeladmin, request, queryset):
     except Exception as e:
          messages.error(request, f"Error al enviar: {e}")
 
-enviar_email.short_description = "Enviar email"
+enviar_email.short_description = "Send email"
 
 
 def procesar_excel(modeladmin, request, queryset):
     ''' Función para procesar los archivos excel '''
     for obj in queryset:
-        file = ExcelFiles.objects.get(id=obj.id)
-        excel = excelFile()
-        excel.open_file(file.file.path)
-        excel.print_datos()
+        try:
+            file = ExcelFiles.objects.get(id=obj.id)
+            excel = excelFile()
+            excel.open_file(file.file.path)
+
+            excel.print_datos()
+        except Exception as e:
+            messages.error(request, f"Error in excel, The format must be Excel Workbook (xlsx): {e}")
 
 
-procesar_excel.short_description = "Procesar Excel"
+procesar_excel.short_description = "Process Excel"
 
 
 def prepare_to_send(modeladmin, request, queryset):
@@ -50,7 +54,7 @@ def prepare_to_send(modeladmin, request, queryset):
             mail.mail = obj
             mail.save()
 
-prepare_to_send.short_description = "Preparar envio"
+prepare_to_send.short_description = "Prepare shipment"
 
 
 def template_file_propague(modeladmin, request, queryset):
@@ -110,12 +114,12 @@ class ClientesEmailInline(admin.TabularInline):
 class ClientesAdmin(admin.ModelAdmin):
     ''' Admin View for Clientes '''
     list_display = ['cliente_id', 'last_name', 'first_name',
-                    'middle_name', 'lead_name', 'status', 'responsible']
+                    'middle_name', 'lead_name', 'status', 'responsible', 'contacted']
     search_fields = ['cliente_id', 'last_name',
-                     'lead_name', 'status', 'responsible']
+                     'lead_name', 'status', 'responsible', 'contacted']
     ordering = ['cliente_id', 'last_name',
-                'lead_name', 'status', 'responsible']
-    list_filter = ['responsible', 'lead_name']
+                'lead_name', 'status', 'responsible', 'contacted']
+    list_filter = ['contacted', 'responsible', 'lead_name']
     inlines = [ClientesEmailInline]
 
     def get_queryset(self, request):
@@ -271,12 +275,25 @@ class MailAdmin(admin.ModelAdmin):
                                            'template_group', 'reminder_days', 'use_template',) 
         return self.readonly_fields
     
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        # Define una función para filtrar los clientes basados en el campo 'responsable'
+        if db_field.name == "cliente":
+            if not if_admin(request.user):
+                accounts = get_response_account(request.user)
+                # clientes = Clientes.objects.filter(responsible__in=accounts)
+                # Filtra los clientes cuyo 'responsable' coincide con un ID particular
+                kwargs["queryset"] = Clientes.objects.filter(responsible__in=accounts)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
     def proximo(self, obj):
         '''
         Calcula los días que faltan para el proximo envío
         '''
         last_send = obj.last_send
+        if obj.status_response:
+            return " - "
+        
         if last_send:
             today = date.today()
             pass_days = (today - last_send.date()).days
@@ -290,6 +307,11 @@ class MailAdmin(admin.ModelAdmin):
                 return "Estamos atrasados"
         else:
             return "Today is a great day"
+        
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if obj.use_template and obj.template_group and obj.send_number == 0:
+            actualizar_con_template(obj.id)
 
 
 class MailInline(admin.TabularInline):
