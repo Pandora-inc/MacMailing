@@ -45,6 +45,7 @@ def crear_evento(mail: Mail):
         connection.cursor()
 
         if Event.objects.filter(title=title).exists():
+            print_r("Evento ya existe")
             event = Event.objects.get(title=title)
             event.description = description
             event.start_time = start_time
