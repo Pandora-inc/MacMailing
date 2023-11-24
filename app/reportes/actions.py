@@ -43,7 +43,7 @@ def crear_evento(mail: Mail):
         connection.cursor()
 
         if Event.objects.filter(title=title).exists():
-            event = Event.objects.get(user=mail.mail_corp.user, title=title)
+            event = Event.objects.get(title=title)
             event.description = description
             event.start_time = start_time
             event.end_time = end_time
