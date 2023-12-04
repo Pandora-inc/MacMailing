@@ -135,7 +135,6 @@ def get_mail_data(id_mail: int) -> dict:
     with connection.cursor() as cursor:
         cursor.callproc("get_mail_data", [id_mail])
         row = cursor.fetchone()
-        usuario_activo = get_user()
 
         msg = {}
         msg['Subject'] = row[0]
@@ -160,8 +159,8 @@ def get_mail_data(id_mail: int) -> dict:
         msg['type'] = row[19]
         msg['firma'] = row[20]
 
-        msg['user_name'] = usuario_activo.first_name
-        msg['user_last_name'] = usuario_activo.last_name
+        msg['user_name'] = row[21]
+        msg['user_last_name'] = row[22]
 
         if row[15]:
             msg['CC'] = ', '.join(emails_cadena(row[15]))

@@ -21,10 +21,13 @@ CREATE DEFINER=`iberlot`@`%` PROCEDURE IF NOT EXISTS get_mail_data (IN mail_id I
         clientes.company_name, 
         clientes.position, 
         auxiliares_type.name, 
-        reportes_mailcorp.firma 
+        reportes_mailcorp.firma,
+        auth_user.first_name,
+        auth_user.last_name
     FROM 
         reportes_mail 
         INNER JOIN reportes_mailcorp ON reportes_mailcorp.id = reportes_mail.mail_corp_id 
+        INNER JOIN auth_user ON auth_user.id = reportes_mailcorp.user_id
         INNER JOIN clientes ON clientes.id = reportes_mail.cliente_id 
         INNER JOIN reportes_clientesemail ON reportes_clientesemail.cliente_id = reportes_mail.cliente_id 
         INNER JOIN auxiliares_type ON auxiliares_type.id = clientes.type_id 
