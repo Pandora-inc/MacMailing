@@ -94,14 +94,15 @@ class AccountAdmin(admin.ModelAdmin):
     ordering = ['name', 'supervisor']
     list_filter = ['supervisor']
 
-    def get_queryset(self, request):
-        # Obtener el queryset base
-        queryset = super().get_queryset(request)
+    # DEPRECATED - Se usa get_queryset
+    # def get_queryset(self, request):
+    #     # Obtener el queryset base
+    #     queryset = super().get_queryset(request)
 
-        if not if_admin(request.user):
-            queryset = queryset.filter(supervisor=request.user)
+    #     if not if_admin(request.user):
+    #         queryset = queryset.filter(supervisor=request.user)
 
-        return queryset
+    #     return queryset
 
 
 class ClientesEmailInline(admin.TabularInline):
@@ -251,7 +252,7 @@ class MailAdmin(admin.ModelAdmin):
     ordering = ['mail_corp', 'cliente', 'subject',
                 'send_number', 'status', 'last_send']
     list_filter = ['mail_corp', 'send_number', 'status', 'status_response']
-    readonly_fields = ('last_send', 'send_number', 'created')
+    readonly_fields = ('body', 'subject', 'last_send', 'send_number', 'created')
 
     actions = [prepare_to_send]
     
@@ -293,7 +294,7 @@ class MailAdmin(admin.ModelAdmin):
         last_send = obj.last_send
         if obj.status_response:
             return " - "
-        
+
         if last_send:
             today = date.today()
             pass_days = (today - last_send.date()).days
@@ -410,17 +411,18 @@ class TemplateGroupAdmin(admin.ModelAdmin):
     readonly_fields = ('create_user',)
     ordering = ['name', 'mail_corp']
 
-    def get_queryset(self, request):
-        '''
-        Filtra los grupos de templates por la cuenta del usuario
-        '''
-        queryset = super().get_queryset(request)
+    # DEPRECATED - Se usa get_queryset
+    # def get_queryset(self, request):
+    #     '''
+    #     Filtra los grupos de templates por la cuenta del usuario
+    #     '''
+    #     queryset = super().get_queryset(request)
 
-        if not if_admin(request.user):
-            accounts = get_response_account(request.user)
-            queryset = queryset.filter(mail_corp__in=accounts)
+    #     if not if_admin(request.user):
+    #         accounts = get_response_account(request.user)
+    #         queryset = queryset.filter(mail_corp__in=accounts)
 
-        return queryset
+    #     return queryset
     
     def save_model(self, request, obj, form, change):
         if not obj.create_user:
@@ -438,18 +440,19 @@ class TemplateFilesAdmin(admin.ModelAdmin):
     readonly_fields = ('create_user',)
     ordering = ['name', 'orden', 'template_group']
 
-    def get_queryset(self, request):
-        '''
-        Filtra los templates por la cuenta del usuario
-        '''
-        queryset = super().get_queryset(request)
+    # DEPRECATED - Se usa get_queryset
+    # def get_queryset(self, request):
+    #     '''
+    #     Filtra los templates por la cuenta del usuario
+    #     '''
+    #     queryset = super().get_queryset(request)
 
-        if not if_admin(request.user):
-            accounts = get_response_account(request.user)
-            groups = TemplatesGroup.objects.filter(mail_corp__in=accounts)
-            queryset = queryset.filter(template_group__in=groups)
+    #     if not if_admin(request.user):
+    #         accounts = get_response_account(request.user)
+    #         groups = TemplatesGroup.objects.filter(mail_corp__in=accounts)
+    #         queryset = queryset.filter(template_group__in=groups)
 
-        return queryset
+    #     return queryset
         
     def save_model(self, request, obj, form, change):
         if not obj.create_user:

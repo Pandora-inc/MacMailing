@@ -16,6 +16,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from django.http import Http404
 from django.db import connection
+from django.contrib.auth import get_user
 from calendarapp.models import Event
 from reportes.models import Clientes, Mail, TemplateFiles, MailsToSend
 
@@ -134,6 +135,7 @@ def get_mail_data(id_mail: int) -> dict:
     with connection.cursor() as cursor:
         cursor.callproc("get_mail_data", [id_mail])
         row = cursor.fetchone()
+        usuario_activo = get_user()
 
         msg = {}
         msg['Subject'] = row[0]
@@ -157,6 +159,9 @@ def get_mail_data(id_mail: int) -> dict:
         msg['position'] = row[18]
         msg['type'] = row[19]
         msg['firma'] = row[20]
+
+        msg['user_name'] = usuario_activo.first_name
+        msg['user_last_name'] = usuario_activo.last_name
 
         if row[15]:
             msg['CC'] = ', '.join(emails_cadena(row[15]))
