@@ -255,7 +255,7 @@ class MailAdmin(admin.ModelAdmin):
     readonly_fields = ('body', 'subject', 'last_send', 'send_number', 'created')
 
     actions = [prepare_to_send]
-    
+
     def get_queryset(self, request):
         # Obtener el queryset base
         queryset = super().get_queryset(request)

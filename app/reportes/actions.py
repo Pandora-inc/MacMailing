@@ -585,6 +585,9 @@ class Email_API(APIView):
                 msg['type'] = row[19]
                 msg['firma'] = row[20]
 
+                msg['user_name'] = row[21]
+                msg['user_last_name'] = row[22]
+
                 if row[15]:
                     msg['CC'] = ', '.join(emails_cadena(row[15]))
                 else:
