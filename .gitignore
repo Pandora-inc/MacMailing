@@ -155,3 +155,5 @@ data/db/ibdata1
 data/db/mysql.ibd
 data/db/undo_001
 data/db/undo_002
+data/db/*
+
