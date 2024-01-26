@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'reportes',
     'ckeditor', # CKEditor config
     'ckeditor_uploader', # CKEditor media uploader
-    "calendarapp.apps.CalendarappConfig",
+    'calendarapp',
 ]
 
 MIDDLEWARE = [
