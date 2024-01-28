@@ -21,6 +21,7 @@ from calendarapp.models import Event
 from reportes.models import Clientes, Mail, TemplateFiles, MailsToSend
 
 PRE_URL = 'projets/MacMailing/app/'
+
 def crear_evento(mail: Mail):
     """
     Creates or updates an event in the calendar app based on the information provided in a 'Mail' object.
@@ -44,6 +45,7 @@ def crear_evento(mail: Mail):
         connection.cursor()
 
         if Event.objects.filter(title=title).exists():
+            print_r("Evento ya existe")
             event = Event.objects.get(title=title)
             event.description = description
             event.start_time = start_time

@@ -73,10 +73,10 @@ export MYSQLCLIENT_CFLAGS=`pkg-config mysqlclient --cflags`
 export MYSQLCLIENT_LDFLAGS=`pkg-config mysqlclient --libs`
 
 cd cd /home/MacMalling_usr/.local/lib/python3.8/site-packages/django/contrib/admin/static/admin/js/admin/
-ln -s ~/projets/MacMailing/app/static_files/admin/js/admin/admin_script.js admin_script.js
+ln -s ~/MacMailing/app/static_files/admin/js/admin/admin_script.js admin_script.js
 
 ssh -i keys/MacMallingAppPc_key.pem MacMalling_usr@macmailling.eastus.cloudapp.azure.com
 
 python3 manage.py runserver 0.0.0.0:8000
-python3 projets/MacMailing/app/manage.py runserver 0.0.0.0:8000
+python3 ~/MacMailing/app/manage.py runserver 0.0.0.0:8000
 ```
