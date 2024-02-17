@@ -23,6 +23,7 @@ from reportes.models import Clientes, Mail, TemplateFiles, MailsToSend
 
 
 PRE_URL = str(Path(__file__).resolve().parent.parent)
+PRE_URL = PRE_URL+'/'
 
 def crear_evento(mail: Mail):
     """
@@ -188,7 +189,7 @@ def add_image_to_email(content: str, message: MIMEMultipart) -> str:
         # FIXME: Esto es un parche para que funcione en el servidor de producción
         # Hay que buscar una solución más elegante
         # Por alguna razón, en el servidor de producción, la ruta de la aplicación no es tomada como la raíz
-        imagen_url = PRE_URL+'/'+imagen_url
+        imagen_url = PRE_URL+imagen_url
 
         with open(imagen_url, 'rb') as file:
             image = MIMEImage(file.read())
