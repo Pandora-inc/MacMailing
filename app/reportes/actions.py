@@ -6,6 +6,7 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.utils import formatdate
 from email import encoders
+from pathlib import Path
 import string
 import smtplib
 import ssl
@@ -20,7 +21,8 @@ from django.contrib.auth import get_user
 from calendarapp.models import Event
 from reportes.models import Clientes, Mail, TemplateFiles, MailsToSend
 
-PRE_URL = 'projets/MacMailing/app/'
+
+PRE_URL = str(Path(__file__).resolve().parent.parent)
 
 def crear_evento(mail: Mail):
     """
@@ -45,7 +47,7 @@ def crear_evento(mail: Mail):
         connection.cursor()
 
         if Event.objects.filter(title=title).exists():
-            print_r("Evento ya existe")
+            print ("Evento ya existe")
             event = Event.objects.get(title=title)
             event.description = description
             event.start_time = start_time
@@ -106,9 +108,9 @@ def registro_envio_mail(id_mail: int, send_number: int):
             mail.send_number = send_number
             mail.last_send = datetime.now()
             mail.save()
-            
+
             crear_evento(mail)
-            
+
             actualizar_con_template(id_mail)
             print("Registro de envio de mail actualizado")
         except Mail.DoesNotExist as e_error:
@@ -121,7 +123,7 @@ def registro_envio_mail(id_mail: int, send_number: int):
             raise e_error
 
 def prepare_email_body(text: str, data: dict) -> str:
-    ''' 
+    '''
     Prepara el cuerpo del mail con los datos del cliente.
     Reemplaza las variables {{}} por los datos del cliente.
     '''
@@ -182,11 +184,11 @@ def add_image_to_email(content: str, message: MIMEMultipart) -> str:
         imagen_name = imagen_url[imagen_url.rfind('/')+1:]
         content = content.replace(
             '/'+imagen_url_original, 'cid:'+imagen_name[:imagen_name.find('.')])
-        
-        # FIXME: Esto es un parche para que funcione en el servidor de producción 
-        # Hay que buscar una solución más elegante 
+
+        # FIXME: Esto es un parche para que funcione en el servidor de producción
+        # Hay que buscar una solución más elegante
         # Por alguna razón, en el servidor de producción, la ruta de la aplicación no es tomada como la raíz
-        imagen_url = PRE_URL+imagen_url
+        imagen_url = PRE_URL+'/'+imagen_url
 
         with open(imagen_url, 'rb') as file:
             image = MIMEImage(file.read())
@@ -269,7 +271,7 @@ def send_mail(id_mail: int) -> bool:
         print("Error en la conexión con el servidor")
         print(e_error)
         raise e_error
-    
+
 def send_mail_api(request, id_mail: int) -> bool:
     """
     Sends an email with the given id_mail.
@@ -335,7 +337,7 @@ def send_mail_api(request, id_mail: int) -> bool:
         print("Error en la conexión con el servidor")
         print(e_error)
         raise e_error
-    
+
 def get_template_file_and_save(id_template: int):
     """
     Retrieves a template file from the database, reads its contents, and saves the contents as text in the same template object.
@@ -437,10 +439,10 @@ def get_next_email_data() -> dict:
     with connection.cursor() as cursor:
         cursor.callproc("get_next_mail_to_send", [])
         row = cursor.fetchone()
-        
+
         if row is None:
             return None
-        
+
         msg = {}
         msg['Subject'] = row[0]
         msg['From'] = row[5]
@@ -556,7 +558,7 @@ class Email_API(APIView):
             print("Error en la conexión con el servidor")
             print(e_error)
             raise e_error
-        
+
     def get_object(self, pk):
         try:
             with connection.cursor() as cursor:
@@ -611,7 +613,7 @@ class Email_API(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def post(self, request, format=None):
         serializer = MailSerializer(data=request.data)
         if serializer.is_valid():
