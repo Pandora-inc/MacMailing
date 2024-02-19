@@ -44,7 +44,7 @@ class MailCorp(models.Model):
 
 class Clientes(models.Model):
     """ Modelo para el registro de los clientes """
-    cliente_id = models.IntegerField(blank=True, null=True)
+    cliente_id = models.IntegerField(unique=True)
     status = models.CharField(max_length=32, blank=True, null=True)
     lead_name = models.CharField(max_length=64, blank=True, null=True)
     salutation = models.CharField(

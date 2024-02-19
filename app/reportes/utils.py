@@ -150,8 +150,13 @@ class excelFile():
                 cliente.cliente_id = data['id'][i]
                 accion = "creado"
             else:
-                cliente = Clientes.objects.get(cliente_id=data['id'][i])
-                accion = "actualizado"
+                try:
+                    cliente = Clientes.objects.get(cliente_id=data['id'][i])
+                    accion = "actualizado"
+                except Clientes.MultipleObjectsReturned:    
+                    cliente = Clientes.objects.filter(cliente_id=data['id'][i]).first()
+                    accion = "actualizado"
+                    raise ValueError(f"Se encontraron multiples clientes con el id: {data['id'][i]}")  
 
             cliente.status = self.get_status(data, i)
             cliente.lead_name = self.get_lead_name(data, i)

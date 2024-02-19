@@ -80,3 +80,9 @@ ssh -i keys/MacMallingAppPc_key.pem MacMalling_usr@macmailling.eastus.cloudapp.a
 python3 manage.py runserver 0.0.0.0:8000
 python3 ~/MacMailing/app/manage.py runserver 0.0.0.0:8000
 ```
+
+
+
+
+crontab -e
+@reboot nohup python3 ~/projets/MacMailing/app/manage.py runserver 0.0.0.0:8000>app.log & 
