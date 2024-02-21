@@ -177,26 +177,32 @@ def get_mail_data(id_mail: int) -> dict:
 def add_image_to_email(content: str, message: MIMEMultipart) -> str:
     """ Función que localiza y formatea las imágenes que se encuentran en el contenido del mail. """
     inicio = content.find('src="/media/uploads')
-    if inicio != -1:
-        imagen_url = content.replace('/media/', '/static_media/')
-        fin = imagen_url.find('"', inicio+5)
-        imagen_url = imagen_url[inicio+6:fin]
-        imagen_url_original = imagen_url.replace('static_media/', 'media/')
-        imagen_name = imagen_url[imagen_url.rfind('/')+1:]
-        content = content.replace(
-            '/'+imagen_url_original, 'cid:'+imagen_name[:imagen_name.find('.')])
+    try:
+        if inicio != -1:
+            imagen_url = content.replace('/media/', '/static_media/')
+            fin = imagen_url.find('"', inicio+5)
+            imagen_url = imagen_url[inicio+6:fin]
+            imagen_url_original = imagen_url.replace('static_media/', 'media/')
+            imagen_name = imagen_url[imagen_url.rfind('/')+1:]
+            content = content.replace(
+                '/'+imagen_url_original, 'cid:'+imagen_name[:imagen_name.find('.')])
 
-        # FIXME: Esto es un parche para que funcione en el servidor de producción
-        # Hay que buscar una solución más elegante
-        # Por alguna razón, en el servidor de producción, la ruta de la aplicación no es tomada como la raíz
-        imagen_url = PRE_URL+imagen_url
+            imagen_url = PRE_URL+imagen_url
 
-        with open(imagen_url, 'rb') as file:
-            image = MIMEImage(file.read())
-            image.add_header('Content-ID', '<' +
-                             imagen_name[:imagen_name.find('.')]+'>')
-            message.attach(image)
-    return content
+            with open(imagen_url, 'rb') as file:
+                image = MIMEImage(file.read())
+                image.add_header('Content-ID', '<' +
+                                imagen_name[:imagen_name.find('.')]+'>')
+                message.attach(image)
+        return content
+    except FileNotFoundError as e_error:
+        print("Error al agregar la imagen al mail")
+        print(e_error)
+        raise e_error
+    except Exception as e_error:
+        print("Error al agregar la imagen al mail")
+        print(e_error)
+        raise e_error
 
 def register_first_email(id_mail: int) -> bool:
 
@@ -512,19 +518,27 @@ class EmailAPI(APIView):
         content = msg_data['content']+msg_data['firma']
 
         message.attach(MIMEText(content, "html"))
+        try:
+            with connection.cursor() as cursor:
+                cursor.callproc("get_mail_attachment", [msg_data['mail_id']])
+                attachment = cursor.fetchall()
 
-        with connection.cursor() as cursor:
-            cursor.callproc("get_mail_attachment", [msg_data['mail_id']])
-            attachment = cursor.fetchall()
-
-            for f in attachment:
-                with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
-                    part = MIMEBase('application', 'octet-stream')
-                    part.set_payload(file.read())
-                    encoders.encode_base64(part)
-                    filename = f[4]+"."+f[5].split(".")[-1]
-                    part.add_header('Content-Disposition', f'attachment; filename={filename}')
-                    message.attach(part)
+                for f in attachment:
+                    with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
+                        part = MIMEBase('application', 'octet-stream')
+                        part.set_payload(file.read())
+                        encoders.encode_base64(part)
+                        filename = f[4]+"."+f[5].split(".")[-1]
+                        part.add_header('Content-Disposition', f'attachment; filename={filename}')
+                        message.attach(part)
+        except Exception as e_error:
+            print("Error al obtener los adjuntos")
+            print(e_error)
+            
+            # respuesta = Response(status=status.HTTP_200_OK)
+            respuesta = Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, data="Error con los adjuntos" )
+            print(respuesta)
+            return respuesta
 
         context = ssl.create_default_context()
         try:
