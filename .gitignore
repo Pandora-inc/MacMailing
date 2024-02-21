@@ -135,3 +135,4 @@ app/static_media/excel_files/*
 keys/
 *.dblwr
 data\*
+app/static_media/*
