@@ -13,6 +13,18 @@ CURRENCYS = [('US Dollar', 'US Dollar'),]
 
 
 class Account(models.Model):
+    """
+    Account class represents an account in the system.
+
+    Attributes:
+        name (str): The name of the account.
+        supervisor (User): The supervisor of the account.
+        created (datetime): The date and time when the account was created.
+
+    Methods:
+        __str__(): Returns a string representation of the account.
+
+    """
     name = models.CharField(max_length=64, blank=True, null=True)
     supervisor = models.ForeignKey(
         User, models.RESTRICT, blank=True, null=True)
@@ -248,7 +260,7 @@ class Mail(models.Model):
 
     def __str__(self):
         return str(self.subject)
-    
+
     class Meta:
         unique_together = ('cliente', 'mail_corp')
 
@@ -260,6 +272,9 @@ class MailsToSend (models.Model):
         User, models.RESTRICT, blank=True, null=True)
     date_approved = models.DateTimeField(blank=True, null=True)
     approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return str(self.mail)
 
 
 class UserAcount(models.Model):
