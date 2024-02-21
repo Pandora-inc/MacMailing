@@ -177,26 +177,32 @@ def get_mail_data(id_mail: int) -> dict:
 def add_image_to_email(content: str, message: MIMEMultipart) -> str:
     """ Función que localiza y formatea las imágenes que se encuentran en el contenido del mail. """
     inicio = content.find('src="/media/uploads')
-    if inicio != -1:
-        imagen_url = content.replace('/media/', '/static_media/')
-        fin = imagen_url.find('"', inicio+5)
-        imagen_url = imagen_url[inicio+6:fin]
-        imagen_url_original = imagen_url.replace('static_media/', 'media/')
-        imagen_name = imagen_url[imagen_url.rfind('/')+1:]
-        content = content.replace(
-            '/'+imagen_url_original, 'cid:'+imagen_name[:imagen_name.find('.')])
+    try:
+        if inicio != -1:
+            imagen_url = content.replace('/media/', '/static_media/')
+            fin = imagen_url.find('"', inicio+5)
+            imagen_url = imagen_url[inicio+6:fin]
+            imagen_url_original = imagen_url.replace('static_media/', 'media/')
+            imagen_name = imagen_url[imagen_url.rfind('/')+1:]
+            content = content.replace(
+                '/'+imagen_url_original, 'cid:'+imagen_name[:imagen_name.find('.')])
 
-        # FIXME: Esto es un parche para que funcione en el servidor de producción
-        # Hay que buscar una solución más elegante
-        # Por alguna razón, en el servidor de producción, la ruta de la aplicación no es tomada como la raíz
-        imagen_url = PRE_URL+imagen_url
+            imagen_url = PRE_URL+imagen_url
 
-        with open(imagen_url, 'rb') as file:
-            image = MIMEImage(file.read())
-            image.add_header('Content-ID', '<' +
-                             imagen_name[:imagen_name.find('.')]+'>')
-            message.attach(image)
-    return content
+            with open(imagen_url, 'rb') as file:
+                image = MIMEImage(file.read())
+                image.add_header('Content-ID', '<' +
+                                imagen_name[:imagen_name.find('.')]+'>')
+                message.attach(image)
+        return content
+    except FileNotFoundError as e_error:
+        print("Error al agregar la imagen al mail")
+        print(e_error)
+        raise e_error
+    except Exception as e_error:
+        print("Error al agregar la imagen al mail")
+        print(e_error)
+        raise e_error
 
 def register_first_email(id_mail: int) -> bool:
 
@@ -341,7 +347,8 @@ def send_mail_api(request, id_mail: int) -> bool:
 
 def get_template_file_and_save(id_template: int):
     """
-    Retrieves a template file from the database, reads its contents, and saves the contents as text in the same template object.
+    Retrieves a template file from the database, reads its contents, 
+    and saves the contents as text in the same template object.
 
     Args:
         id_template (int): The ID of the template file to retrieve from the database.
@@ -476,7 +483,7 @@ def get_next_email_data() -> dict:
 
         return msg
 
-class Email_API(APIView):
+class EmailAPI(APIView):
     """
     API endpoint that allows emails to be sent.
     """
@@ -500,6 +507,7 @@ class Email_API(APIView):
         message['From'] = msg_data['from_email']
         message['To'] = msg_data['To']
         message['Subject'] = msg_data['Subject']
+        message['cc'] = msg_data['CC']
 
         msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
         msg_data['firma'] = prepare_email_body(msg_data['firma'], msg_data)
@@ -510,18 +518,27 @@ class Email_API(APIView):
         content = msg_data['content']+msg_data['firma']
 
         message.attach(MIMEText(content, "html"))
+        try:
+            with connection.cursor() as cursor:
+                cursor.callproc("get_mail_attachment", [msg_data['mail_id']])
+                attachment = cursor.fetchall()
 
-        with connection.cursor() as cursor:
-            cursor.callproc("get_mail_attachment", [msg_data['mail_id']])
-            attachment = cursor.fetchall()
-
-            for f in attachment:
-                with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
-                    part = MIMEBase('application', 'octet-stream')
-                    part.set_payload(file.read())
-                    encoders.encode_base64(part)
-                    part.add_header('Content-Disposition', f'attachment; filename={f[4]+"."+f[5].split(".")[-1]}')
-                    message.attach(part)
+                for f in attachment:
+                    with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
+                        part = MIMEBase('application', 'octet-stream')
+                        part.set_payload(file.read())
+                        encoders.encode_base64(part)
+                        filename = f[4]+"."+f[5].split(".")[-1]
+                        part.add_header('Content-Disposition', f'attachment; filename={filename}')
+                        message.attach(part)
+        except Exception as e_error:
+            print("Error al obtener los adjuntos")
+            print(e_error)
+            
+            # respuesta = Response(status=status.HTTP_200_OK)
+            respuesta = Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, data="Error con los adjuntos" )
+            print(respuesta)
+            return respuesta
 
         context = ssl.create_default_context()
         try:
@@ -561,6 +578,42 @@ class Email_API(APIView):
             raise e_error
 
     def get_object(self, pk):
+        """
+        Get the email object with the specified primary key (pk).
+
+        Args:
+            pk (int): The primary key of the email object.
+
+        Returns:
+            dict: A dictionary containing the email data with the following keys:
+                - 'Subject': The subject of the email.
+                - 'From': The sender of the email.
+                - 'To': The recipient of the email.
+                - 'Date': The date of the email.
+                - 'content-type': The content type of the email.
+                - 'content': The content of the email.
+                - 'number': The number of the email.
+                - 'from_email': The sender's email address.
+                - 'from_pass': The sender's email password.
+                - 'from_smtp': The SMTP server for sending the email.
+                - 'from_port': The port number for the SMTP server.
+                - 'salutation': The salutation in the email.
+                - 'first_name': The first name of the recipient.
+                - 'middle_name': The middle name of the recipient.
+                - 'last_name': The last name of the recipient.
+                - 'lead_name': The lead name in the email.
+                - 'data': The data in the email.
+                - 'company_name': The company name in the email.
+                - 'position': The position in the email.
+                - 'type': The type of the email.
+                - 'firma': The signature in the email.
+                - 'user_name': The user's name in the email.
+                - 'user_last_name': The user's last name in the email.
+                - 'CC': The CC recipients of the email, separated by commas. Empty string if no CC recipients.
+
+        Raises:
+            Http404: If the email object with the specified primary key does not exist.
+        """
         try:
             with connection.cursor() as cursor:
                 cursor.callproc("get_mail_data", [pk])
@@ -599,8 +652,8 @@ class Email_API(APIView):
                     msg['CC'] = ''
 
                 return msg
-        except Mail.DoesNotExist:
-            raise Http404
+        except Mail.DoesNotExist as exc:
+            raise Http404 from exc
 
     def get(self, request, pk, format=None):
         mail = self.get_object(pk)
