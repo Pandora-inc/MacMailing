@@ -140,3 +140,4 @@ app/static_media/*
 *.cnf
 *.pem
 *.ibd
+app/macmail/settings.py
