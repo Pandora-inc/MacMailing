@@ -6,10 +6,9 @@ from ckeditor_uploader.fields import RichTextUploadingField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-
-SALUDATIONS = [('Mrs.', 'Mrs.'), ('Mr.', 'Mr.'), ('Ms.', 'Ms.'),
+SALUTATIONS = [('Mrs.', 'Mrs.'), ('Mr.', 'Mr.'), ('Ms.', 'Ms.'),
                ('Dr.', 'Dr.'), ('Prof.', 'Prof.'), ('Other', 'Other')]
-CURRENCYS = [('US Dollar', 'US Dollar'),]
+CURRENCY = [('US Dollar', 'US Dollar'),]
 
 
 class Account(models.Model):
@@ -35,6 +34,26 @@ class Account(models.Model):
 
 
 class MailCorp(models.Model):
+    """
+    MailCorp class represents a mail corporation in the system.
+
+    Attributes:
+        name (str): The name of the mail corporation.
+        email (str): The email address of the mail corporation.
+        password (str): The password of the mail corporation.
+        smtp (str): The SMTP server of the mail corporation.
+        smtp_port (str): The SMTP port of the mail corporation.
+        imap (str): The IMAP server of the mail corporation.
+        imap_port (str): The IMAP port of the mail corporation.
+        created (datetime): The date and time when the mail corporation was created.
+        account (Account): The account associated with the mail corporation.
+        user (User): The user associated with the mail corporation.
+        firma (str): The signature of the mail corporation.
+
+    Methods:
+        __str__(): Returns a string representation of the mail corporation.
+
+    """
     name = models.CharField(max_length=64, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     # password = models.CharField(_('password'), max_length=64, blank=True, null=True)
@@ -60,7 +79,7 @@ class Clientes(models.Model):
     status = models.CharField(max_length=32, blank=True, null=True)
     lead_name = models.CharField(max_length=64, blank=True, null=True)
     salutation = models.CharField(
-        max_length=16, blank=True, null=True, choices=SALUDATIONS)
+        max_length=16, blank=True, null=True, choices=SALUTATIONS)
     first_name = models.CharField(max_length=32, blank=True, null=True)
     middle_name = models.CharField(max_length=32, blank=True, null=True)
     last_name = models.CharField(max_length=32, blank=True, null=True)
@@ -82,7 +101,7 @@ class Clientes(models.Model):
     total = models.DecimalField(
         max_digits=11, decimal_places=2, blank=True, null=True)
     currency = models.CharField(
-        max_length=16, blank=True, null=True, choices=CURRENCYS)
+        max_length=16, blank=True, null=True, choices=CURRENCY)
     product = models.CharField(max_length=32, blank=True, null=True)
     price = models.DecimalField(
         max_digits=11, decimal_places=2, blank=True, null=True)
@@ -108,22 +127,27 @@ class Clientes(models.Model):
         return str(self.lead_name) + " - " + str(self.first_name) + " " + str(self.last_name) + " - " + str(self.cliente_id)
 
     def add_contact(self, type, data):
+        """ Agrega un contacto al cliente """
         contact = ClientesContact(cliente=self, type=type, data=data)
         contact.save()
 
     def add_web(self, type, data):
+        """ Agrega un contacto web al cliente """
         web = ClientesWeb(cliente=self, type=type, data=data)
         web.save()
 
     def add_address(self, type, data):
+        """ Agrega una dirección al cliente """
         address = ClientesAddress(cliente=self, type=type, data=data)
         address.save()
 
     def add_email(self, type, data):
+        """ Agrega un email al cliente """
         email = ClientesEmail(cliente=self, type=type, data=data)
         email.save()
 
     def add_social(self, type, data):
+        """ Agrega un contacto social al cliente """
         social = ClientesSocial(cliente=self, type=type, data=data)
         social.save()
 
@@ -137,6 +161,18 @@ class Clientes(models.Model):
 
 
 class ClientesContact(models.Model):
+    """
+    The 'ClientesContact' class represents a contact associated with a client.
+
+    Attributes:
+        cliente (ForeignKey): The client associated with the contact.
+        type (ForeignKey): The type of contact.
+        data (CharField): The contact data or information.
+
+    Methods:
+        __str__(): Returns a string representation of the contact.
+
+    """
     cliente = models.ForeignKey(
         Clientes, models.RESTRICT, blank=True, null=True)
     type = models.ForeignKey(
@@ -148,6 +184,18 @@ class ClientesContact(models.Model):
 
 
 class ClientesWeb(models.Model):
+    """
+    The 'ClientesWeb' class represents a web contact associated with a client.
+
+    Attributes:
+        cliente (ForeignKey): The client associated with the web contact.
+        type (ForeignKey): The type of web contact.
+        data (TextField): The data or information related to the web contact.
+
+    Methods:
+        __str__(): Returns a string representation of the web contact.
+
+    """
     cliente = models.ForeignKey(
         Clientes, models.RESTRICT, blank=True, null=True)
     type = models.ForeignKey(WebType, models.RESTRICT, blank=True, null=True)
@@ -158,6 +206,18 @@ class ClientesWeb(models.Model):
 
 
 class ClientesEmail(models.Model):
+    """
+    The 'ClientesEmail' class represents an email contact associated with a client.
+
+    Attributes:
+        cliente (ForeignKey): The client associated with the email contact.
+        type (ForeignKey): The type of email.
+        data (CharField): The email address.
+
+    Methods:
+        __str__(): Returns a string representation of the email contact.
+
+    """
     cliente = models.ForeignKey(
         Clientes, models.RESTRICT, blank=True, null=True)
     type = models.ForeignKey(EmailType, models.RESTRICT, blank=True, null=True)
@@ -168,6 +228,18 @@ class ClientesEmail(models.Model):
 
 
 class ClientesSocial(models.Model):
+    """
+    The 'ClientesSocial' class represents a social media contact associated with a client.
+
+    Attributes:
+        cliente (ForeignKey): The client associated with the social media contact.
+        type (ForeignKey): The type of social media.
+        data (TextField): The data or information related to the social media contact.
+
+    Methods:
+        __str__(): Returns a string representation of the social media contact.
+
+    """
     cliente = models.ForeignKey(
         Clientes, models.RESTRICT, blank=True, null=True)
     type = models.ForeignKey(
@@ -179,6 +251,21 @@ class ClientesSocial(models.Model):
 
 
 class ClientesAddress(models.Model):
+    """
+    The 'ClientesAddress' class represents an address associated with a client.
+
+    Attributes:
+        cliente (ForeignKey): The client associated with the address.
+        address (TextField): The full address.
+        street_house_no (TextField): The street and house number.
+        apartment_office_room_floor (CharField): The apartment, office, room, or floor number.
+        city (CharField): The city of the address.
+        district (CharField): The district of the address.
+        region_area (CharField): The region or area of the address.
+        postal_code (CharField): The postal code of the address.
+        country (ForeignKey): The country of the address.
+
+    """
     cliente = models.ForeignKey(
         Clientes, models.RESTRICT, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
@@ -194,6 +281,18 @@ class ClientesAddress(models.Model):
 
 
 class ClientesUTM(models.Model):
+    """
+    The 'ClientesUTM' class represents a model for tracking UTM parameters related to a client.
+
+    Attributes:
+        cliente (ForeignKey): A foreign key to the 'Clientes' model representing the client.
+        source (CharField): A string field representing the UTM source code.
+        medium (CharField): A string field representing the UTM medium.
+        campaign (CharField): A string field representing the UTM campaign.
+        content (CharField): A string field representing the UTM content.
+        term (CharField): A string field representing the UTM term.
+
+    """
     cliente = models.ForeignKey(
         Clientes, models.RESTRICT, blank=True, null=True)
     source = models.CharField(max_length=64, help_text='Codigo')
@@ -204,6 +303,17 @@ class ClientesUTM(models.Model):
 
 
 class Attachment(models.Model):
+    """
+    A class representing an attachment.
+
+    Attributes:
+        name (str): The name of the attachment.
+        file (FileField): The file associated with the attachment.
+        created (DateTimeField): The date and time when the attachment was created.
+
+    Methods:
+        __str__(): Returns a string representation of the attachment.
+    """
     name = models.CharField(max_length=64, blank=True, null=True)
     file = models.FileField(upload_to='attachments/', blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
@@ -213,6 +323,19 @@ class Attachment(models.Model):
 
 
 class TemplatesGroup(models.Model):
+    """
+    TemplatesGroup class represents a group of templates in the system.
+
+    Attributes:
+        name (str): The name of the templates group.
+        created (datetime): The date and time when the templates group was created.
+        create_user (User): The user who created the templates group.
+        mail_corp (MailCorp): The mail corporation associated with the templates group.
+
+    Methods:
+        __str__(): Returns a string representation of the templates group.
+
+    """
     name = models.CharField(max_length=64, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     create_user = models.ForeignKey(
@@ -225,6 +348,22 @@ class TemplatesGroup(models.Model):
 
 
 class TemplateFiles(models.Model):
+    """
+    TemplateFiles class represents a template file in the system.
+
+    Attributes:
+        name (str): The name of the template file.
+        orden (int): The order number of the template file.
+        file (FileField): The file associated with the template file.
+        text (RichTextUploadingField): The text content of the template file.
+        created (datetime): The date and time when the template file was created.
+        create_user (User): The user who created the template file.
+        template_group (TemplatesGroup): The templates group associated with the template file.
+
+    Methods:
+        __str__(): Returns a string representation of the template file.
+
+    """
     name = models.CharField(max_length=64, default="Sudject")
     orden = models.PositiveIntegerField(default=1)
     file = models.FileField(upload_to='template_files/', blank=True, null=True)
@@ -240,6 +379,32 @@ class TemplateFiles(models.Model):
 
 
 class Mail(models.Model):
+    """
+    The 'Mail' class represents an email in the system.
+
+    Attributes:
+        mail_corp (ForeignKey): The mail corporation associated with the email.
+        cliente (ForeignKey): The client associated with the email.
+        subject (str): The subject of the email.
+        body (RichTextUploadingField): The body or content of the email.
+        created (DateTimeField): The date and time when the email was created.
+        attachment (ManyToManyField): The attachments associated with the email.
+        status (bool): The status of the email.
+        status_response (bool): The status of the email response.
+        use_template (bool): Indicates whether the email uses a template.
+        template_group (ForeignKey): The templates group associated with the email.
+        send_number (int): The number of times the email has been sent.
+        last_send (DateTimeField): The date and time of the last email send.
+        reminder_days (int): The number of days for email reminder.
+
+    Methods:
+        __str__(): Returns a string representation of the email.
+
+    Meta:
+        unique_together (tuple): Specifies that the combination of 'cliente' and 
+        'mail_corp' should be unique.
+
+    """
     mail_corp = models.ForeignKey(
         MailCorp, models.RESTRICT, blank=True, null=True)
     cliente = models.ForeignKey(
@@ -262,10 +427,25 @@ class Mail(models.Model):
         return str(self.subject)
 
     class Meta:
+        """ Meta data of the model """
         unique_together = ('cliente', 'mail_corp')
 
 
 class MailsToSend (models.Model):
+    """
+    MailsToSend class represents a model for storing mails to be sent in the system.
+
+    Attributes:
+        mail (Mail): The mail object associated with the mail to be sent.
+        send (bool): Indicates whether the mail has been sent or not.
+        user_approved (User): The user who approved the mail to be sent.
+        date_approved (datetime): The date and time when the mail was approved to be sent.
+        approved (bool): Indicates whether the mail has been approved to be sent or not.
+
+    Methods:
+        __str__(): Returns a string representation of the MailsToSend object.
+
+    """
     mail = models.ForeignKey(Mail, models.RESTRICT, blank=True, null=True)
     send = models.BooleanField(default=False)
     user_approved = models.ForeignKey(
@@ -278,6 +458,20 @@ class MailsToSend (models.Model):
 
 
 class UserAcount(models.Model):
+    """
+    UserAcount class represents a user account in the system.
+
+    Attributes:
+        user (User): The user associated with the account.
+        account (Account): The account associated with the user.
+        name_usr_acount (str): The name of the user account.
+        created (datetime): The date and time when the user account was created.
+
+    Methods:
+        __str__(): Returns a string representation of the user account.
+        get_usr_acount(): Returns the name of the user account and the associated account.
+
+    """
     user = models.ForeignKey(User, models.RESTRICT, blank=True, null=True)
     account = models.ForeignKey(
         Account, models.RESTRICT, blank=True, null=True)
@@ -288,6 +482,7 @@ class UserAcount(models.Model):
         return str(self.user)
 
     def get_usr_acount(self):
+        """ Returns the name of the user account and the associated account. """
         return str(self.name_usr_acount)+" ("+str(self.account)+")"
 
 
@@ -315,11 +510,30 @@ class ExcelFiles(models.Model):
         return str(self.name)
 
 
-""" 
+"""
 Lo siguiente se ejecuta al guardar las plantillas. 
 """
 
 def propague_template(id_template: int):
+    """
+    Propagates a template to mails with a specific order number.
+
+    Parameters:
+        id_template (int): The ID of the template to propagate.
+
+    Returns:
+        None
+
+    Raises:
+        TemplateFiles.DoesNotExist: If the template with the given ID does not exist.
+
+    Example:
+        propague_template(1)
+
+    This function retrieves a template with the given ID and propagates it to mails that
+    have a specific order number. It updates the subject and body of each mail with the 
+    template's name and text, respectively.
+    """
     template = TemplateFiles.objects.get(id=id_template)
     orden = template.orden-1
     mails = Mail.objects.filter(
@@ -333,6 +547,7 @@ def propague_template(id_template: int):
 
 @receiver(post_save, sender=TemplateFiles)
 def mi_funcion_al_guardar(sender, instance, **kwargs):
+    """ Función que se ejecuta al guardar un template """
     propague_template(instance.id)
 
 post_save.connect(mi_funcion_al_guardar, sender=TemplateFiles)

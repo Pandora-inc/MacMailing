@@ -7,9 +7,26 @@ from django.contrib import admin, messages
 from auxiliares.models import EmailType
 
 from .utils import excelFile
-from .actions import actualizar_con_template, get_mail_data, get_template_file_and_save, prepare_email_body, send_mail
-from .models import (Attachment, Mail, TemplateFiles, TemplatesGroup, Clientes, ClientesContact,
-                     ClientesWeb, ClientesEmail, ClientesSocial, ClientesAddress, ClientesUTM, ExcelFiles, Account, MailCorp, MailsToSend)
+from .actions import (actualizar_con_template,
+                      get_mail_data,
+                      get_template_file_and_save,
+                      prepare_email_body,
+                      send_mail)
+from .models import (Attachment,
+                     Mail,
+                     TemplateFiles,
+                     TemplatesGroup,
+                     Clientes,
+                     ClientesContact,
+                     ClientesWeb,
+                     ClientesEmail,
+                     ClientesSocial,
+                     ClientesAddress,
+                     ClientesUTM,
+                     ExcelFiles,
+                     Account,
+                     MailCorp,
+                     MailsToSend)
 
 
 def enviar_email(modeladmin, request, queryset):
@@ -40,7 +57,8 @@ def procesar_excel(modeladmin, request, queryset):
 
             excel.print_datos()
         except Exception as e:
-            messages.error(request, f"Error in excel, The format must be Excel Workbook (xlsx): {e}")
+            mensaje = f"Error in excel, The format must be Excel Workbook (xlsx): {e}"
+            messages.error(request, mensaje)
 
 
 procesar_excel.short_description = "Process Excel"
@@ -117,7 +135,7 @@ class ClientesAdmin(admin.ModelAdmin):
     list_display = ['cliente_id', 'last_name', 'first_name',
                     'middle_name', 'lead_name', 'status', 'responsible', 'contacted']
     search_fields = ['cliente_id', 'last_name',
-                     'lead_name', 'status', 'responsible', 'contacted']
+                     'lead_name', 'status', 'responsible__name', 'contacted']
     ordering = ['cliente_id', 'last_name',
                 'lead_name', 'status', 'responsible', 'contacted']
     list_filter = ['contacted', 'responsible', 'lead_name']
@@ -139,7 +157,14 @@ class ClientesAddressAdmin(admin.ModelAdmin):
     Admin View for ClientesAddress
     '''
     list_display = ['cliente', 'address', 'city', 'postal_code', 'country']
-    search_fields = ['cliente', 'address', 'city', 'postal_code', 'country']
+    search_fields = ['cliente__lead_name',
+                     'cliente__first_name',
+                     'cliente__last_name',
+                     'cliente__cliente_id',
+                     'address',
+                     'city',
+                     'postal_code',
+                     'country__description']
     ordering = ['cliente', 'address', 'city', 'postal_code', 'country']
     list_filter = ['cliente', 'address']
 
@@ -149,7 +174,12 @@ class ClientesContactAdmin(admin.ModelAdmin):
     Admin View for ClientesContact
     '''
     list_display = ['cliente', 'type', 'data']
-    search_fields = ['cliente', 'type', 'data']
+    search_fields = ['cliente__lead_name',
+                     'cliente__first_name',
+                     'cliente__last_name',
+                     'cliente__cliente_id',
+                     'type__name',
+                     'data']
     ordering = ['cliente', 'type']
     list_filter = ['cliente', 'type']
 
@@ -159,7 +189,12 @@ class ClientesEmailAdmin(admin.ModelAdmin):
     Admin View for ClientesEmail
     '''
     list_display = ['cliente', 'type', 'data']
-    search_fields = ['cliente', 'type', 'data']
+    search_fields = ['cliente__lead_name',
+                     'cliente__first_name',
+                     'cliente__last_name',
+                     'cliente__cliente_id',
+                     'type__name',
+                     'data']
     ordering = ['cliente', 'type']
     list_filter = ['cliente', 'type']
 
@@ -181,7 +216,12 @@ class ClientesSocialAdmin(admin.ModelAdmin):
     Admin View for ClientesSocial
     '''
     list_display = ['cliente', 'type', 'data']
-    search_fields = ['cliente', 'type', 'data']
+    search_fields = ['cliente__lead_name',
+                     'cliente__first_name',
+                     'cliente__last_name',
+                     'cliente__cliente_id',
+                     'type__name',
+                     'data']
     ordering = ['cliente', 'type']
     list_filter = ['cliente', 'type']
 
@@ -191,7 +231,13 @@ class ClientesUTMAdmin(admin.ModelAdmin):
     Admin View for ClientesUTM
     '''
     list_display = ['cliente', 'source', 'campaign', 'content']
-    search_fields = ['cliente', 'source', 'campaign', 'content']
+    search_fields = ['cliente__lead_name',
+                     'cliente__first_name',
+                     'cliente__last_name',
+                     'cliente__cliente_id',
+                     'source',
+                     'campaign',
+                     'content']
     ordering = ['cliente', 'campaign']
     list_filter = ['cliente', 'campaign']
 
@@ -201,7 +247,12 @@ class ClientesWebAdmin(admin.ModelAdmin):
     Admin View for ClientesWeb
     '''
     list_display = ['cliente', 'type', 'data']
-    search_fields = ['cliente', 'type', 'data']
+    search_fields = ['cliente__lead_name',
+                     'cliente__first_name',
+                     'cliente__last_name',
+                     'cliente__cliente_id',
+                     'type__name',
+                     'data']
     ordering = ['cliente', 'type']
     list_filter = ['cliente', 'type']
 
@@ -211,7 +262,7 @@ class MailCorpAdmin(admin.ModelAdmin):
     Admin View for MailCorp
     '''
     list_display = ['name', 'email', 'account', 'user']
-    search_fields = ['name', 'email', 'account', 'user']
+    search_fields = ['name', 'email', 'account__name', 'user__username']
     ordering = ['name', 'email', 'account', 'user']
     list_filter = ['account', 'user']
 
@@ -230,7 +281,7 @@ class ExcelFilesAdmin(admin.ModelAdmin):
     Admin View for ExcelFiles
     '''
     list_display = ['name', 'file', 'create_user']
-    search_fields = ['name', 'file', 'create_user']
+    search_fields = ['name', 'file', 'create_user__username']
     ordering = ['name', 'file', 'create_user']
     list_filter = ['create_user']
 
@@ -247,8 +298,16 @@ class MailAdmin(admin.ModelAdmin):
 
     list_display = ['mail_corp', 'cliente', 'subject', 'send_number',
                     'status', 'status_response', 'last_send', 'proximo']
-    search_fields = ['mail_corp', 'cliente', 'subject',
-                     'send_number', 'status', 'last_send']
+    search_fields = ['mail_corp__name',
+                     'mail_corp__email',
+                     'cliente__lead_name',
+                     'cliente__first_name',
+                     'cliente__last_name',
+                     'cliente__cliente_id',
+                     'subject',
+                     'send_number', 
+                     'status',
+                     'last_send']
     ordering = ['mail_corp', 'cliente', 'subject',
                 'send_number', 'status', 'last_send']
     list_filter = ['mail_corp', 'send_number', 'status', 'status_response']
@@ -275,7 +334,7 @@ class MailAdmin(admin.ModelAdmin):
                                            'attachment', 'status', 'status_response',
                                            'template_group', 'reminder_days', 'use_template',) 
         return self.readonly_fields
-    
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         # Define una función para filtrar los clientes basados en el campo 'responsable'
         if db_field.name == "cliente":
@@ -308,7 +367,7 @@ class MailAdmin(admin.ModelAdmin):
                 return "Estamos atrasados"
         else:
             return "Today is a great day"
-        
+
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         if obj.use_template and obj.template_group and obj.send_number == 0:
@@ -327,8 +386,13 @@ class MailsToSendAdmin(admin.ModelAdmin):
     Admin View for MailsToSend
     '''
     list_display = ['mail', 'approved', 'send', 'mail_to', 'mail_from']
-    readonly_fields = ('mail_from', 'mail_subject', 'mail_body', 'user_approved', 'date_approved')
-    search_fields = ['mail', 'approved', 'send']
+    readonly_fields = (
+        'mail_from',
+        'mail_subject',
+        'mail_body',
+        'user_approved',
+        'date_approved')
+    search_fields = ['mail__mail_corp__name', 'mail__cliente__lead_name', 'approved', 'send']
     ordering = ['mail', 'approved', 'send']
 
     def get_queryset(self, request):
@@ -354,7 +418,7 @@ class MailsToSendAdmin(admin.ModelAdmin):
         body += '<br>'+obj.mail.mail_corp.firma
         msg_data = get_mail_data(obj.mail.id)
         body = prepare_email_body(body, msg_data)
-        
+
         return mark_safe(body)
 
     def mail_subject(self, obj):
@@ -407,7 +471,9 @@ class TemplateGroupAdmin(admin.ModelAdmin):
     Admin View for TemplateGroup
     '''
     list_display = ['name', 'mail_corp']
-    search_fields = ['name', 'mail_corp']
+    search_fields = ['name',
+                     'mail_corp__name',
+                     'mail_corp__email']
     readonly_fields = ('create_user',)
     ordering = ['name', 'mail_corp']
 
@@ -423,7 +489,7 @@ class TemplateGroupAdmin(admin.ModelAdmin):
     #         queryset = queryset.filter(mail_corp__in=accounts)
 
     #     return queryset
-    
+
     def save_model(self, request, obj, form, change):
         if not obj.create_user:
             # Asigna el usuario actual
@@ -436,7 +502,7 @@ class TemplateFilesAdmin(admin.ModelAdmin):
     Admin View for TemplateFiles
     '''
     list_display = ['name', 'orden', 'template_group']
-    search_fields = ['name', 'orden', 'template_group']
+    search_fields = ['name', 'orden', 'template_group__name']
     readonly_fields = ('create_user',)
     ordering = ['name', 'orden', 'template_group']
 
@@ -453,7 +519,7 @@ class TemplateFilesAdmin(admin.ModelAdmin):
     #         queryset = queryset.filter(template_group__in=groups)
 
     #     return queryset
-        
+
     def save_model(self, request, obj, form, change):
         if not obj.create_user:
             # Asigna el usuario actual
