@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from django.http import Http404
 from .serializers import ClientesSerializer, ExcelSerializer
-from .utils import excelFile
+from .utils import UtilExcelFile
 # from reportes.serializers.excel_serializer import ClientesSerializer, ExcelSerializer
 
 from .models import Clientes, ExcelFiles
@@ -74,12 +74,13 @@ class ProcessExcel(APIView):
 
     def get(self, request, format=None):
         """
-        Retrieves an Excel file from the database, reads the data from the file using the 'excelFile' class,
-        and saves the data to the database using the 'print_datos' method of the 'excelFile' class.
+        Retrieves an Excel file from the database, reads the data from the file using the 
+        'UtilExcelFile' class, and saves the data to the database using the 'print_datos' method 
+        of the 'UtilExcelFile' class.
         Returns a success response.
         """
         file = ExcelFiles.objects.get(id=2)
-        excel = excelFile()
+        excel = UtilExcelFile()
         excel.open_file(file.file.path)
         excel.print_datos()
 

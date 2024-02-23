@@ -66,8 +66,7 @@ class MailCorp(models.Model):
     account = models.ForeignKey(
         Account, models.RESTRICT, blank=True, null=True)
     user = models.ForeignKey(User, models.RESTRICT)
-    firma = RichTextUploadingField(
-        blank=True, null=True)  # CKEditor Rich Text Field
+    firma = RichTextUploadingField(blank=True, null=True, config_name='awesome_ckeditor')
 
     def __str__(self):
         return str(self.name)
@@ -367,7 +366,7 @@ class TemplateFiles(models.Model):
     name = models.CharField(max_length=64, default="Sudject")
     orden = models.PositiveIntegerField(default=1)
     file = models.FileField(upload_to='template_files/', blank=True, null=True)
-    text = RichTextUploadingField(blank=True, null=True)
+    text = RichTextUploadingField(blank=True, null=True, config_name='awesome_ckeditor')
     created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     create_user = models.ForeignKey(
         User, models.RESTRICT, blank=True, null=True)
@@ -410,8 +409,7 @@ class Mail(models.Model):
     cliente = models.ForeignKey(
         Clientes, models.RESTRICT, blank=True, null=True)
     subject = models.CharField(max_length=64, blank=True, null=True)
-    body = RichTextUploadingField(
-        blank=True, null=True)  # CKEditor Rich Text Field
+    body = RichTextUploadingField(blank=True, null=True, config_name='awesome_ckeditor')
     created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     attachment = models.ManyToManyField(Attachment, blank=True)
     status = models.BooleanField(default=False)

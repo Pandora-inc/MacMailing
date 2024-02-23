@@ -1,33 +1,45 @@
-import openpyxl
+""" This module contains the class for reading """
 
 from datetime import datetime
+import openpyxl
 from .constants import INDICE_TRADUCCION, INDICE_TRADUCCION_CONTACT
 
 from auxiliares.models import ContactType, EmailType, SocialType, WebType, Country, Type
-from .models import Clientes, ClientesAddress, ClientesContact, ClientesEmail, ClientesSocial, ClientesWeb, MailCorp, Account
+from .models import (Clientes,
+                     ClientesAddress,
+                     ClientesContact,
+                     ClientesEmail,
+                     ClientesSocial,
+                     ClientesWeb,
+                     MailCorp,
+                     Account)
 
 
-'''
-Class for reading and manipulating Excel files.
 
-Methods:
-- __init__: Initializes the class with an empty workbook and active worksheet.
-- open_file: Opens an Excel file and sets the workbook and active worksheet.
-- clean_name: Cleans the name of a column by removing spaces, dashes, periods, commas, parentheses, and slashes.
-- get_structure: Returns a dictionary with the structure of the Excel file and a dictionary with the indices.
-- get_data: Returns a dictionary with the data of the Excel file and a dictionary with the indices.
-- print_datos: Prints the data of the Excel file to the console and creates and saves instances of various models in a Django project based on the data.
-- add_sheet: Adds a sheet to the Excel file.
-- add_row: Adds a row to the active worksheet.
-- save: Saves the Excel file.
+class UtilExcelFile():
+    '''
+    Class for reading and manipulating Excel files.
 
-Fields:
-- file_name: The name of the Excel file.
-- wb: The openpyxl workbook object.
-- ws: The openpyxl worksheet object.
-'''
-class excelFile():
-    ''' Clase para leer archivos excel '''
+    Methods:
+    - __init__: Initializes the class with an empty workbook and active worksheet.
+    - open_file: Opens an Excel file and sets the workbook and active worksheet.
+    - clean_name: Cleans the name of a column by removing spaces, dashes, periods, 
+        commas, parentheses, and slashes.
+    - get_structure: Returns a dictionary with the structure of the Excel file and a 
+        dictionary with the indices.
+    - get_data: Returns a dictionary with the data of the Excel file and a dictionary 
+        with the indices.
+    - print_datos: Prints the data of the Excel file to the console and creates and 
+        saves instances of various models in a Django project based on the data.
+    - add_sheet: Adds a sheet to the Excel file.
+    - add_row: Adds a row to the active worksheet.
+    - save: Saves the Excel file.
+
+    Fields:
+    - file_name: The name of the Excel file.
+    - wb: The openpyxl workbook object.
+    - ws: The openpyxl worksheet object.
+    '''
     file_name = None
     wb = None
     ws = None
@@ -70,7 +82,14 @@ class excelFile():
             return clave
 
     def convertir_a_datetime(self, fecha_str):
-        formatos = ["%Y-%m-%d", "%d/%m/%Y", "%m-%d-%Y", "%m/%d/%y %H:%M", "%m/%d/%y %H:%M:%S %p", "%m/%d/%Y %H:%M", "%m/%d/%Y %H:%M:%S %p"]
+        """ Convierte una fecha en string a datetime """
+        formatos = ["%Y-%m-%d",
+                    "%d/%m/%Y",
+                    "%m-%d-%Y",
+                    "%m/%d/%y %H:%M",
+                    "%m/%d/%y %H:%M:%S %p",
+                    "%m/%d/%Y %H:%M",
+                    "%m/%d/%Y %H:%M:%S %p"]
         for formato in formatos:
             try:
                 if fecha_str is None:
@@ -115,18 +134,19 @@ class excelFile():
             estructura, indice = self.get_structure()
 
             for row in self.ws.iter_rows(min_row=2):
-                for i in range(len(row)):
+                i=0
+                # for i in range(len(row)):
+                for campo in row:
                     if indice[i]:
                         indio = self.clean_name(indice[i])
                         indio = self.traducir_claves_dict(indio, INDICE_TRADUCCION)
-
-                        # TODO: Este if es una excepcion, hay que ver como solucionarlo
-                        if i == 58:
-                            indio = indio+"_dire"
+                        indio = indio + "_dire" if i == 58 else indio
                     else:
                         indio = i
-                    dato = row[i].value
+                    dato = campo.value
                     estructura[indio].append(dato)
+                    i += 1
+
         except KeyError as e:
             print("Error de key error: " + str(e))
             raise ValueError(str(e))
@@ -148,15 +168,15 @@ class excelFile():
             if not Clientes.objects.filter(cliente_id=data['id'][i]).exists():
                 cliente = Clientes()
                 cliente.cliente_id = data['id'][i]
-                accion = "creado"
+                action = "creado"
             else:
                 try:
                     cliente = Clientes.objects.get(cliente_id=data['id'][i])
-                    accion = "actualizado"
-                except Clientes.MultipleObjectsReturned:    
+                    action = "actualizado"
+                except Clientes.MultipleObjectsReturned as exc:
                     cliente = Clientes.objects.filter(cliente_id=data['id'][i]).first()
-                    accion = "actualizado"
-                    raise ValueError(f"Se encontraron multiples clientes con el id: {data['id'][i]}")  
+                    mensaje = f"Se encontraron multiples clientes con el id:{data['id'][i]}"
+                    raise ValueError(mensaje) from exc
 
             cliente.status = self.get_status(data, i)
             cliente.lead_name = self.get_lead_name(data, i)
@@ -211,7 +231,8 @@ class excelFile():
                 if item[i]:
                     nombre = self.traducir_claves_dict(indice[e], INDICE_TRADUCCION_CONTACT)
                     if nombre and ContactType.objects.filter(name=nombre):
-                        if not ClientesContact.objects.filter(cliente=cliente, type=ContactType.objects.get(name=nombre)).exists():
+                        if not ClientesContact.objects.filter(cliente=cliente,
+                                                              type=ContactType.objects.get(name=nombre)).exists():
                             cliente.add_contact(
                                 ContactType.objects.get(name=nombre), item[i])
                         else:
@@ -253,7 +274,7 @@ class excelFile():
                 e += 1
 
             # cliente.save()
-            print("Se ha "+accion+" el cliente: ",
+            print("Se ha "+action+" el cliente: ",
                   cliente.first_name, cliente.last_name)
 
     def add_sheet(self, sheet_name):
@@ -398,12 +419,19 @@ class excelFile():
         '''
         This method is used to get the source information from the data
         '''
-        if 'source_information' in data:
-            return data['source_information'][indice]
-        elif 'información_de_origen' in data:
-            return data['información_de_origen'][indice]
-        else:
-            return None
+        try:
+            if 'source_information' in data:
+                return data['source_information'][indice]
+            elif 'información_de_origen' in data:
+                return data['información_de_origen'][indice]
+            else:
+                return None
+        except MailCorp.DoesNotExist as exc:
+            raise ValueError('The source_information does not exist: ' +
+                             data['información_de_origen'][indice]) from exc
+        except Exception as exc:
+            raise ValueError('Error en source_information: ' +
+                             data['información_de_origen'][indice]) from exc
 
     def get_created_by(self, data: list, indice: int)-> str:
         '''
@@ -603,18 +631,18 @@ class excelFile():
         '''
         try:
             if 'country' in data:
-                pais = data['country'][indice]
+                country = data['country'][indice]
             elif 'pais' in data:
-                pais = data['country'][indice]
+                country = data['country'][indice]
             else:
                 return None
 
-            return Country.objects.get(description=pais)
+            return Country.objects.get(description=country)
         except Country.DoesNotExist:
             # raise ValueError('The country does not exist: ' + pais) from exc
-            coutry = Country(description=pais)
-            coutry.save()
-            return coutry
+            country = Country(description=country)
+            country.save()
+            return country
 
     def get_account(self, data: list, indice: int)-> str:
         '''
@@ -689,6 +717,7 @@ class excelFile():
             return None
 
     def get_address(self, data: list, indice: int)-> str:
+        """ This method is used to get the address from the data """
         if 'address' in data:
             return data['address'][indice]
         elif 'dirección' in data:
@@ -697,6 +726,7 @@ class excelFile():
             return None
 
     def get_street_house_no(self, data: list, indice: int)-> str:
+        """ This method is used to get the street_house_no from the data """
         if 'street_house_no' in data:
             return data['street_house_no'][indice]
         elif 'calle_casa_núm' in data:
@@ -705,6 +735,7 @@ class excelFile():
             return None
 
     def get_apartment_office_room_floor(self, data: list, indice: int)-> str:
+        """ This method is used to get the apartment_office_room_floor from the data """
         if 'apartment_office_room_floor' in data:
             return data['apartment_office_room_floor'][indice]
         elif 'departamento_oficina_habitación_piso' in data:
@@ -713,6 +744,7 @@ class excelFile():
             return None
 
     def get_city(self, data: list, indice: int)-> str:
+        """ This method is used to get the city from the data """
         if 'city' in data:
             return data['city'][indice]
         elif 'ciudad' in data:
@@ -721,6 +753,7 @@ class excelFile():
             return None
 
     def get_district(self, data: list, indice: int)-> str:
+        """ This method is used to get the district from the data """
         if 'district' in data:
             return data['district'][indice]
         elif 'distrito' in data:
@@ -729,6 +762,7 @@ class excelFile():
             return None
 
     def get_regionarea(self, data: list, indice: int)-> str:
+        """ This method is used to get the regionarea from the data """
         if 'regionarea' in data:
             return data['regionarea'][indice]
         elif 'regiónárea' in data:
@@ -737,6 +771,7 @@ class excelFile():
             return None
 
     def get_zippostal_code(self, data: list, indice: int)-> str:
+        """ This method is used to get the zippostal_code from the data """
         if 'zippostal_code' in data:
             return data['zippostal_code'][indice]
         elif 'código_postal' in data:
@@ -745,6 +780,7 @@ class excelFile():
             return None
 
     def get_country_dire(self, data: list, indice: int)-> str:
+        """ This method is used to get the country_dire from the data """
         if 'country_dire' in data:
             return data['country_dire'][indice]
         elif 'país' in data:
