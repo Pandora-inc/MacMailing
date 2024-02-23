@@ -6,7 +6,7 @@ from django.contrib import admin, messages
 
 from auxiliares.models import EmailType
 
-from .utils import excelFile
+from .utils import UtilExcelFile
 from .actions import (actualizar_con_template,
                       get_mail_data,
                       get_template_file_and_save,
@@ -52,7 +52,7 @@ def procesar_excel(modeladmin, request, queryset):
     for obj in queryset:
         try:
             file = ExcelFiles.objects.get(id=obj.id)
-            excel = excelFile()
+            excel = UtilExcelFile()
             excel.open_file(file.file.path)
 
             excel.print_datos()
