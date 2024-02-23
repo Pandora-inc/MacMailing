@@ -95,7 +95,7 @@ class Clientes(models.Model):
     modified_by = models.ForeignKey(
         MailCorp, models.RESTRICT, blank=True, null=True, related_name='modificado_por')
     company_name = models.CharField(max_length=64, blank=True, null=True)
-    position = models.CharField(max_length=64, blank=True, null=True)
+    position = models.CharField(max_length=256, blank=True, null=True)
     comment = models.TextField(blank=True, null=True)
     total = models.DecimalField(
         max_digits=11, decimal_places=2, blank=True, null=True)
@@ -408,7 +408,7 @@ class Mail(models.Model):
         MailCorp, models.RESTRICT, blank=True, null=True)
     cliente = models.ForeignKey(
         Clientes, models.RESTRICT, blank=True, null=True)
-    subject = models.CharField(max_length=64, blank=True, null=True)
+    subject = models.CharField(max_length=256, blank=True, null=True)
     body = RichTextUploadingField(blank=True, null=True, config_name='awesome_ckeditor')
     created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     attachment = models.ManyToManyField(Attachment, blank=True)

@@ -504,7 +504,8 @@ class TemplateFilesAdmin(admin.ModelAdmin):
     list_display = ['name', 'orden', 'template_group']
     search_fields = ['name', 'orden', 'template_group__name']
     readonly_fields = ('create_user',)
-    ordering = ['name', 'orden', 'template_group']
+    ordering = ['name', 'orden', 'template_group__name']
+    list_filter = ['template_group', 'create_user']
 
     # DEPRECATED - Se usa get_queryset
     # def get_queryset(self, request):
