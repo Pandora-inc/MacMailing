@@ -228,6 +228,7 @@ def send_mail(id_mail: int) -> bool:
     message['From'] = msg_data['from_email']
     message['To'] = msg_data['To']
     message['Subject'] = msg_data['Subject']
+    message['cc'] = msg_data['CC']
 
     msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
     msg_data['firma'] = prepare_email_body(msg_data['firma'], msg_data)
@@ -295,6 +296,7 @@ def send_mail_api(request, id_mail: int) -> bool:
     message['From'] = msg_data['from_email']
     message['To'] = msg_data['To']
     message['Subject'] = msg_data['Subject']
+    message['cc'] = msg_data['CC']
 
     msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
     msg_data['firma'] = prepare_email_body(msg_data['firma'], msg_data)

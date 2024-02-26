@@ -297,6 +297,10 @@ class UtilExcelFile():
             return data['status'][indice]
         elif 'estatus' in data:
             return data['estatus'][indice]
+        elif 'stage' in data:
+            return data['stage'][indice]
+        elif 'etapa' in data:
+            return data['etapa'][indice]
         else:
             return None
 
