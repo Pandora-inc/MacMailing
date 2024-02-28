@@ -27,7 +27,8 @@ PRE_URL = PRE_URL+'/'
 
 def crear_evento(mail: Mail):
     """
-    Creates or updates an event in the calendar app based on the information provided in a 'Mail' object.
+    Creates or updates an event in the calendar app based on the 
+    information provided in a 'Mail' object.
 
     Args:
         mail (Mail): The 'Mail' object containing information about the email sent.
@@ -71,6 +72,20 @@ def crear_evento(mail: Mail):
     print("Evento creado")
 
 def actualizar_con_template(id_mail: int):
+    """
+    Creates or updates an event in the calendar app based on the 
+    information provided in a 'Mail' object.
+
+    Args:
+        mail (Mail): The 'Mail' object containing information about the email sent.
+
+    Returns:
+        None
+
+    Raises:
+        None
+
+    """
     try:
         mail = Mail.objects.get(id=id_mail)
         if TemplateFiles.objects.filter(template_group_id=mail.template_group, orden=mail.send_number+1).exists():
@@ -89,7 +104,8 @@ def actualizar_con_template(id_mail: int):
 
 def registro_envio_mail(id_mail: int, send_number: int):
     """
-    Update the status of a sent email in the database and create or update an event in the calendar app.
+    Update the status of a sent email in the database and create or update an 
+    event in the calendar app.
 
     Args:
         id_mail (int): The id of the email to be updated in the database.
@@ -99,8 +115,10 @@ def registro_envio_mail(id_mail: int, send_number: int):
         None
 
     Additional aspects:
-        - This function requires the 'crear_evento' function to be defined and imported in the module.
-        - The function uses the Django ORM to retrieve the 'Mail' object associated with the 'id_mail' input.
+        - This function requires the 'crear_evento' function to be defined 
+            and imported in the module.
+        - The function uses the Django ORM to retrieve the 'Mail' object 
+            associated with the 'id_mail' input.
     """
     with connection.cursor():
         try:
@@ -376,7 +394,7 @@ def emails_cadena(cadena):
     try:
         # Definimos una lista de signos de puntuación a eliminar, excepto @ y .
         caracteres_puntuacion = string.punctuation.replace(
-            '@', '').replace('.', '')
+            '@', '').replace('.', '').replace('_', '').replace('-', '')
 
         # Eliminamos todos los caracteres de puntuación de la cadena,
         # que no se usan en los correos electrónicos

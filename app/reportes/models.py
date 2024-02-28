@@ -172,11 +172,13 @@ class ClientesContact(models.Model):
         __str__(): Returns a string representation of the contact.
 
     """
-    cliente = models.ForeignKey(
-        Clientes, models.RESTRICT, blank=True, null=True)
-    type = models.ForeignKey(
-        ContactType, models.RESTRICT, blank=True, null=True)
-    data = models.CharField(max_length=64, blank=True, null=True)
+    cliente = models.ForeignKey(Clientes, models.RESTRICT)
+    type = models.ForeignKey(ContactType, models.RESTRICT)
+    data = models.CharField(max_length=64)
+
+    class Meta:
+        """ Meta data of the model """
+        unique_together = ('cliente', 'type')
 
     def __str__(self):
         return str(self.data)
@@ -195,10 +197,13 @@ class ClientesWeb(models.Model):
         __str__(): Returns a string representation of the web contact.
 
     """
-    cliente = models.ForeignKey(
-        Clientes, models.RESTRICT, blank=True, null=True)
-    type = models.ForeignKey(WebType, models.RESTRICT, blank=True, null=True)
-    data = models.TextField(blank=True, null=True)
+    cliente = models.ForeignKey(Clientes, models.RESTRICT)
+    type = models.ForeignKey(WebType, models.RESTRICT)
+    data = models.TextField()
+
+    class Meta:
+        """ Meta data of the model """
+        unique_together = ('cliente', 'type')
 
     def __str__(self):
         return str(self.data)
@@ -217,10 +222,13 @@ class ClientesEmail(models.Model):
         __str__(): Returns a string representation of the email contact.
 
     """
-    cliente = models.ForeignKey(
-        Clientes, models.RESTRICT, blank=True, null=True)
-    type = models.ForeignKey(EmailType, models.RESTRICT, blank=True, null=True)
-    data = models.CharField(max_length=250, blank=True, null=True)
+    cliente = models.ForeignKey(Clientes, models.RESTRICT)
+    type = models.ForeignKey(EmailType, models.RESTRICT)
+    data = models.CharField(max_length=250)
+
+    class Meta:
+        """ Meta data of the model """
+        unique_together = ('cliente', 'type')
 
     def __str__(self):
         return str(self.data)
@@ -239,12 +247,14 @@ class ClientesSocial(models.Model):
         __str__(): Returns a string representation of the social media contact.
 
     """
-    cliente = models.ForeignKey(
-        Clientes, models.RESTRICT, blank=True, null=True)
-    type = models.ForeignKey(
-        SocialType, models.RESTRICT, blank=True, null=True)
-    data = models.TextField(blank=True, null=True)
+    cliente = models.ForeignKey(Clientes, models.RESTRICT)
+    type = models.ForeignKey(SocialType, models.RESTRICT)
+    data = models.TextField()
 
+    class Meta:
+        """ Meta data of the model """
+        unique_together = ('cliente', 'type')
+        
     def __str__(self):
         return str(self.data)
 
