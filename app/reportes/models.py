@@ -110,7 +110,7 @@ class Clientes(models.Model):
     repeat_lead = models.BooleanField(blank=True, null=True, default=False)
     client = models.CharField(max_length=32, blank=True, null=True)
     customer_journey = models.CharField(max_length=32, blank=True, null=True)
-    type = models.ForeignKey(Type, models.RESTRICT, blank=True, null=True)
+    type = models.ForeignKey(Type, models.RESTRICT)
     country = models.ForeignKey(
         Country, models.RESTRICT, blank=True, null=True)
     account = models.ForeignKey(
