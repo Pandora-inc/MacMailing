@@ -414,8 +414,10 @@ class MailsToSendAdmin(admin.ModelAdmin):
         '''
         Muestra el cuerpo del mail
         '''
-        body = obj.mail.body
-        body += '<br>'+obj.mail.mail_corp.firma
+
+        body = obj.mail.body if obj.mail.body else ''
+        firma = obj.mail.mail_corp.firma if obj.mail.mail_corp.firma else ''
+        body += '<br>' + firma
         msg_data = get_mail_data(obj.mail.id)
         body = prepare_email_body(body, msg_data)
 
