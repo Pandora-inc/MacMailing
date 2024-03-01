@@ -23,7 +23,9 @@ CREATE DEFINER=`iberlot`@`%` PROCEDURE IF NOT EXISTS get_mail_data (IN mail_id I
         auxiliares_type.name, 
         reportes_mailcorp.firma,
         auth_user.first_name,
-        auth_user.last_name
+        auth_user.last_name,
+        reportes_mail.id,
+        reportes_mailstosend.id
     FROM 
         reportes_mail 
         INNER JOIN reportes_mailcorp ON reportes_mailcorp.id = reportes_mail.mail_corp_id 
@@ -37,15 +39,7 @@ CREATE DEFINER=`iberlot`@`%` PROCEDURE IF NOT EXISTS get_mail_data (IN mail_id I
 END;
 
 
-
-CREATE PROCEDURE get_next_mail_to_send()
-BEGIN
-SELECT id FROM reportes_mailstosend WHERE approved = 1 AND send = 0 ORDER BY date_approved LIMIT 1;
-END;
-
-
-
-CREATE PROCEDURE get_next_mail_to_send()
+CREATE DEFINER=`iberlot`@`%` PROCEDURE `get_next_mail_to_send`()
 BEGIN
 SELECT
         reportes_mail.subject, 
@@ -68,23 +62,32 @@ SELECT
         clientes.company_name, 
         clientes.position, 
         auxiliares_type.name, 
-        reportes_mailcorp.firma 
+        reportes_mailcorp.firma,
+        auth_user.first_name,
+        auth_user.last_name,
+        reportes_mail.id,
+        reportes_mailstosend.id
     FROM 
         reportes_mail 
         INNER JOIN reportes_mailcorp ON reportes_mailcorp.id = reportes_mail.mail_corp_id 
+        INNER JOIN auth_user ON auth_user.id = reportes_mailcorp.user_id
         INNER JOIN clientes ON clientes.id = reportes_mail.cliente_id 
         INNER JOIN reportes_clientesemail ON reportes_clientesemail.cliente_id = reportes_mail.cliente_id 
         INNER JOIN auxiliares_type ON auxiliares_type.id = clientes.type_id 
+        INNER JOIN reportes_mailstosend ON reportes_mailstosend.mail_id = reportes_mail.id
     WHERE 
-        reportes_mail.id = mail_id 
-        AND reportes_clientesemail.type_id = (SELECT mail_id FROM reportes_mailstosend WHERE approved = 1 AND send = 0 ORDER BY date_approved LIMIT 1);
-END;
+        reportes_mailstosend.approved = 1 
+        AND reportes_mailstosend.send = 0 
+        AND reportes_clientesemail.type_id = 1
+    ORDER BY reportes_mailstosend.date_approved
+    LIMIT 1;
+END
 
 
-CREATE DEFINER=`iberlot`@`%` PROCEDURE IF NOT EXISTS get_mail_attachment (IN mail_id INT)
-    BEGIN
+CREATE DEFINER=`iberlot`@`%` PROCEDURE `get_mail_attachment`(IN mail_id INT)
+BEGIN
     SELECT * 
     FROM reportes_mail_attachment 
     INNER JOIN reportes_attachment ON reportes_attachment.id = reportes_mail_attachment.attachment_id 
-    WHERE mail_id = id_mail;
-END;
+    WHERE reportes_mail_attachment.mail_id = mail_id;
+END
