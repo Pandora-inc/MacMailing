@@ -184,6 +184,8 @@ def get_mail_data(id_mail: int) -> dict:
 
         msg['user_name'] = row[21]
         msg['user_last_name'] = row[22]
+        msg['mail_id'] = row[23]
+        msg['mail_to_send_id'] = row[24]
 
         if row[15]:
             msg['CC'] = ', '.join(emails_cadena(row[15]))
@@ -493,8 +495,10 @@ def get_next_email_data() -> dict:
         msg['position'] = row[18]
         msg['type'] = row[19]
         msg['firma'] = row[20]
-        msg['mail_id'] = row[21]
-        msg['mail_to_send_id'] = row[22]
+        msg['user_name'] = row[21]
+        msg['user_last_name'] = row[22]
+        msg['mail_id'] = row[23]
+        msg['mail_to_send_id'] = row[24]
 
         if row[15]:
             msg['CC'] = ', '.join(emails_cadena(row[15]))
@@ -665,6 +669,8 @@ class EmailAPI(APIView):
 
                 msg['user_name'] = row[21]
                 msg['user_last_name'] = row[22]
+                msg['mail_id'] = row[23]
+                msg['mail_to_send_id'] = row[24]
 
                 if row[15]:
                     msg['CC'] = ', '.join(emails_cadena(row[15]))
