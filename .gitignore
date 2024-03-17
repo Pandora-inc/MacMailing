@@ -141,3 +141,5 @@ app/static_media/*
 *.pem
 *.ibd
 app/macmail/settings.py
+/data_bkp
+app/macmail/settings.py
