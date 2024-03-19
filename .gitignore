@@ -142,4 +142,5 @@ app/static_media/*
 *.ibd
 app/macmail/settings.py
 /data_bkp
-app/macmail/settings.py
+/data
+/issues/Planificaciones
