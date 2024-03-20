@@ -373,7 +373,7 @@ class TemplateFiles(models.Model):
         __str__(): Returns a string representation of the template file.
 
     """
-    name = models.CharField(max_length=64, default="Sudject")
+    name = models.CharField(max_length=64, default="Sudject", verbose_name="Subject")
     orden = models.PositiveIntegerField(default=1)
     file = models.FileField(upload_to='template_files/', blank=True, null=True)
     text = RichTextUploadingField(blank=True, null=True, config_name='awesome_ckeditor')
