@@ -343,6 +343,13 @@ class MailAdmin(admin.ModelAdmin):
                 # clientes = Clientes.objects.filter(responsible__in=accounts)
                 # Filtra los clientes cuyo 'responsable' coincide con un ID particular
                 kwargs["queryset"] = Clientes.objects.filter(responsible__in=accounts)
+
+        if db_field.name == 'mail_corp':
+            if not if_admin(request.user):
+                accounts = get_response_account(request.user)
+
+                kwargs["queryset"] = MailCorp.objects.filter(user=request.user)
+
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
