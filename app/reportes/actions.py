@@ -228,13 +228,38 @@ def add_image_to_email(content: str, message: MIMEMultipart) -> str:
         print(e_error)
         raise e_error
 
-def register_first_email(id_mail: int) -> bool:
+def register_first_email(id_mail: int):
+    """
+    Register the first email sent to a client.
 
-    mail = Mail.objects.get(id=id_mail)
-    cliente = Clientes.objects.get(id=mail.cliente.id)
-    cliente.contacted = True
-    cliente.contacted_on = datetime.now()
-    cliente.save()
+    Args:
+        id_mail (int): The ID of the email to register.
+
+    Raises:
+        Mail.DoesNotExist: If the email with the given ID does not exist.
+        Clientes.DoesNotExist: If the client associated with the email does not exist.
+
+    """
+    try:
+        mail = Mail.objects.get(id=id_mail)
+        if mail.send_number == 1:
+            cliente = Clientes.objects.get(id=mail.cliente.id)
+            cliente.contacted = True
+            cliente.contacted_on = datetime.now()
+            cliente.save()
+    except Mail.DoesNotExist as e_error:
+        print("Error al registrar el primer mail")
+        print("No existe el mail")
+        raise e_error
+    except Clientes.DoesNotExist as e_error:
+        print("Error al registrar el primer mail")
+        print("No existe el cliente")
+        raise e_error
+    except Exception as e_error:
+        print("Error al registrar el primer mail")
+        print(e_error)
+        raise e_error
+
 
 def send_mail(id_mail: int) -> bool:
     """
@@ -361,6 +386,7 @@ def send_mail_api(request, id_mail: int) -> bool:
                 server.send_message(message)
                 server.quit()
                 registro_envio_mail(id_mail, msg_data['number']+1)
+                register_first_email(id_mail)
                 return True
             except Exception as e_error:
                 print("Error en el envio del mail")
@@ -566,9 +592,10 @@ class EmailAPI(APIView):
         except Exception as e_error:
             print("Error al obtener los adjuntos")
             print(e_error)
-            
+
             # respuesta = Response(status=status.HTTP_200_OK)
-            respuesta = Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, data="Error con los adjuntos" )
+            respuesta = Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+                                 data="Error con los adjuntos" )
             print(respuesta)
             return respuesta
 
@@ -586,6 +613,7 @@ class EmailAPI(APIView):
                     server.send_message(message)
                     server.quit()
                     registro_envio_mail(msg_data['mail_id'], msg_data['number']+1)
+                    register_first_email(msg_data['mail_id'])
 
                     mail_to_send = MailsToSend.objects.get(id=msg_data['mail_to_send_id'])
                     mail_to_send.send = True
