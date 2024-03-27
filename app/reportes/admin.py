@@ -461,8 +461,8 @@ class MailsToSendAdmin(admin.ModelAdmin):
             obj.date_approved = timezone.now()
         super().save_model(request, obj, form, change)
 
-    mail_body.short_description = 'Cuerpo del Email'
-    mail_subject.short_description = 'Asunto del Email'
+    mail_body.short_description = 'Email Body'
+    mail_subject.short_description = 'Email subject'
 
     actions = [enviar_email]
 
@@ -555,3 +555,5 @@ admin.site.register(Account, AccountAdmin)
 admin.site.register(MailCorp, MailCorpAdmin)
 admin.site.register(TemplatesGroup, TemplateGroupAdmin)
 admin.site.register(TemplateFiles, TemplateFilesAdmin)
+
+admin.site.site_header = 'MacMailing'
