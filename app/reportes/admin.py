@@ -1,9 +1,12 @@
 """ Configuraciones del Admin """
 from datetime import date
+from django.http import HttpRequest
+from django.http.response import HttpResponse
 from django.utils.safestring import mark_safe
 from django.utils import timezone
 from django.contrib import admin, messages
 
+from .forms import MailForm
 from auxiliares.models import EmailType
 
 from .utils import UtilExcelFile
@@ -104,6 +107,13 @@ def get_response_account(user):
     ''' Obtener las cuentas de respuesta del usuario '''
     return MailCorp.objects.filter(user=user)
 
+def create_mails(modeladmin, request, queryset):
+    ''' Función para crear los mails '''
+
+    for obj in queryset:
+        print(obj)
+        print(type(obj))
+
 
 class AccountAdmin(admin.ModelAdmin):
     ''' Admin View for Account '''
@@ -122,6 +132,11 @@ class AccountAdmin(admin.ModelAdmin):
 
     #     return queryset
 
+class MailInline(admin.StackedInline):
+    """ Clase para mostrar los mails en la vista de Clientes """
+    model = Mail
+    form = MailForm
+    extra = 1  # Permite agregar múltiples instancias del modelo Mail en una sola vista
 
 class ClientesEmailInline(admin.TabularInline):
     '''
@@ -140,6 +155,7 @@ class ClientesAdmin(admin.ModelAdmin):
                 'lead_name', 'status', 'responsible', 'contacted']
     list_filter = ['contacted', 'responsible', 'lead_name']
     inlines = [ClientesEmailInline]
+    actions = [create_mails]
 
     def get_queryset(self, request):
         ''' Obtener el queryset base '''
@@ -292,6 +308,8 @@ class MailAdmin(admin.ModelAdmin):
     '''
     Admin View for Mail
     '''
+    # form = MailForm
+
     class Media:
         ''' Media files for admin '''
         js = ('admin/js/admin/admin_script.js',)
@@ -352,6 +370,10 @@ class MailAdmin(admin.ModelAdmin):
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+    # def add_view(self, request, form_url='', extra_context=None):
+    #     # self.fields = ['clientes', 'subject', 'body']
+    #     return super().add_view(request, form_url=form_url, extra_context=extra_context)
+
 
     def proximo(self, obj):
         '''
@@ -379,14 +401,6 @@ class MailAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         if obj.use_template and obj.template_group and obj.send_number == 0:
             actualizar_con_template(obj.id)
-
-
-class MailInline(admin.TabularInline):
-    '''
-    Tabular Inline View for Mail
-    '''
-    model = ClientesEmail
-
 
 class MailsToSendAdmin(admin.ModelAdmin):
     '''
