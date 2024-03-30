@@ -1,7 +1,12 @@
 {
     "cSpell.words": [
+        "dias",
         "direccion",
+        "envio",
+        "funcion",
+        "loggeo",
         "polizas",
+        "puntuacion",
         "superusuario",
         "Tiposdoc"
     ],
@@ -16,7 +21,7 @@
         "activityBar.foreground": "#ffffff",
         "activityBar.background": "#9ec102",
         "activityBar.inactiveForeground": "#555555",
-        "activityBarBadge.background": "#06B9A5", 
+        "activityBarBadge.background": "#06B9A5",
         "activityBarBadge.foreground": "#15202B",
         "statusBar.background": "#9ec102",
         "statusBar.foreground": "#252525",

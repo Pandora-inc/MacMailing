@@ -42,7 +42,7 @@ def enviar_email(modeladmin, request, queryset):
                 messages.warning(request, "Email no aprobado")
                 print("Email no aprobado")
     except Exception as e:
-         messages.error(request, f"Error al enviar: {e}")
+        messages.error(request, f"Error al enviar: {e}")
 
 enviar_email.short_description = "Send email"
 
@@ -305,7 +305,7 @@ class MailAdmin(admin.ModelAdmin):
                      'cliente__last_name',
                      'cliente__cliente_id',
                      'subject',
-                     'send_number', 
+                     'send_number',
                      'status',
                      'last_send']
     ordering = ['mail_corp', 'cliente', 'subject',
@@ -332,7 +332,7 @@ class MailAdmin(admin.ModelAdmin):
         if obj and obj.status_response:
             return self.readonly_fields + ('mail_corp', 'cliente', 'subject', 'body',
                                            'attachment', 'status', 'status_response',
-                                           'template_group', 'reminder_days', 'use_template',) 
+                                           'template_group', 'reminder_days', 'use_template',)
         return self.readonly_fields
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
@@ -399,9 +399,10 @@ class MailsToSendAdmin(admin.ModelAdmin):
         'mail_subject',
         'mail_body',
         'user_approved',
-        'date_approved')
+        'date_approved',
+        'error_message',)
     search_fields = ['mail__mail_corp__name', 'mail__cliente__lead_name', 'approved', 'send']
-    ordering = ['mail', 'approved', 'send']
+    ordering = ['mail', 'approved', 'send', 'status']
 
     def get_queryset(self, request):
         '''

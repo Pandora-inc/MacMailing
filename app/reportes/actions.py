@@ -1,4 +1,4 @@
-
+""" This module contains functions to send emails and update the database. """
 from datetime import timedelta, datetime
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
@@ -10,16 +10,15 @@ from pathlib import Path
 import string
 import smtplib
 import ssl
-from reportes.serializers import MailSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from django.http import Http404
 from django.db import connection
-from django.contrib.auth import get_user
 from calendarapp.models import Event
-from reportes.models import Clientes, Mail, TemplateFiles, MailsToSend
+from reportes.serializers import MailSerializer
+from reportes.models import (Clientes, Mail, TemplateFiles, MailsToSend)
 
 
 PRE_URL = str(Path(__file__).resolve().parent.parent)
@@ -27,7 +26,7 @@ PRE_URL = PRE_URL+'/'
 
 def crear_evento(mail: Mail):
     """
-    Creates or updates an event in the calendar app based on the 
+    Creates or updates an event in the calendar app based on the
     information provided in a 'Mail' object.
 
     Args:
@@ -73,7 +72,7 @@ def crear_evento(mail: Mail):
 
 def actualizar_con_template(id_mail: int):
     """
-    Creates or updates an event in the calendar app based on the 
+    Creates or updates an event in the calendar app based on the
     information provided in a 'Mail' object.
 
     Args:
@@ -88,15 +87,17 @@ def actualizar_con_template(id_mail: int):
     """
     try:
         mail = Mail.objects.get(id=id_mail)
-        if TemplateFiles.objects.filter(template_group_id=mail.template_group, orden=mail.send_number+1).exists():
-            template = TemplateFiles.objects.get(template_group_id=mail.template_group, orden=mail.send_number+1)
+        if TemplateFiles.objects.filter(template_group_id=mail.template_group,
+                                        orden=mail.send_number+1).exists():
+            template = TemplateFiles.objects.get(template_group_id=mail.template_group,
+                                                 orden=mail.send_number+1)
             mail.body = template.text
             mail.subject = template.name
             mail.save()
-    except Mail.DoesNotExist:
+    except Mail.DoesNotExist as exc:
         print("Error al actualizar el mail con el template")
         print("No existe el mail")
-        raise Http404
+        raise Http404 from exc
     except Exception as e_error:
         print("Error al actualizar el mail con el template")
         print(e_error)
@@ -104,7 +105,7 @@ def actualizar_con_template(id_mail: int):
 
 def registro_envio_mail(id_mail: int, send_number: int):
     """
-    Update the status of a sent email in the database and create or update an 
+    Update the status of a sent email in the database and create or update an
     event in the calendar app.
 
     Args:
@@ -115,9 +116,9 @@ def registro_envio_mail(id_mail: int, send_number: int):
         None
 
     Additional aspects:
-        - This function requires the 'crear_evento' function to be defined 
+        - This function requires the 'crear_evento' function to be defined
             and imported in the module.
-        - The function uses the Django ORM to retrieve the 'Mail' object 
+        - The function uses the Django ORM to retrieve the 'Mail' object
             associated with the 'id_mail' input.
     """
     with connection.cursor():
@@ -272,62 +273,7 @@ def send_mail(id_mail: int) -> bool:
         bool: True if the email was sent successfully, False otherwise.
     """
     msg_data = get_mail_data(id_mail)
-
-    message = MIMEMultipart()
-    message['From'] = msg_data['from_email']
-    message['To'] = msg_data['To']
-    message['Subject'] = msg_data['Subject']
-    message['cc'] = msg_data['CC']
-
-    msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
-    msg_data['firma'] = prepare_email_body(msg_data['firma'], msg_data)
-
-    msg_data['content'] = add_image_to_email(msg_data['content'], message)
-    msg_data['firma'] = add_image_to_email(msg_data['firma'], message)
-
-    content = msg_data['content']+msg_data['firma']
-
-    message.attach(MIMEText(content, "html"))
-
-    with connection.cursor() as cursor:
-        consulta_attachment = f"SELECT * FROM reportes_mail_attachment \
-                                    INNER JOIN reportes_attachment ON reportes_attachment.id = reportes_mail_attachment.attachment_id \
-                                    WHERE mail_id = {id_mail}"
-        cursor.execute(consulta_attachment)
-        attachment = cursor.fetchall()
-
-        for f in attachment:
-            with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
-                part = MIMEBase('application', 'octet-stream')
-                part.set_payload(file.read())
-                encoders.encode_base64(part)
-                part.add_header('Content-Disposition', f'attachment; filename={f[4]+"."+f[5].split(".")[-1]}')
-                message.attach(part)
-
-    context = ssl.create_default_context()
-    try:
-        with smtplib.SMTP(msg_data['from_smtp'], msg_data['from_port']) as server:
-            server.starttls(context=context)
-            try:
-                server.login(msg_data['from_email'], msg_data['from_pass'])
-            except Exception as e_error:
-                print("Error en el loggeo")
-                server.quit()
-                raise e_error
-            try:
-                server.send_message(message)
-                server.quit()
-                registro_envio_mail(id_mail, msg_data['number']+1)
-                register_first_email(id_mail)
-                return True
-            except Exception as e_error:
-                print("Error en el envio del mail")
-                server.quit()
-                raise e_error
-    except Exception as e_error:
-        print("Error en la conexión con el servidor")
-        print(e_error)
-        raise e_error
+    send_new_mail(msg_data)
 
 def send_mail_api(request, id_mail: int) -> bool:
     """
@@ -340,66 +286,12 @@ def send_mail_api(request, id_mail: int) -> bool:
         bool: True if the email was sent successfully, False otherwise.
     """
     msg_data = get_mail_data(id_mail)
+    send_new_mail(msg_data)
 
-    message = MIMEMultipart()
-    message['From'] = msg_data['from_email']
-    message['To'] = msg_data['To']
-    message['Subject'] = msg_data['Subject']
-    message['cc'] = msg_data['CC']
-
-    msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
-    msg_data['firma'] = prepare_email_body(msg_data['firma'], msg_data)
-
-    msg_data['content'] = add_image_to_email(msg_data['content'], message)
-    msg_data['firma'] = add_image_to_email(msg_data['firma'], message)
-
-    content = msg_data['content']+msg_data['firma']
-
-    message.attach(MIMEText(content, "html"))
-
-    with connection.cursor() as cursor:
-        consulta_attachment = f"SELECT * FROM reportes_mail_attachment \
-                                    INNER JOIN reportes_attachment ON reportes_attachment.id = reportes_mail_attachment.attachment_id \
-                                    WHERE mail_id = {id_mail}"
-        cursor.execute(consulta_attachment)
-        attachment = cursor.fetchall()
-
-        for f in attachment:
-            with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
-                part = MIMEBase('application', 'octet-stream')
-                part.set_payload(file.read())
-                encoders.encode_base64(part)
-                part.add_header('Content-Disposition', f'attachment; filename={f[4]+"."+f[5].split(".")[-1]}')
-                message.attach(part)
-
-    context = ssl.create_default_context()
-    try:
-        with smtplib.SMTP(msg_data['from_smtp'], msg_data['from_port']) as server:
-            server.starttls(context=context)
-            try:
-                server.login(msg_data['from_email'], msg_data['from_pass'])
-            except Exception as e_error:
-                print("Error en el loggeo")
-                server.quit()
-                raise e_error
-            try:
-                server.send_message(message)
-                server.quit()
-                registro_envio_mail(id_mail, msg_data['number']+1)
-                register_first_email(id_mail)
-                return True
-            except Exception as e_error:
-                print("Error en el envio del mail")
-                server.quit()
-                raise e_error
-    except Exception as e_error:
-        print("Error en la conexión con el servidor")
-        print(e_error)
-        raise e_error
 
 def get_template_file_and_save(id_template: int):
     """
-    Retrieves a template file from the database, reads its contents, 
+    Retrieves a template file from the database, reads its contents,
     and saves the contents as text in the same template object.
 
     Args:
@@ -459,7 +351,7 @@ def emails_cadena(cadena):
 
                         # si tiene dos o más caracteres, el dominio es válido.
                         # Quitamos los espacios que puedan haber en el dominio
-                        # y añadimos el correo (tupla) en la lista 'emails'
+                        # y añadimos el correo (dupla) en la lista 'emails'
                         if len(dominio.split(".")[-1]) > 1:
                             dominio_limpio = dominio.replace(" ", "")
                             emails.append((nombre, dominio_limpio))
@@ -541,6 +433,138 @@ def get_next_email_data() -> dict:
 
         return msg
 
+def send_new_mail(msg_data) -> bool:
+    """
+    Sends a new email using the provided message data.
+
+    Args:
+        msg_data (dict): A dictionary containing the necessary data for
+            sending the email. It should have the following keys:
+            - 'from_email' (str): The email address of the sender.
+            - 'To' (str): The email address of the recipient.
+            - 'Subject' (str): The subject of the email.
+            - 'CC' (str): The email addresses to be included in the CC field.
+            - 'content' (str): The content of the email.
+            - 'firma' (str): The signature of the email.
+            - 'mail_to_send_id' (int): The ID of the mail to be sent.
+
+    Returns:
+        bool: True if the email was sent successfully, False otherwise.
+
+    Raises:
+        MailsToSend.DoesNotExist: If the mail with the given ID does not exist.
+        Exception: If there is an error in the process of sending the email.
+
+    Additional aspects:
+        - This function uses the 'prepare_email_body' function to prepare
+            the email body by replacing variables with client data.
+        - This function uses the 'add_image_to_email' function to locate and
+            format images in the email content.
+        - This function uses the Django ORM to retrieve the 'MailsToSend' object
+            associated with the 'mail_to_send_id' input.
+        - This function uses the 'register_envio_mail' function to update the status
+             of the sent email in the database and create or update an event in the calendar app.
+        - This function uses the 'register_first_email' function to register the first
+            email sent to a client.
+        - This function uses the 'smtplib' library to establish a connection with the
+            SMTP server and send the email.
+        - This function handles various exceptions and updates the status and error message
+            of the 'MailsToSend' object accordingly.
+
+    """
+
+    message = MIMEMultipart()
+    message['From'] = msg_data['from_email']
+    message['To'] = msg_data['To']
+    message['Subject'] = msg_data['Subject']
+    message['cc'] = msg_data['CC']
+
+    msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
+    msg_data['firma'] = prepare_email_body(msg_data['firma'], msg_data)
+
+    msg_data['content'] = add_image_to_email(msg_data['content'], message)
+    msg_data['firma'] = add_image_to_email(msg_data['firma'], message)
+
+    content = msg_data['content']+msg_data['firma']
+
+    message.attach(MIMEText(content, "html"))
+    try:
+        mail_to_send = MailsToSend.objects.get(id=msg_data['mail_to_send_id'])
+
+        with connection.cursor() as cursor:
+            cursor.callproc("get_mail_attachment", [msg_data['mail_id']])
+            attachment = cursor.fetchall()
+
+            for f in attachment:
+                with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
+                    part = MIMEBase('application', 'octet-stream')
+                    part.set_payload(file.read())
+                    encoders.encode_base64(part)
+                    filename = f[4]+"."+f[5].split(".")[-1]
+                    part.add_header('Content-Disposition', f'attachment; filename={filename}')
+                    message.attach(part)
+
+    except MailsToSend.DoesNotExist as e_error:
+        error = "Error al obtener el mail a enviar"
+        print(error)
+        print("ID del mail a enviar: "+str(msg_data['mail_to_send_id']))
+        raise e_error
+
+    except Exception as e_error:
+        error = "Error al obtener los adjuntos"
+        mail_to_send = MailsToSend.objects.get(id=msg_data['mail_to_send_id'])
+        mail_to_send.status = False
+        mail_to_send.error_message = error
+        mail_to_send.save()
+
+        # respuesta = Response(status=status.HTTP_200_OK)
+        respuesta = Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                             data="Error con los adjuntos" )
+        print(e_error)
+        return respuesta
+
+    context = ssl.create_default_context()
+    try:
+        with smtplib.SMTP(msg_data['from_smtp'], msg_data['from_port']) as server:
+            server.starttls(context=context)
+            try:
+                server.login(msg_data['from_email'], msg_data['from_pass'])
+            except Exception as e_error:
+                error = "Error en el loggeo"
+                mail_to_send.status = False
+                mail_to_send.error_message = error
+                mail_to_send.save()
+                server.quit()
+                raise e_error
+            try:
+                server.send_message(message)
+                server.quit()
+                registro_envio_mail(msg_data['mail_id'], msg_data['number']+1)
+                register_first_email(msg_data['mail_id'])
+
+                mail_to_send.send = True
+                mail_to_send.save()
+            except Exception as e_error:
+                error = "Error en el envio del mail"
+                mail_to_send.status = False
+                mail_to_send.error_message = error
+                mail_to_send.save()
+                server.quit()
+                raise e_error
+            else:
+                # respuesta = Response(status=status.HTTP_200_OK)
+                respuesta = Response(status=status.HTTP_200_OK,
+                                     data={'mail_id': msg_data['mail_id']} )
+                print(respuesta)
+                return respuesta
+    except Exception as e_error:
+        error = "Error en la conexión con el servidor"
+        mail_to_send.status = False
+        mail_to_send.error_message = error
+        mail_to_send.save()
+        print(e_error)
+        raise e_error
+
 class EmailAPI(APIView):
     """
     API endpoint that allows emails to be sent.
@@ -561,81 +585,7 @@ class EmailAPI(APIView):
         if msg_data is None:
             return Response(status=status.HTTP_208_ALREADY_REPORTED)
 
-        message = MIMEMultipart()
-        message['From'] = msg_data['from_email']
-        message['To'] = msg_data['To']
-        message['Subject'] = msg_data['Subject']
-        message['cc'] = msg_data['CC']
-
-        msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
-        msg_data['firma'] = prepare_email_body(msg_data['firma'], msg_data)
-
-        msg_data['content'] = add_image_to_email(msg_data['content'], message)
-        msg_data['firma'] = add_image_to_email(msg_data['firma'], message)
-
-        content = msg_data['content']+msg_data['firma']
-
-        message.attach(MIMEText(content, "html"))
-        try:
-            with connection.cursor() as cursor:
-                cursor.callproc("get_mail_attachment", [msg_data['mail_id']])
-                attachment = cursor.fetchall()
-
-                for f in attachment:
-                    with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
-                        part = MIMEBase('application', 'octet-stream')
-                        part.set_payload(file.read())
-                        encoders.encode_base64(part)
-                        filename = f[4]+"."+f[5].split(".")[-1]
-                        part.add_header('Content-Disposition', f'attachment; filename={filename}')
-                        message.attach(part)
-        except Exception as e_error:
-            print("Error al obtener los adjuntos")
-            print(e_error)
-
-            # respuesta = Response(status=status.HTTP_200_OK)
-            respuesta = Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-                                 data="Error con los adjuntos" )
-            print(respuesta)
-            return respuesta
-
-        context = ssl.create_default_context()
-        try:
-            with smtplib.SMTP(msg_data['from_smtp'], msg_data['from_port']) as server:
-                server.starttls(context=context)
-                try:
-                    server.login(msg_data['from_email'], msg_data['from_pass'])
-                except Exception as e_error:
-                    print("Error en el loggeo")
-                    server.quit()
-                    raise e_error
-                try:
-                    server.send_message(message)
-                    server.quit()
-                    registro_envio_mail(msg_data['mail_id'], msg_data['number']+1)
-                    register_first_email(msg_data['mail_id'])
-
-                    mail_to_send = MailsToSend.objects.get(id=msg_data['mail_to_send_id'])
-                    mail_to_send.send = True
-                    mail_to_send.save()
-                except MailsToSend.DoesNotExist as e_error:
-                    print("Error al actualizar el estado del mail a enviar")
-                    print("ID del mail a enviar: "+str(msg_data['mail_to_send_id']))
-                    server.quit()
-                    raise e_error
-                except Exception as e_error:
-                    print("Error en el envio del mail")
-                    server.quit()
-                    raise e_error
-                else:
-                    # respuesta = Response(status=status.HTTP_200_OK)
-                    respuesta = Response(status=status.HTTP_200_OK, data={'mail_id': msg_data['mail_id']} )
-                    print(respuesta)
-                    return respuesta
-        except Exception as e_error:
-            print("Error en la conexión con el servidor")
-            print(e_error)
-            raise e_error
+        send_new_mail(msg_data)
 
     def get_object(self, pk):
         """
@@ -669,7 +619,8 @@ class EmailAPI(APIView):
                 - 'firma': The signature in the email.
                 - 'user_name': The user's name in the email.
                 - 'user_last_name': The user's last name in the email.
-                - 'CC': The CC recipients of the email, separated by commas. Empty string if no CC recipients.
+                - 'CC': The CC recipients of the email, separated by commas.
+                    Empty string if no CC recipients.
 
         Raises:
             Http404: If the email object with the specified primary key does not exist.
@@ -677,7 +628,6 @@ class EmailAPI(APIView):
         try:
             with connection.cursor() as cursor:
                 cursor.callproc("get_mail_data", [pk])
-                # data = dictfetchall(cursor)
                 row = cursor.fetchone()
 
                 msg = {}
@@ -722,11 +672,13 @@ class EmailAPI(APIView):
             raise Http404 from exc
 
     def get(self, request, pk, format=None):
+        """ Get the email object with the specified primary key (pk). """
         mail = self.get_object(pk)
         serializer = MailSerializer(mail)
         return Response(serializer.data)
 
     def put(self, request, pk, format=None):
+        """ Update the email object with the specified primary key (pk). """
         mail = self.get_object(pk)
         serializer = MailSerializer(mail, data=request.data)
         if serializer.is_valid():
@@ -735,6 +687,7 @@ class EmailAPI(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, format=None):
+        """ Create a new email object. """
         serializer = MailSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
