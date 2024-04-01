@@ -542,8 +542,6 @@ def send_new_mail(msg_data) -> bool:
                 registro_envio_mail(msg_data['mail_id'], msg_data['number']+1)
                 register_first_email(msg_data['mail_id'])
 
-                mail_to_send.send = True
-                mail_to_send.save()
             except Exception as e_error:
                 error = "Error en el envio del mail"
                 mail_to_send.status = False
@@ -552,7 +550,10 @@ def send_new_mail(msg_data) -> bool:
                 server.quit()
                 raise e_error
             else:
-                # respuesta = Response(status=status.HTTP_200_OK)
+
+                mail_to_send.send = True
+                mail_to_send.save()
+                print(mail_to_send)
                 respuesta = Response(status=status.HTTP_200_OK,
                                      data={'mail_id': msg_data['mail_id']} )
                 print(respuesta)
