@@ -273,7 +273,9 @@ def send_mail(id_mail: int) -> bool:
         bool: True if the email was sent successfully, False otherwise.
     """
     msg_data = get_mail_data(id_mail)
-    send_new_mail(msg_data)
+    if send_new_mail(msg_data):
+        return True
+    return False
 
 def send_mail_api(request, id_mail: int) -> bool:
     """
@@ -514,13 +516,12 @@ def send_new_mail(msg_data) -> bool:
         error = "Error al obtener los adjuntos"
         mail_to_send = MailsToSend.objects.get(id=msg_data['mail_to_send_id'])
         mail_to_send.status = False
-        mail_to_send.error_message = error
+        mail_to_send.error_message = error + " - " + str(e_error)
         mail_to_send.save()
 
         # respuesta = Response(status=status.HTTP_200_OK)
         respuesta = Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                              data="Error con los adjuntos" )
-        print(e_error)
         return respuesta
 
     context = ssl.create_default_context()
@@ -532,7 +533,7 @@ def send_new_mail(msg_data) -> bool:
             except Exception as e_error:
                 error = "Error en el loggeo"
                 mail_to_send.status = False
-                mail_to_send.error_message = error
+                mail_to_send.error_message = error + " - " + str(e_error)
                 mail_to_send.save()
                 server.quit()
                 raise e_error
@@ -545,7 +546,7 @@ def send_new_mail(msg_data) -> bool:
             except Exception as e_error:
                 error = "Error en el envio del mail"
                 mail_to_send.status = False
-                mail_to_send.error_message = error
+                mail_to_send.error_message = error + " - " + str(e_error)
                 mail_to_send.save()
                 server.quit()
                 raise e_error
@@ -553,7 +554,6 @@ def send_new_mail(msg_data) -> bool:
 
                 mail_to_send.send = True
                 mail_to_send.save()
-                print(mail_to_send)
                 respuesta = Response(status=status.HTTP_200_OK,
                                      data={'mail_id': msg_data['mail_id']} )
                 print(respuesta)
@@ -561,9 +561,8 @@ def send_new_mail(msg_data) -> bool:
     except Exception as e_error:
         error = "Error en la conexión con el servidor"
         mail_to_send.status = False
-        mail_to_send.error_message = error
+        mail_to_send.error_message = error + " - " + str(e_error)
         mail_to_send.save()
-        print(e_error)
         raise e_error
 
 class EmailAPI(APIView):
