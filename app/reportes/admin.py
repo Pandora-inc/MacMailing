@@ -392,7 +392,7 @@ class MailsToSendAdmin(admin.ModelAdmin):
     '''
     Admin View for MailsToSend
     '''
-    list_display = ['mail', 'approved', 'mail_to', 'mail_from']
+    list_display = ['mail', 'approved', 'mail_to', 'mail_from', 'status']
     exclude = ('send',)
     readonly_fields = (
         'mail_from',
