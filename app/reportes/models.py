@@ -1,10 +1,10 @@
 """ Modelo de datos relacionados a la actividad """
-from django.db import models
 from django.contrib.auth.models import User
-from auxiliares.models import ContactType, Country, EmailType, SocialType, WebType, Type
-from ckeditor_uploader.fields import RichTextUploadingField
+from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from auxiliares.models import ContactType, Country, EmailType, SocialType, WebType, Type
+from ckeditor_uploader.fields import RichTextUploadingField
 
 SALUTATIONS = [('Mrs.', 'Mrs.'), ('Mr.', 'Mr.'), ('Ms.', 'Ms.'),
                ('Dr.', 'Dr.'), ('Prof.', 'Prof.'), ('Other', 'Other')]
@@ -66,8 +66,8 @@ class MailCorp(models.Model):
     account = models.ForeignKey(
         Account, models.RESTRICT, blank=True, null=True)
     user = models.ForeignKey(User, models.RESTRICT)
-    firma = RichTextUploadingField(blank=True, null=True, 
-                                   config_name='awesome_ckeditor', 
+    firma = RichTextUploadingField(blank=True, null=True,
+                                   config_name='awesome_ckeditor',
                                    verbose_name='signature')
 
     def __str__(self):
@@ -405,7 +405,7 @@ class TemplateFiles(models.Model):
 
     def __str__(self):
         return str(self.name)
-    
+
     class Meta:
         """ Meta data of the model """
         verbose_name = 'template file'
@@ -435,7 +435,7 @@ class Mail(models.Model):
         __str__(): Returns a string representation of the email.
 
     Meta:
-        unique_together (tuple): Specifies that the combination of 'cliente' and 
+        unique_together (tuple): Specifies that the combination of 'cliente' and
         'mail_corp' should be unique.
 
     """
@@ -485,6 +485,8 @@ class MailsToSend (models.Model):
         User, models.RESTRICT, blank=True, null=True)
     date_approved = models.DateTimeField(blank=True, null=True)
     approved = models.BooleanField(default=False)
+    status = models.BooleanField(default=True)
+    error_message = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return str(self.mail)
@@ -547,11 +549,6 @@ class ExcelFiles(models.Model):
         verbose_name = 'excel file'
         verbose_name_plural = 'excel files'
 
-
-"""
-Lo siguiente se ejecuta al guardar las plantillas. 
-"""
-
 def propague_template(id_template: int):
     """
     Propagates a template to mails with a specific order number.
@@ -569,7 +566,7 @@ def propague_template(id_template: int):
         propague_template(1)
 
     This function retrieves a template with the given ID and propagates it to mails that
-    have a specific order number. It updates the subject and body of each mail with the 
+    have a specific order number. It updates the subject and body of each mail with the
     template's name and text, respectively.
     """
     template = TemplateFiles.objects.get(id=id_template)

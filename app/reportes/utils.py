@@ -23,13 +23,13 @@ class UtilExcelFile():
     Methods:
     - __init__: Initializes the class with an empty workbook and active worksheet.
     - open_file: Opens an Excel file and sets the workbook and active worksheet.
-    - clean_name: Cleans the name of a column by removing spaces, dashes, periods, 
+    - clean_name: Cleans the name of a column by removing spaces, dashes, periods,
         commas, parentheses, and slashes.
-    - get_structure: Returns a dictionary with the structure of the Excel file and a 
+    - get_structure: Returns a dictionary with the structure of the Excel file and a
         dictionary with the indices.
-    - get_data: Returns a dictionary with the data of the Excel file and a dictionary 
+    - get_data: Returns a dictionary with the data of the Excel file and a dictionary
         with the indices.
-    - print_datos: Prints the data of the Excel file to the console and creates and 
+    - print_datos: Prints the data of the Excel file to the console and creates and
         saves instances of various models in a Django project based on the data.
     - add_sheet: Adds a sheet to the Excel file.
     - add_row: Adds a row to the active worksheet.
@@ -242,7 +242,8 @@ class UtilExcelFile():
                             contact.save()
 
                     elif nombre and WebType.objects.filter(name=nombre):
-                        if not ClientesWeb.objects.filter(cliente=cliente, type=WebType.objects.get(name=nombre)).exists():
+                        if not ClientesWeb.objects.filter(cliente=cliente,
+                                                          type=WebType.objects.get(name=nombre)).exists():
                             cliente.add_web(
                                 WebType.objects.get(name=nombre), item[i])
                         else:
@@ -252,7 +253,8 @@ class UtilExcelFile():
                             contact.save()
 
                     elif nombre and EmailType.objects.filter(name=nombre):
-                        if not ClientesEmail.objects.filter(cliente=cliente, type=EmailType.objects.get(name=nombre)).exists():
+                        if not ClientesEmail.objects.filter(cliente=cliente,
+                                                            type=EmailType.objects.get(name=nombre)).exists():
                             cliente.add_email(
                                 EmailType.objects.get(name=nombre), item[i])
                         else:
@@ -262,7 +264,8 @@ class UtilExcelFile():
                             contact.save()
 
                     elif nombre and SocialType.objects.filter(name=nombre):
-                        if not ClientesSocial.objects.filter(cliente=cliente, type=SocialType.objects.get(name=nombre)).exists():
+                        if not ClientesSocial.objects.filter(cliente=cliente,
+                                                             type=SocialType.objects.get(name=nombre)).exists():
                             cliente.add_social(
                                 SocialType.objects.get(name=nombre), item[i])
                         else:
@@ -616,15 +619,15 @@ class UtilExcelFile():
         '''
         try:
             if 'type' in data:
-                type = data['type'][indice]
+                tipo = data['type'][indice]
             elif 'tipo' in data:
-                type = data['tipo'][indice]
+                tipo = data['tipo'][indice]
             else:
                 return None
 
-            return Type.objects.get(name=type)
+            return Type.objects.get(name=tipo)
         except Type.DoesNotExist:
-            tipo = Type(name=type)
+            tipo = Type(name=tipo)
             tipo.save()
             return tipo
             # raise ValueError('The type does not exist: ' + type) from exc
