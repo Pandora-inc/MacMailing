@@ -36,7 +36,7 @@ urlpatterns = [
     path("send_email/<int:id_mail>", actions.send_mail_api, name="send_email"),
     path("send_next_email/", EmailAPI.send_next_mail, name="send_next_email"),
     path("timer_to_send_email/", timer_to_send.timer_to_send_email, name="timer_to_send_email"),
-    path('crear_correo/', crear_correo, name='crear_correo'),
+    path('admin/reportes/mail/send_mail_form/', crear_correo, name='crear_correo'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -31,7 +31,7 @@ class ExcelSerializer(serializers.ModelSerializer):
 
 class MailSerializer(serializers.Serializer):
     """ Serializer para el envío de correos electrónicos """
-    
+
     subject = serializers.CharField(max_length=100)
     from_name = serializers.CharField(max_length=100)
     from_email = serializers.EmailField()
@@ -54,4 +54,3 @@ class MailSerializer(serializers.Serializer):
     position = serializers.CharField()
     type = serializers.CharField()
     firma = serializers.CharField()
-    

@@ -4,6 +4,7 @@ from django.http import HttpRequest
 from django.http.response import HttpResponse
 from django.utils.safestring import mark_safe
 from django.utils import timezone
+from django.shortcuts import redirect, render
 from django.contrib import admin, messages
 
 from .forms import MailForm
@@ -107,12 +108,6 @@ def get_response_account(user):
     ''' Obtener las cuentas de respuesta del usuario '''
     return MailCorp.objects.filter(user=user)
 
-def create_mails(modeladmin, request, queryset):
-    ''' Función para crear los mails '''
-
-    for obj in queryset:
-        print(obj)
-        print(type(obj))
 
 
 class AccountAdmin(admin.ModelAdmin):
@@ -155,7 +150,7 @@ class ClientesAdmin(admin.ModelAdmin):
                 'lead_name', 'status', 'responsible', 'contacted']
     list_filter = ['contacted', 'responsible', 'lead_name']
     inlines = [ClientesEmailInline]
-    actions = [create_mails]
+    actions = ['enviar_mail_replicado']
 
     def get_queryset(self, request):
         ''' Obtener el queryset base '''
@@ -166,6 +161,39 @@ class ClientesAdmin(admin.ModelAdmin):
             queryset = queryset.filter(responsible__in=accounts)
 
         return queryset
+
+    def enviar_mail_replicado(self, request, queryset):
+        ''' Función para crear los mails '''
+        if queryset.count() > 0:
+            # Redirigir al formulario de Mail replicado
+            selected_clientes_ids = queryset.values_list('id', flat=True)
+            url = f'/admin/reportes/mail/send_mail_form/?clientes={",".join(map(str, selected_clientes_ids))}'
+            return redirect(url)
+        else:
+            self.message_user(request, "No se han seleccionado clientes para enviar el Mail replicado.", level='warning')
+
+    enviar_mail_replicado.short_description = "Create a new mails"
+
+    def get_form(self, request, obj=None, **kwargs):
+        if obj is None:
+            return MailForm
+        return super().get_form(request, obj, **kwargs)
+
+    def send_mail_form(self, request):
+        if 'clientes' in request.GET:
+            selected_clientes_ids = map(int, request.GET.get('clientes').split(','))
+            initial_data = {'cliente': selected_clientes_ids}
+            form = MailForm(initial=initial_data)
+        else:
+            form = MailForm()
+        context = {
+            'form': form,
+            'title': 'Enviar Mail replicado'
+        }
+        return render(request, 'admin/send_mail_form.html', context)
+
+    def save_model(self, request, obj, form, change):
+        obj.save()
 
 
 class ClientesAddressAdmin(admin.ModelAdmin):
@@ -369,6 +397,38 @@ class MailAdmin(admin.ModelAdmin):
                 kwargs["queryset"] = MailCorp.objects.filter(user=request.user)
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_form(self, request, obj=None, **kwargs):
+        # Usar el formulario MailForm en la vista del admin
+        if obj is None:
+            return MailForm
+        return super().get_form(request, obj, **kwargs)
+
+    def send_mail_form(self, request):
+        # Vista para el formulario de Mail replicado
+        if 'clientes' in request.GET:
+            selected_clientes_ids = map(int, request.GET.get('clientes').split(','))
+            initial_data = {'cliente': selected_clientes_ids}
+            form = MailForm(initial=initial_data)
+        else:
+            form = MailForm()
+        context = {
+            'form': form,
+            'title': 'Enviar Mail replicado'
+        }
+        return render(request, 'admin/send_mail_form.html', context)
+    # Crea la plantilla send_mail_form.html en tu app admin
+
+    def save_model(self, request, obj, form, change):
+        # Guardar el objeto Mail replicado
+        obj.save()
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        if request.method == 'GET' and 'clientes' in request.GET:
+            # Preseleccionar clientes en el formulario si se pasan en la URL
+            selected_clientes_ids = map(int, request.GET.get('clientes').split(','))
+            self.prepopulated_fields = {'cliente': selected_clientes_ids}
+        return super().change_view(request, object_id, form_url, extra_context)
 
     # def add_view(self, request, form_url='', extra_context=None):
     #     # self.fields = ['clientes', 'subject', 'body']
