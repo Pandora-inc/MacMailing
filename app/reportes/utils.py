@@ -794,3 +794,23 @@ class UtilExcelFile():
             return data['país'][indice]
         else:
             return None
+
+
+
+def if_admin(user):
+    """ Función para verificar si el usuario es admin """
+    if user.is_superuser:
+        return True
+    else:
+        grupos = user.groups.all()
+
+        for grupo in grupos:
+            if grupo.name == 'SuperAdmin' or grupo.name == 'Admin':
+                return True
+
+        return False
+
+
+def get_response_account(user):
+    ''' Obtener las cuentas de respuesta del usuario '''
+    return MailCorp.objects.filter(user=user)

@@ -9,7 +9,7 @@ import calendar
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
-from reportes.admin import if_admin
+from reportes.utils import if_admin
 
 from calendarapp.models import EventMember, Event
 from calendarapp.utils import Calendar
@@ -140,7 +140,7 @@ class CalendarViewIndex(LoginRequiredMixin, generic.base.TemplateView):
         context = {"form": forms, "events": event_list,
                    "events_month": events_month}
         return render(request, self.template_name, context)
-    
+
 
 class CalendarViewNew(LoginRequiredMixin, generic.View):
     # login_url = "accounts:signin"

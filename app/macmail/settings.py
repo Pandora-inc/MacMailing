@@ -171,7 +171,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # ADMIN_REORDER = (
 #     # Keep original label and models
-#     {'app':'actividad', 'models': ('actividad.Clientes','actividad.Ordenes','actividad.Polizas','actividad.Comprobantes','actividad.Cheques','actividad.Rendiciones','actividad.Companias','actividad.Secciones','actividad.Productores')}, 
+#     {'app':'actividad', 'models': ('actividad.Clientes','actividad.Ordenes','actividad.Polizas','actividad.Comprobantes','actividad.Cheques','actividad.Rendiciones','actividad.Companias','actividad.Secciones','actividad.Productores')},
 #     {'app': 'reportes', 'models': ('reportes.RegistrosLibros', 'reportes.LibrosRubricados')},
 #     {'app': 'parametros', 'models': ('parametros.Bancos', 'parametros.Postal', 'parametros.Monedas', 'parametros.Tipospedido', 'parametros.Tipospoliza', 'parametros.Mediosdepago')},
 #     'auth',

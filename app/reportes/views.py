@@ -108,6 +108,7 @@ def crear_correo(request):
             form.save()
             return render(request, 'correo_creado.html')
     else:
+        print("pepinos")
         form = MailForm()
 
     context = {
