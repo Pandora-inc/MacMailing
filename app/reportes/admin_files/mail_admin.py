@@ -8,15 +8,17 @@ from django.urls import reverse
 
 from reportes.forms import MailForm
 from reportes.utils import get_response_account, if_admin
-from reportes.models import Clientes, Mail, MailCorp, MailsToSend, TemplatesGroup
+from reportes.models import Clientes, Mail, MailCorp, MailsToSend, TemplateFiles, TemplatesGroup
 
 
 def prepare_to_send(modeladmin, request, queryset):
     ''' Función para preparar los emails para enviar '''
     for obj in queryset:
         if obj.status_response is False:
+            print(obj.status)
             mail = MailsToSend()
-            mail.mail = obj
+            mail.mail = Mail.objects.get(pk=obj.pk)
+            print(obj.mail_corp)
             mail.save()
 
 prepare_to_send.short_description = "Prepare shipment"
@@ -164,14 +166,12 @@ class MailAdmin(admin.ModelAdmin):
             status_response = True if status_response == 'on' else False
 
             status = request.POST.get('status', False)
-            status = True if status == 'on' else False
+            status = True if (status in ['on', 'true', 1, True, "1"]) else False
 
             for cliente in clientes:
                 client = Clientes.objects.get(pk=cliente)
-                print(client)
                 if cliente:
                     if Mail.objects.filter(mail_corp=mail_corp, cliente=cliente).exists():
-                        print(cliente+" have a mail .")
                         self.message_user(request, cliente+" have a mail .", level=messages.WARNING)
                     else:
                         mail = Mail.objects.create(
@@ -183,6 +183,13 @@ class MailAdmin(admin.ModelAdmin):
                             template_group=template_group,
                             reminder_days=reminder_days
                         )
+                        if use_template and template_group:
+                            template = TemplateFiles.objects.filter(template_group=template_group,
+                                                                    orden=1)
+                            if template.exists():
+                                mail.body = template.first().text
+                                mail.subject = template.first().name
+
                         if mail.save():
                             self.message_user(request, f"{cliente} has been added.",
                                               level=messages.SUCCESS)
