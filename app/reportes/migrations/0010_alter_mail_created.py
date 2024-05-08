@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('reportes', '0008_alter_mailstosend_mail'),
+        ('reportes', '0009_alter_mailstosend_mail'),
     ]
 
     operations = [

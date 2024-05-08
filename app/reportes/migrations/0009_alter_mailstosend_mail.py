@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('reportes', '0007_alter_clientes_options_alter_clientesaddress_options_and_more'),
+        ('reportes', '0008_mailstosend_error_message_mailstosend_status'),
     ]
 
     operations = [
