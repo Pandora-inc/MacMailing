@@ -445,7 +445,7 @@ class Mail(models.Model):
         Clientes, models.RESTRICT, blank=True, null=True, verbose_name='customer')
     subject = models.CharField(max_length=256, blank=True, null=True)
     body = RichTextUploadingField(blank=True, null=True, config_name='awesome_ckeditor')
-    created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True)
     attachment = models.ManyToManyField(Attachment, blank=True)
     status = models.BooleanField(default=False)
     status_response = models.BooleanField(default=False)
@@ -479,7 +479,7 @@ class MailsToSend (models.Model):
         __str__(): Returns a string representation of the MailsToSend object.
 
     """
-    mail = models.ForeignKey(Mail, models.RESTRICT, blank=True, null=True)
+    mail = models.ForeignKey(Mail, models.RESTRICT)
     send = models.BooleanField(default=False)
     user_approved = models.ForeignKey(
         User, models.RESTRICT, blank=True, null=True)
