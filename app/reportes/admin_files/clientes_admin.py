@@ -45,7 +45,7 @@ class ClientesAdmin(admin.ModelAdmin):
             url = reverse('admin:reportes_mail_add') + f'?customer={",".join(map(str, selected_clientes_ids))}'
             return redirect(url)
         else:
-            mensaje = "No customers have been selected to send the replicated mail."
+            mensaje = "No leads have been selected to send the replicated mail."
             self.message_user(request, message=mensaje, level='warning')
 
     enviar_mail_replicado.short_description = "Create a new mails"

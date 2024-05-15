@@ -76,7 +76,7 @@ class MailCorp(models.Model):
 
 class Clientes(models.Model):
     """ Modelo para el registro de los clientes """
-    cliente_id = models.IntegerField(unique=True)
+    cliente_id = models.IntegerField(unique=True, verbose_name='lead id')
     status = models.CharField(max_length=32, blank=True, null=True)
     lead_name = models.CharField(max_length=64, blank=True, null=True)
     salutation = models.CharField(
@@ -157,8 +157,8 @@ class Clientes(models.Model):
         """ Meta data del modelo """
         # managed = False
         db_table = 'clientes'
-        verbose_name = 'customer'
-        verbose_name_plural = 'customers'
+        verbose_name = 'lead'
+        verbose_name_plural = 'leads'
         ordering = ('cliente_id',)
 
 
@@ -175,15 +175,15 @@ class ClientesContact(models.Model):
         __str__(): Returns a string representation of the contact.
 
     """
-    cliente = models.ForeignKey(Clientes, models.RESTRICT, verbose_name='customer')
+    cliente = models.ForeignKey(Clientes, models.RESTRICT, verbose_name='lead')
     type = models.ForeignKey(ContactType, models.RESTRICT)
     data = models.CharField(max_length=64)
 
     class Meta:
         """ Meta data of the model """
         unique_together = ('cliente', 'type')
-        verbose_name = 'customer contact'
-        verbose_name_plural = 'customer contacts'
+        verbose_name = 'lead contact'
+        verbose_name_plural = 'lead contacts'
 
     def __str__(self):
         return str(self.data)
@@ -202,15 +202,15 @@ class ClientesWeb(models.Model):
         __str__(): Returns a string representation of the web contact.
 
     """
-    cliente = models.ForeignKey(Clientes, models.RESTRICT, verbose_name='customer')
+    cliente = models.ForeignKey(Clientes, models.RESTRICT, verbose_name='lead')
     type = models.ForeignKey(WebType, models.RESTRICT)
     data = models.TextField()
 
     class Meta:
         """ Meta data of the model """
         unique_together = ('cliente', 'type')
-        verbose_name = 'customer web'
-        verbose_name_plural = 'customer webs'
+        verbose_name = 'lead web'
+        verbose_name_plural = 'lead webs'
 
     def __str__(self):
         return str(self.data)
@@ -229,15 +229,15 @@ class ClientesEmail(models.Model):
         __str__(): Returns a string representation of the email contact.
 
     """
-    cliente = models.ForeignKey(Clientes, models.RESTRICT, verbose_name='customer')
+    cliente = models.ForeignKey(Clientes, models.RESTRICT, verbose_name='lead')
     type = models.ForeignKey(EmailType, models.RESTRICT)
     data = models.CharField(max_length=250)
 
     class Meta:
         """ Meta data of the model """
         unique_together = ('cliente', 'type')
-        verbose_name = 'customer email'
-        verbose_name_plural = 'customer emails'
+        verbose_name = 'lead email'
+        verbose_name_plural = 'lead emails'
 
     def __str__(self):
         return str(self.data)
@@ -256,15 +256,15 @@ class ClientesSocial(models.Model):
         __str__(): Returns a string representation of the social media contact.
 
     """
-    cliente = models.ForeignKey(Clientes, models.RESTRICT, verbose_name='customer')
+    cliente = models.ForeignKey(Clientes, models.RESTRICT, verbose_name='lead')
     type = models.ForeignKey(SocialType, models.RESTRICT)
     data = models.TextField()
 
     class Meta:
         """ Meta data of the model """
         unique_together = ('cliente', 'type')
-        verbose_name = 'customer social'
-        verbose_name_plural = 'customer socials'
+        verbose_name = 'lead social'
+        verbose_name_plural = 'lead socials'
 
     def __str__(self):
         return str(self.data)
@@ -287,7 +287,7 @@ class ClientesAddress(models.Model):
 
     """
     cliente = models.ForeignKey(
-        Clientes, models.RESTRICT, verbose_name='customer')
+        Clientes, models.RESTRICT, verbose_name='lead')
     address = models.TextField(blank=True, null=True)
     street_house_no = models.TextField(blank=True, null=True)
     apartment_office_room_floor = models.CharField(
@@ -301,8 +301,8 @@ class ClientesAddress(models.Model):
 
     class Meta:
         """ Meta data of the model """
-        verbose_name = 'customer address'
-        verbose_name_plural = 'customer address'
+        verbose_name = 'lead address'
+        verbose_name_plural = 'lead address'
 
 
 class ClientesUTM(models.Model):
@@ -319,7 +319,7 @@ class ClientesUTM(models.Model):
 
     """
     cliente = models.ForeignKey(
-        Clientes, models.RESTRICT, verbose_name='customer')
+        Clientes, models.RESTRICT, verbose_name='lead')
     source = models.CharField(max_length=64, help_text='Codigo')
     medium = models.CharField(max_length=64, help_text='Medio')
     campaign = models.CharField(max_length=64, help_text='Campaign')
@@ -328,8 +328,8 @@ class ClientesUTM(models.Model):
 
     class Meta:
         """ Meta data of the model """
-        verbose_name = 'customer utm'
-        verbose_name_plural = 'customer utms'
+        verbose_name = 'lead utm'
+        verbose_name_plural = 'lead utms'
 
 class Attachment(models.Model):
     """
@@ -442,7 +442,7 @@ class Mail(models.Model):
     mail_corp = models.ForeignKey(
         MailCorp, models.RESTRICT, blank=True, null=True)
     cliente = models.ForeignKey(
-        Clientes, models.RESTRICT, blank=True, null=True, verbose_name='customer')
+        Clientes, models.RESTRICT, blank=True, null=True, verbose_name='lead')
     subject = models.CharField(max_length=256, blank=True, null=True)
     body = RichTextUploadingField(blank=True, null=True, config_name='awesome_ckeditor')
     created = models.DateTimeField(auto_now_add=True)
