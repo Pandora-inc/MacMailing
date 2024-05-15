@@ -65,7 +65,7 @@ CKEDITOR.replace( 'editor', {
 } );
 ```
 
-This value is unique for each customer and can be found in the [CKEditor Ecosystem dashboard](https://dashboard.ckeditor.com).
+This value is unique for each lead and can be found in the [CKEditor Ecosystem dashboard](https://dashboard.ckeditor.com).
 
 This is all. If you are having trouble in setting up Export to PDF plugin, please [contact us](https://ckeditor.com/contact/).
 
