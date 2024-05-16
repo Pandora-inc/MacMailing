@@ -94,6 +94,9 @@ def actualizar_con_template(id_mail: int):
             mail.body = template.text
             mail.subject = template.name
             mail.save()
+        else:
+            mail.status = 0
+            mail.save()
     except Mail.DoesNotExist as exc:
         print("Error al actualizar el mail con el template")
         print("No existe el mail")
@@ -370,6 +373,7 @@ def emails_cadena(cadena):
         # Si no hay correos en la lista...
         if len(emails) == 0:
             print("No se encontraron correos electrónicos en la cadena.")
+            return None
         else:
             # Recorremos la lista y mostramos todos los emails en caso de tener nombre de usuario..,
             response = []
