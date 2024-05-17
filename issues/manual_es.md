@@ -149,7 +149,7 @@ Los datos que se pueden agregar en esta pantalla son:
   - Fecha de creación
 
 Entre las acciones disponibles en la pantalla de edición del usuario tenemos el historial. Al acceder podemos ver todas las modificaciones que sufrió ese registro.
-  
+
 [![Usuarios Historial](imgs/03_usuarios_historial.png "Usuarios Historial")](imgs/03_usuarios_historial.png "Usuarios Historial")
 
 Al confirmar los cambios guardamos y nos llevara nuevamente a la pantalla del listado mostrándonos un mensaje de confirmación.
@@ -206,7 +206,7 @@ Recuerde que al eliminar un evento este dejara de mostrarse en el calendario y e
 
 ## Accounts
 
-En esta pantalla podemos crear y administrar los datos de las cuentas. Una cuenta puede tener un [supervisor](#usuarios) y multiples [cuentas de mail](#mail-corps) asociadas. Estas cuentas a su vez tendrán una [persona](#usuarios) que las supervisara.  
+En esta pantalla podemos crear y administrar los datos de las cuentas. Una cuenta puede tener un [supervisor](#usuarios) y multiples [cuentas de mail](#mail-corps) asociadas. Estas cuentas a su vez tendrán una [persona](#usuarios) que las supervisara.
 
 ### Crear / Editar Account
 
@@ -521,6 +521,9 @@ Crear uno nuevo presionando en el botón agregar.
 
 O eliminar el mail, tildándolo, seleccionando la acción "Eliminar mails seleccionados/as" y presionando en ejecutar.
 
+    Al enviar el mail automáticamente se cambia el numero del ultimo mail enviado y se traen los datos del proximo mail a enviar.
+    Si no llega a haber algún template fail que corresponda con el numero del mail a enviar se le cambia el estado a al mail.
+
 ### Crear / Editar Mails
 
 La pantalla de creación de Mail y de edición son la misma, la diferencia es que en la edición trae los datos del mail que queremos modificar.
@@ -529,7 +532,7 @@ La pantalla de creación de Mail y de edición son la misma, la diferencia es qu
 
 En esta pantalla podremos:
 
-- Seleccionar la casilla desde la que se va a enviar el mail. 
+- Seleccionar la casilla desde la que se va a enviar el mail.
 - Seleccionar el cliente.
 - Poner un Subject al mail.
 - Escribir un cuerpo personalizado para el mail. Este cuerpo puede contener texto enriquecido e imágenes.
@@ -574,21 +577,39 @@ Una vez preparado el envio se creara un registro en Mails to send.
 
 En esta pantalla podemos editar y administrar la cola de envío de mails.
 
+[![Listado Mail to send](imgs/11_mails_to_send_listado.png "Listado Mail to send")](imgs/11_mails_to_send_listado.png "Listado Mail to send")
+
+Ademas, en caso de requerirlo, podemos seleccionar un mail y forzar su envio.
+
+[![Envio forzado del mail](imgs/11_mails_to_send_enviar.png "Envio forzado del mail")](imgs/11_mails_to_send_enviar.png "Envio forzado del mail")
+
+De forma automática, si llega a haber algún error en el envio del mail se cambiara el status del mismo, con lo que ya no se intentara el envio y se agregara un mensaje de error en el campo de texto correspondiente para su revision por parte de un usuario.
+
+[![Mensaje de error](imgs/11_mails_to_send_error_message.png "Mensaje de error")](imgs/11_mails_to_send_error_message.png "Mensaje de error")
+
 ### Editar Mails to send
 
-La pantalla de creación de XXX y de edición son la misma, la diferencia es que en la edición trae los datos del XXX que queremos modificar.
+La pantalla de creación de Mails to send y de edición son la misma, la diferencia es que en la edición trae los datos del Mail que queremos modificar.
 
 En esta pantalla podremos:
 
-### Eliminar XXX
+- Cambiar el mail que se enviara en caso de ser necesario.
+- Cambiar el estado del mail.
+- Aprobarlo para su envio.
 
-Para eliminar un XXX se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar XXX seleccionados/as"* , luego presionar el botón Ejecutar.
+Un mail solo se enviara si esta aprobado.
+
+### Eliminar Mails to send
+
+Para eliminar un Mails to send se selecciona este tildándolo y en el menu de acciones seleccionar la opción *"Eliminar Mails to send seleccionados/as"* , luego presionar el botón Ejecutar.
 
 Si esta todo correcto se pedirá la confirmación de la eliminación.
 
+[![Eliminar Mail to send](imgs/11_mails_to_send_eliminar.png "Confirmar Eliminar Mail to send")](imgs/11_mails_to_send_eliminar.png "Eliminar Mail to send")
+
 Luego de aceptar volveremos al listado y veremos la confirmación del borrado.
 
-Si llega a haber un XXX el XXX asociado nos mostrara un mensaje de error.
+[![Confirmación de Eliminar Mail to send](imgs/11_mails_to_send_eliminar_confirmacion.png "Confirmación de Eliminar Mail to send")](imgs/11_mails_to_send_eliminar_confirmacion.png "Confirmación de Eliminar Mail to send")
 
 - [Volver al indice](#secciones)
 
@@ -725,4 +746,3 @@ Es muy importante crear las [cuentas](#accounts) y los [mails corporativos](#mai
 [![Error al importar](imgs/05_excel_error.png "Error al importar")](imgs/05_excel_error.png "Error al importar")esar el Excel. De otra forma es muy probable que se retorne un mensaje de error.
 
 [![Error al importar](imgs/05_excel_error.png "Error al importar")](imgs/05_excel_error.png "Error al importar")
-
