@@ -72,16 +72,24 @@ def crear_evento(mail: Mail):
 
 def actualizar_con_template(id_mail: int):
     """
-    Creates or updates an event in the calendar app based on the
-    information provided in a 'Mail' object.
+    Updates an email with a template.
+
+    Retrieve the email object based on the provided id_mail.
+    Check if a template exists for the email's template group and send number.
+    If a template exists, retrieve the template object.
+    Update the email's body with the template's text and subject with the template's name.
+    Save the updated email object.
+    If no template is found, set the email's status to 0.
+    Handle exceptions if the email does not exist or if there is an error during the update process.
 
     Args:
-        mail (Mail): The 'Mail' object containing information about the email sent.
-
-    Returns:
-        None
+        id_mail (int): The ID of the email to be updated.
 
     Raises:
+        Http404: If the email with the given ID does not exist.
+        Exception: If there is an error while updating the email with the template.
+
+    Returns:
         None
 
     """
@@ -93,6 +101,9 @@ def actualizar_con_template(id_mail: int):
                                                  orden=mail.send_number+1)
             mail.body = template.text
             mail.subject = template.name
+            mail.save()
+        else:
+            mail.status = 0
             mail.save()
     except Mail.DoesNotExist as exc:
         print("Error al actualizar el mail con el template")
@@ -370,6 +381,7 @@ def emails_cadena(cadena):
         # Si no hay correos en la lista...
         if len(emails) == 0:
             print("No se encontraron correos electrónicos en la cadena.")
+            return None
         else:
             # Recorremos la lista y mostramos todos los emails en caso de tener nombre de usuario..,
             response = []
