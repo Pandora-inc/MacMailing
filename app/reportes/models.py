@@ -371,6 +371,7 @@ class TemplatesGroup(models.Model):
         User, models.RESTRICT, blank=True, null=True)
     mail_corp = models.ForeignKey(
         MailCorp, models.RESTRICT, blank=True, null=True)
+    max_number = models.IntegerField(default=1)
 
     def __str__(self):
         return str(self.name)
