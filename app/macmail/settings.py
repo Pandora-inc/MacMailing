@@ -86,9 +86,9 @@ DATABASES = {
     'default': {
         "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.mysql"),
         "NAME": os.environ.get("SQL_NAME", "macmail_db"),
-        "USER": os.environ.get("SQL_USER", "db_user"),
-        "PASSWORD": os.environ.get("SQL_PASSWORD", "StrongPassword!"),
-        "HOST": os.environ.get("SQL_HOST", "macmail-db-host-prod.mysql.database.azure.com"),
+        "USER": os.environ.get("SQL_USER", "macmail_user"),
+        "PASSWORD": os.environ.get("SQL_PASSWORD", "macmail_pass"),
+        "HOST": os.environ.get("SQL_HOST", "macmail_db_host"),
         "PORT": os.environ.get("SQL_PORT", "3306"),
         'OPTIONS': {
             "init_command": "SET sql_mode='STRICT_TRANS_TABLES'"
