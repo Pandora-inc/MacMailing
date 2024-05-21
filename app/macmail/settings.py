@@ -11,8 +11,13 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os.path
 from pathlib import Path
-from dotenv import load_dotenv
-load_dotenv()
+from dotenv import load_dotenv, find_dotenv
+
+dotenv_path = find_dotenv()
+if dotenv_path:
+    load_dotenv(dotenv_path)
+else:
+    print(".env file not found")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -75,17 +80,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'macmail.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 DATABASES = {
     'default': {
-        "ENGINE": os.getenv("SQL_ENGINE", "django.db.backends.mysql"),
-        "NAME": os.getenv("SQL_NAME", "macmail_db"),
-        "USER": os.getenv("SQL_USER", "macmail_user"),
-        "PASSWORD": os.getenv("SQL_PASSWORD", "macmail_pass"),
-        "HOST": os.getenv("SQL_HOST", "macmail_db_host"),
-        "PORT": os.getenv("SQL_PORT", "3306"),
+        "ENGINE": os.getenv("SQL_ENGINE"),
+        "NAME": os.getenv("SQL_DATABASE"),
+        "USER": os.getenv("SQL_USER"),
+        "PASSWORD": os.getenv("SQL_PASSWORD"),
+        "HOST": os.getenv("SQL_HOST"),
+        "PORT": os.getenv("SQL_PORT"),
         'OPTIONS': {
             "init_command": "SET sql_mode='STRICT_TRANS_TABLES'"
         }
