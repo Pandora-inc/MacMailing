@@ -98,7 +98,7 @@ def actualizar_con_template(id_mail: int):
         number = mail.send_number+1
         template_group = mail.template_group
 
-        while template_group.max_number < number:
+        while template_group.max_number <= number:
             number = number - template_group.max_number
 
         if TemplateFiles.objects.filter(template_group_id=mail.template_group,
