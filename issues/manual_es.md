@@ -587,6 +587,11 @@ De forma automática, si llega a haber algún error en el envio del mail se camb
 
 [![Mensaje de error](imgs/11_mails_to_send_error_message.png "Mensaje de error")](imgs/11_mails_to_send_error_message.png "Mensaje de error")
 
+> Nota: Al enviar el mail se le asigna un nuevo send number al sumarle uno al anterior. Si este numero es menor que el numero máximo del template group se localiza el template file asociado a ese numero y se recupera la información para asociarla al mail. Si el numero es mayor se le resta el max number la cantidad de veces que sea necesarias hasta que quede un numero menor y ese es el template file que se va a utilizar.
+>Ejemplo:
+>Si tenemos un template group que el valor máximo es 7 y un mail que va por el send number 11. Este mail va a tomar los datos del template file 4.
+>Esto viene de 11 - 7 = 4
+
 ### Editar Mails to send
 
 La pantalla de creación de Mails to send y de edición son la misma, la diferencia es que en la edición trae los datos del Mail que queremos modificar.
