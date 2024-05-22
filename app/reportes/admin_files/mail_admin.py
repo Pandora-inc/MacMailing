@@ -136,14 +136,13 @@ class MailAdmin(admin.ModelAdmin):
         """ Sobreescribe la vista de cambio de formulario """
         # Verifica si se está guardando el formulario (si es una solicitud POST)
         if request.method == 'POST':
-            print("1")
             clientes = request.POST.getlist('cliente', None)
             if not clientes:
                 self.message_user(request, "Client is required", level=messages.WARNING)
                 return super().changeform_view(request, object_id, form_url, extra_context)
-
-            if len(clientes) == 1:
-                return super().changeform_view(request, object_id, form_url, extra_context)
+            # TODO: Verificar si se puede hacer que el formulario se guarde si solo hay un cliente
+            # if len(clientes) == 1:
+            #     return super().changeform_view(request, object_id, form_url, extra_context)
 
             mail_corp_id = request.POST.get('mail_corp', None)
             mail_corp = MailCorp.objects.get(pk=mail_corp_id)
