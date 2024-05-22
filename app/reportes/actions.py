@@ -95,10 +95,18 @@ def actualizar_con_template(id_mail: int):
     """
     try:
         mail = Mail.objects.get(id=id_mail)
+        number = mail.send_number+1
+        template_group = mail.template_group
+
+        while template_group.max_number < number:
+            number = number - template_group.max_number
+            if number == template_group.max_number:
+                break
+
         if TemplateFiles.objects.filter(template_group_id=mail.template_group,
-                                        orden=mail.send_number+1).exists():
+                                        orden=number).exists():
             template = TemplateFiles.objects.get(template_group_id=mail.template_group,
-                                                 orden=mail.send_number+1)
+                                                 orden=number)
             mail.body = template.text
             mail.subject = template.name
             mail.save()
