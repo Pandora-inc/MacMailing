@@ -171,7 +171,10 @@ class MailAdmin(admin.ModelAdmin):
                 client = Clientes.objects.get(pk=cliente)
                 if cliente:
                     if Mail.objects.filter(mail_corp=mail_corp, cliente=cliente).exists():
-                        self.message_user(request, cliente+" have a mail .", level=messages.WARNING)
+                        if len(clientes) == 1:
+                            return super().changeform_view(request, object_id, form_url, extra_context)
+                        else:
+                            self.message_user(request, f"{cliente} already have a mail.", level=messages.WARNING)
                     else:
                         mail = Mail.objects.create(
                             mail_corp=mail_corp if mail_corp else None,

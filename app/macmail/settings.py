@@ -138,6 +138,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "static_media")
 #ckeditor upload path
 CKEDITOR_UPLOAD_PATH="uploads/"
 
+CKEDITOR_CONFIGS = {
+    'awesome_ckeditor': {
+        'toolbar': 'full',
+    },
+}
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
