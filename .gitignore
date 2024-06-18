@@ -144,3 +144,4 @@ app/macmail/settings.py
 /data_bkp
 /data
 /issues/Planificaciones
+/keys
