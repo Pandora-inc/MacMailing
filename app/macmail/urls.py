@@ -19,17 +19,24 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic.base import TemplateView
 from calendarapp.views.other_views import CalendarViewIndex
-from reportes.views import ClientesList_APIView, ExcelsList_APIView, ProcessExcel
+from reportes.views import ClientesListAPIView, ExcelsList_APIView, ProcessExcel, crear_correo
+import reportes.actions as actions
+from reportes.actions import EmailAPI
+import reportes.timer_to_send_email as timer_to_send
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("admin/", CalendarViewIndex.as_view(), name="calendar"),
     re_path(r'^$', TemplateView.as_view(template_name='/static_pages/index.html'), name='home'),
     re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
-    path('clientes/', ClientesList_APIView.as_view(), name='clientes'),
+    path('clientes/', ClientesListAPIView.as_view(), name='clientes'),
     path('excels/', ExcelsList_APIView.as_view(), name='archivos'),
     path('excels_work/', ProcessExcel.as_view(), name='excels_work'),
     path("", include("calendarapp.urls")),
+    path("send_email/<int:id_mail>", actions.send_mail_api, name="send_email"),
+    path("send_next_email/", EmailAPI.send_next_mail, name="send_next_email"),
+    path("timer_to_send_email/", timer_to_send.timer_to_send_email, name="timer_to_send_email"),
+    path('muchos_correos/', crear_correo, name='crear_correo'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -127,16 +127,20 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-app/data
 data/*
 venv/*
 app/env/*
-data/db/*
 *.ibt
 app/static_media/excel_files/*
-*/migrations/
-*/migrations/*
-app/reportes/migrations/
-app/auxiliares/migrations/
 keys/
-data/db/
+data\*
+app/static_media/*
+
+*.dblwr
+*.cnf
+*.pem
+*.ibd
+app/macmail/settings.py
+/data_bkp
+/data
+/issues/Planificaciones
