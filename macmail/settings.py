@@ -27,8 +27,10 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(os.getenv("DEBUG", default=1))
 
-ALLOWED_HOSTS = ['*']
-# ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", '*').split(" ")
+
+# Obteniendo la variable de entorno y separando los orígenes por espacio
+trusted_origins = os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(" ")
 
 
 # Application definition
