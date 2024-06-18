@@ -12,7 +12,14 @@ services:
     command: gunicorn macmail.wsgi:application --bind 0.0.0.0:8000
     restart: always
     volumes:
-      - ./app/:/usr/src/app/
+      - ./macmail/:/usr/src/app/macmail/
+      - ./reportes/:/usr/src/app/reportes/
+      - ./auxiliares/:/usr/src/app/auxiliares/
+      - ./calendarapp/:/usr/src/app/calendarapp/
+      - ./static_files/:/usr/src/app/static_files/
+      - ./static_media/:/usr/src/app/static_media/
+      - ./static_pages/:/usr/src/app/static_pages/
+      - ./templates/:/usr/src/app/templates/
     ports:
       - 9000:8000
     env_file:
