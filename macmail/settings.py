@@ -32,6 +32,8 @@ ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", '*').split(" ")
 # Obteniendo la variable de entorno y separando los orígenes por espacio
 trusted_origins = os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(" ")
 
+# Filtrando posibles valores vacíos en la lista resultante
+CSRF_TRUSTED_ORIGINS = [origin for origin in trusted_origins if origin]
 
 # Application definition
 
@@ -113,6 +115,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Configuración del módulo de autenticación
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
