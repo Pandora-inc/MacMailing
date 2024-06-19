@@ -25,9 +25,10 @@ from reportes.actions import EmailAPI
 import reportes.timer_to_send_email as timer_to_send
 
 urlpatterns = [
+    re_path(r'^$', TemplateView.as_view(template_name='index.html'), name='home'),
+    path('dashboard/', TemplateView.as_view(template_name='dashboard.html'), name='dashboard'),
     path('admin/', admin.site.urls),
     path("admin/", CalendarViewIndex.as_view(), name="calendar"),
-    re_path(r'^$', TemplateView.as_view(template_name='/static_pages/index.html'), name='home'),
     re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
     path('clientes/', ClientesListAPIView.as_view(), name='clientes'),
     path('excels/', ExcelsList_APIView.as_view(), name='archivos'),
