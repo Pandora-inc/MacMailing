@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('reportes', '0008_mailstosend_error_message_mailstosend_status'),
+        ('reportes', '0010_alter_mail_created'),
     ]
 
     operations = [

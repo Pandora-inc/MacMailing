@@ -26,7 +26,7 @@ import reportes.timer_to_send_email as timer_to_send
 
 urlpatterns = [
     re_path(r'^$', TemplateView.as_view(template_name='index.html'), name='home'),
-    path('dashboard/', TemplateView.as_view(template_name='dashboard.html'), name='dashboard'),
+    # path('dashboard/', TemplateView.as_view(template_name='dashboard.html'), name='dashboard'),
     path('admin/', admin.site.urls),
     path("admin/", CalendarViewIndex.as_view(), name="calendar"),
     re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
@@ -38,6 +38,7 @@ urlpatterns = [
     path("send_next_email/", EmailAPI.send_next_mail, name="send_next_email"),
     path("timer_to_send_email/", timer_to_send.timer_to_send_email, name="timer_to_send_email"),
     path('muchos_correos/', crear_correo, name='crear_correo'),
+    path('', include('reportes.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
