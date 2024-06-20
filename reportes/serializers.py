@@ -16,19 +16,6 @@ class ExcelSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-# class CompleteExcelSerializer(serializers.ModelSerializer):
-#      """ Serializer para el modelo ExcelFiles con los clientes asociados """
-
-#     class Meta:
-#         """ Clase Meta """
-#         model = ExcelFiles
-#         fields = '__all__'
-
-#     def to_representation(self, instance):
-#         response = super().to_representation(instance)
-#         response['clientes'] = ClientesSerializer(instance.clientes.all(), many=True).data
-#         return response
-
 class MailSerializer(serializers.Serializer):
     """ Serializer para el envío de correos electrónicos """
 
@@ -54,3 +41,12 @@ class MailSerializer(serializers.Serializer):
     position = serializers.CharField()
     type = serializers.CharField()
     firma = serializers.CharField()
+
+
+
+class ClientesSerializer(serializers.ModelSerializer):
+    """ Serializer para el modelo Clientes """
+    class Meta:
+        model = Clientes
+        fields = '__all__'
+        required = False
