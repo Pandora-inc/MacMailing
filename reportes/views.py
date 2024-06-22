@@ -30,6 +30,25 @@ class ClientesListAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class UpdateClientesView(APIView):
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        cliente_id = data.get('cliente_id')
+
+        if not cliente_id:
+            return Response({"error": "cliente_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            cliente = Clientes.objects.get(cliente_id=cliente_id)
+        except Clientes.DoesNotExist:
+            return Response({"error": "Cliente not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ClientesSerializer(cliente, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class ClientesDetail_APIView(APIView):
     def get_object(self, pk):
         try:

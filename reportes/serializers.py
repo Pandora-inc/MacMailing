@@ -54,3 +54,26 @@ class MailSerializer(serializers.Serializer):
     position = serializers.CharField()
     type = serializers.CharField()
     firma = serializers.CharField()
+
+
+class BitrixIncomingSerializer(serializers.Serializer):
+    """ Serializer para la recepción de correos electrónicos de Bitrix24
+
+    "event": "ONCRMCONTACTUPDATE",
+    "event_id": "2",
+    "data[FIELDS][ID]": "2",
+    "ts": "1718849644",
+    "auth[domain]": "b24-tgz7td.bitrix24.es",
+    "auth[client_endpoint]": "https://b24-tgz7td.bitrix24.es/rest/",
+    "auth[server_endpoint]": "https://oauth.bitrix.info/rest/",
+    "auth[member_id]": "4bbd6c4cac68c1b2679b8845c1f63312",
+    "auth[application_token]": "peml4jfd0ls52rlgykdtsjjzr58p8a04"
+
+    """
+    event = serializers.CharField()
+    event_id = serializers.CharField()
+    # data_field_id = serializers.CharField()
+    data = serializers.DictField()
+    # data['FIELDS']['ID'] = serializers.CharField()
+    ts = serializers.CharField()
+    # auth = serializers.DictField()
