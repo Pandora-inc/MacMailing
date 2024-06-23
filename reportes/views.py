@@ -91,12 +91,8 @@ class ProcessExcel(APIView):
         return Response("success")
 
     def post(self, request, format=None):
-        """
-        Retrieves data from the database using a SQL query and returns it as a response.
-        """
-        cursor = connection.cursor()
-        cursor.execute("SELECT * FROM reportes_clientes")
-        clientes = cursor.fetchall()
+        """ Método que se ejecuta al hacer una petición POST a la API. """
+        clientes = Clientes.objects.all()
         return Response(clientes)
 
 def crear_correo(request):

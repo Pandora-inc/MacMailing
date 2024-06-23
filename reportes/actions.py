@@ -18,7 +18,7 @@ from django.http import Http404
 from django.db import connection
 from calendarapp.models import Event
 from reportes.serializers import MailSerializer
-from reportes.models import (Clientes, Mail, TemplateFiles, MailsToSend)
+from reportes.models import (Attachment, Clientes, ClientesEmail, Mail, TemplateFiles, MailsToSend)
 
 
 PRE_URL = str(Path(__file__).resolve().parent.parent)
@@ -175,48 +175,66 @@ def get_mail_data(id_mail: int) -> dict:
     '''
     Obtiene los datos del mail a enviar.
     '''
-    with connection.cursor() as cursor:
-        cursor.callproc("get_mail_data", [id_mail])
-        row = cursor.fetchone()
+    mail = Mail.objects.get(id=id_mail)
+    if mail:  # Asegúrate de que mail no sea None
+        return get_data_for_mail(mail)
 
-        msg = {}
-        msg['Subject'] = row[0]
-        msg['From'] = row[5]
-        msg['To'] = row[16]
-        msg['Date'] = formatdate(localtime=True)
-        msg['content-type'] = 'text/html'
-        msg['content'] = row[1]
-        msg['number'] = row[3]
-        msg['from_email'] = row[6]
-        msg['from_pass'] = row[7]
-        msg['from_smtp'] = row[8]
-        msg['from_port'] = row[9]
-        msg['salutation'] = row[10]
-        msg['first_name'] = row[11]
-        msg['middle_name'] = row[12]
-        msg['last_name'] = row[13]
-        msg['lead_name'] = row[14]
-        msg['data'] = row[16]
-        msg['company_name'] = row[17]
-        msg['position'] = row[18]
-        msg['type'] = row[19]
-        msg['firma'] = row[20]
+def get_data_for_mail(mail: Mail, next_mail_id: int=None) -> dict:
+    '''
+    Obtiene los datos del mail a enviar.
+    '''
+    mail_corp = mail.mail_corp
+    cliente = mail.cliente
+    if cliente:  # Asegúrate de que cliente no sea None
+        cliente_email = ClientesEmail.objects.filter(cliente=cliente, type=1).first()
+        if cliente_email:  # Asegúrate de que cliente_email no sea None
+            data = {
+                'subject': mail.subject,
+                'from_name': mail_corp.name,
+                'from_email': mail_corp.email,
+                'to': cliente_email.data,
+                'date': datetime.now().isoformat(),
+                'content': mail.body,
+                'number': mail.send_number,
+                'content_type': 'text/html',
+                'from_pass': mail_corp.password,
+                'from_smtp': mail_corp.smtp,
+                'from_port': mail_corp.smtp_port,
+                'salutation': cliente.salutation,
+                'first_name': cliente.first_name,
+                'middle_name': cliente.middle_name,
+                'last_name': cliente.last_name,
+                'lead_name': cliente.lead_name,
+                'data': cliente_email.data,
+                'company_name': cliente.company_name,
+                'position': cliente.position,
+                'type': cliente.type.name,
+                'firma': mail_corp.firma,
+                'user_name': mail_corp.user.first_name,
+                'user_last_name': mail_corp.user.last_name,
+                'mail_id': mail.id,
+            }
 
-        msg['user_name'] = row[21]
-        msg['user_last_name'] = row[22]
-        msg['mail_id'] = row[23]
-        msg['mail_to_send_id'] = row[24]
-
-        if row[15]:
-            mails = emails_cadena(row[15])
-            if mails:
-                msg['CC'] = ', '.join(mails)
+            if cliente.source_information:
+                mails = emails_cadena(cliente.source_information)
+                if mails:
+                    data['cc'] = ', '.join(mails)
             else:
-                msg['CC'] = ''
-        else:
-            msg['CC'] = ''
+                data['cc'] = ''
 
-        return msg
+            if next_mail_id:
+                data['mail_to_send_id'] = next_mail_id
+
+            serializer = MailSerializer(data=data)
+            if serializer.is_valid():
+                return serializer.data
+            else:
+                print("Error al obtener los datos del mail a enviar.")
+                return(serializer.errors)
+        else:
+            print("No se encontró cliente_email con type=1 para el cliente.")
+    else:
+        print("El mail no tiene un cliente asociado.")
 
 def add_image_to_email(content: str, message: MIMEMultipart) -> str:
     """ Función que localiza y formatea las imágenes que se encuentran en el contenido del mail. """
@@ -410,50 +428,18 @@ def get_next_email_data() -> dict:
     '''
     Obtiene los datos del mail a enviar.
     '''
-    with connection.cursor() as cursor:
-        cursor.callproc("get_next_mail_to_send", [])
-        row = cursor.fetchone()
+    next_mail = MailsToSend.objects.filter(approved=True, send=False).order_by('date_approved').first()
 
-        if row is None:
-            return None
-
-        msg = {}
-        msg['Subject'] = row[0]
-        msg['From'] = row[5]
-        msg['To'] = row[16]
-        msg['Date'] = formatdate(localtime=True)
-        msg['content-type'] = 'text/html'
-        msg['content'] = row[1]
-        msg['number'] = row[3]
-        msg['from_email'] = row[6]
-        msg['from_pass'] = row[7]
-        msg['from_smtp'] = row[8]
-        msg['from_port'] = row[9]
-        msg['salutation'] = row[10]
-        msg['first_name'] = row[11]
-        msg['middle_name'] = row[12]
-        msg['last_name'] = row[13]
-        msg['lead_name'] = row[14]
-        msg['data'] = row[16]
-        msg['company_name'] = row[17]
-        msg['position'] = row[18]
-        msg['type'] = row[19]
-        msg['firma'] = row[20]
-        msg['user_name'] = row[21]
-        msg['user_last_name'] = row[22]
-        msg['mail_id'] = row[23]
-        msg['mail_to_send_id'] = row[24]
-
-        if row[15]:
-            mails = emails_cadena(row[15])
-            if mails:
-                msg['CC'] = ', '.join(mails)
-            else:
-                msg['CC'] = ''
+    if next_mail:
+        mail = next_mail.mail
+        if mail:  # Asegúrate de que mail no sea None
+            return get_data_for_mail(mail, next_mail.id)
         else:
-            msg['CC'] = ''
+            print("next_mail no tiene un mail asociado.")
+    else:
+        print("No se encontró un mail para enviar.")
 
-        return msg
+    return None
 
 def send_new_mail(msg_data) -> bool:
     """
@@ -494,12 +480,11 @@ def send_new_mail(msg_data) -> bool:
             of the 'MailsToSend' object accordingly.
 
     """
-
     message = MIMEMultipart()
     message['From'] = msg_data['from_email']
-    message['To'] = msg_data['To']
-    message['Subject'] = msg_data['Subject']
-    message['cc'] = msg_data['CC']
+    message['To'] = msg_data['to']
+    message['Subject'] = msg_data['subject']
+    message['cc'] = msg_data['cc']
 
     msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
     msg_data['firma'] = prepare_email_body(msg_data['firma'], msg_data)
@@ -512,19 +497,14 @@ def send_new_mail(msg_data) -> bool:
     message.attach(MIMEText(content, "html"))
     try:
         mail_to_send = MailsToSend.objects.get(id=msg_data['mail_to_send_id'])
-
-        with connection.cursor() as cursor:
-            cursor.callproc("get_mail_attachment", [msg_data['mail_id']])
-            attachment = cursor.fetchall()
-
-            for f in attachment:
-                with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
-                    part = MIMEBase('application', 'octet-stream')
-                    part.set_payload(file.read())
-                    encoders.encode_base64(part)
-                    filename = f[4]+"."+f[5].split(".")[-1]
-                    part.add_header('Content-Disposition', f'attachment; filename={filename}')
-                    message.attach(part)
+        for f in mail_to_send.mail_attachment.all():
+            with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
+                part = MIMEBase('application', 'octet-stream')
+                part.set_payload(file.read())
+                encoders.encode_base64(part)
+                filename = f[4]+"."+f[5].split(".")[-1]
+                part.add_header('Content-Disposition', f'attachment; filename={filename}')
+                message.attach(part)
 
     except MailsToSend.DoesNotExist as e_error:
         error = "Error al obtener el mail a enviar"
@@ -646,48 +626,7 @@ class EmailAPI(APIView):
             Http404: If the email object with the specified primary key does not exist.
         """
         try:
-            with connection.cursor() as cursor:
-                cursor.callproc("get_mail_data", [pk])
-                row = cursor.fetchone()
-
-                msg = {}
-                msg['Subject'] = row[0]
-                msg['From'] = row[5]
-                msg['To'] = row[16]
-                msg['Date'] = formatdate(localtime=True)
-                msg['content-type'] = 'text/html'
-                msg['content'] = row[1]
-                msg['number'] = row[3]
-                msg['from_email'] = row[6]
-                msg['from_pass'] = row[7]
-                msg['from_smtp'] = row[8]
-                msg['from_port'] = row[9]
-                msg['salutation'] = row[10]
-                msg['first_name'] = row[11]
-                msg['middle_name'] = row[12]
-                msg['last_name'] = row[13]
-                msg['lead_name'] = row[14]
-                msg['data'] = row[16]
-                msg['company_name'] = row[17]
-                msg['position'] = row[18]
-                msg['type'] = row[19]
-                msg['firma'] = row[20]
-
-                msg['user_name'] = row[21]
-                msg['user_last_name'] = row[22]
-                msg['mail_id'] = row[23]
-                msg['mail_to_send_id'] = row[24]
-
-                if row[15]:
-                    mails = emails_cadena(row[15])
-                    if mails:
-                        msg['CC'] = ', '.join(mails)
-                    else:
-                        msg['CC'] = ''
-                else:
-                    msg['CC'] = ''
-
-                return msg
+            return Mail.objects.get(pk=pk)
         except Mail.DoesNotExist as exc:
             raise Http404 from exc
 
