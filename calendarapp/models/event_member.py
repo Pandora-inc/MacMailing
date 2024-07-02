@@ -1,8 +1,10 @@
+""" Event member model """
 from django.db import models
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from calendarapp.models import Event, EventAbstract
 
+User = get_user_model()
 
 class EventMember(EventAbstract):
     """ Event member model """

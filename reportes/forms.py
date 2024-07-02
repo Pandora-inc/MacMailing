@@ -1,6 +1,4 @@
 """ Formulario para el envío de correos electrónicos """
-from typing import Any
-import requests
 from django import forms
 
 from .utils import get_response_account, if_admin
@@ -35,7 +33,7 @@ class MailForm(forms.ModelForm):
 
         # Verifica si el campo 'cliente' está en el formulario y es una instancia de Clientes
         if 'cliente' in self.cleaned_data and isinstance(self.cleaned_data['cliente'], Clientes):
-            cliente_instance = self.cleaned_data['cliente'].first()  # Por ejemplo, selecciona el primer elemento del queryset
+            cliente_instance = self.cleaned_data['cliente'].first()
             instance.cliente = cliente_instance
         else:
             raise ValueError("El campo 'cliente' debe ser una instancia de Clientes.")
@@ -48,5 +46,16 @@ class MailForm(forms.ModelForm):
     class Meta:
         """ Clase Meta """
         model = Mail
-        fields = '__all__'
-        exclude = ['cliente']
+        fields = [
+            'mail_corp',
+            'subject',
+            'body',
+            'attachment',
+            'status',
+            'status_response',
+            'use_template',
+            'template_group',
+            'send_number',
+            'last_send',
+            'reminder_days'
+        ]

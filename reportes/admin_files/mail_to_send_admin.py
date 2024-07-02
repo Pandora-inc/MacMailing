@@ -1,4 +1,4 @@
-
+""" Admin de mails a enviar """
 
 from django.contrib import admin, messages
 from django.utils.safestring import mark_safe
@@ -10,20 +10,22 @@ from reportes.utils import if_admin, get_response_account
 from reportes.actions import get_mail_data, prepare_email_body, send_mail
 
 
-def enviar_email(modeladmin, request, queryset):
+def enviar_email(request, queryset):
     """ Función para enviar email desde el admin """
     try:
         for obj in queryset:
             if obj.approved is True:
                 if send_mail(obj.mail_id):
-                    # TODO esto es lo que hay que agregar para que registre el mail enviado
-                    obj.send = True
-                    obj.save()
+                    obj.send = True  # Marcar el correo como enviado
+                    obj.save()  # Guardar el objeto actualizado en la base de datos
+                    messages.success(request, f"Correo enviado correctamente a {obj.mail_id}")
+                else:
+                    messages.warning(request, f"No se pudo enviar el correo a {obj.mail_id}")
             else:
-                messages.warning(request, "Email no aprobado")
-                print("Email no aprobado")
+                messages.warning(request, f"El correo {obj.mail_id} no está aprobado")
     except Exception as e:
-         messages.error(request, f"Error al enviar: {e}")
+        messages.error(request, f"Error al enviar correos: {e}")
+
 
 enviar_email.short_description = "Send email"
 
@@ -86,10 +88,14 @@ class MailsToSendAdmin(admin.ModelAdmin):
         '''
         Muestra el mail del destinatario
         '''
-        # FIXME: Esto debería mostrar el mail principar del cliente
-        email = ClientesEmail.objects.get(
-            cliente=obj.mail.cliente, type=EmailType.objects.get(id=1))
-        return email
+        try:
+            email = ClientesEmail.objects.get(
+                cliente=obj.mail.cliente, type=EmailType.objects.get(id=1))
+            return email.email
+        except ClientesEmail.DoesNotExist:
+            email = ClientesEmail.objects.get(cliente=obj.mail.cliente).first()
+            return email
+
 
     def save_model(self, request, obj, form, change):
         # Verifica si el campo 'approved' cambió a True y 'user_approved' aún no está establecido

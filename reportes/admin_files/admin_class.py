@@ -1,17 +1,12 @@
 """ Configuraciones del Admin """
-from django import forms
 from django.contrib import admin, messages
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 
-from auxiliares.models import EmailType
-from reportes.actions import (get_mail_data,
-                     get_template_file_and_save,
-                     prepare_email_body, send_mail)
-from reportes.models import (Clientes, ClientesEmail, ExcelFiles, Mail, MailCorp)
-from reportes.utils import UtilExcelFile, get_response_account, if_admin
+from reportes.actions import get_template_file_and_save
+from reportes.models import ExcelFiles
+from reportes.utils import UtilExcelFile, if_admin
 
-
-
-def procesar_excel(modeladmin, request, queryset):
+def procesar_excel(request, queryset):
     ''' Función para procesar los archivos excel '''
     for obj in queryset:
         try:
@@ -20,29 +15,57 @@ def procesar_excel(modeladmin, request, queryset):
             excel.open_file(file.file.path)
 
             excel.print_datos()
-        except Exception as e:
-            mensaje = f"Error in excel, The format must be Excel Workbook (xlsx): {e}"
-            messages.error(request, mensaje)
-
+        except ObjectDoesNotExist as e:
+            messages.error(request, f"Object not found: {e}")
+        except ValidationError as e:
+            messages.error(request, f"Validation error: {e}")
+        except IOError as e:
+            messages.error(request, f"IO error: {e}")
 
 procesar_excel.short_description = "Process Excel"
 
 
-
-def template_file_propague(modeladmin, request, queryset):
+def template_file_propague(request, queryset):
     ''' Función para propagar las plantillas '''
     for obj in queryset:
         try:
             get_template_file_and_save(obj.id)
-        except Exception as e:
-            messages.error(request, f"Error propagating: {e}")
+        except ObjectDoesNotExist as e:
+            messages.error(request, f"Object not found: {e}")
+        except ValidationError as e:
+            messages.error(request, f"Validation error: {e}")
+        except IOError as e:
+            messages.error(request, f"IO error: {e}")
 
 template_file_propague.short_description = "Template Propagation"
 
+class CommonAdminSetupMixin:
+    """ Clase Mixin para configuraciones comunes del admin """
+    list_display = ['cliente', 'type', 'data']
+    search_fields = [
+        'cliente__lead_name',
+        'cliente__first_name',
+        'cliente__last_name',
+        'cliente__cliente_id',
+        'type__name',
+        'data'
+    ]
+    ordering = ['cliente', 'type']
+    list_filter = ['cliente', 'type']
 
+    def get_client_name(self, obj):
+        """ Returns the name of the client associated with the object """
+        return obj.cliente.lead_name
 
+    get_client_name.short_description = 'Client Name'
+    get_client_name.admin_order_field = 'cliente__lead_name'
 
+    def get_type_name(self, obj):
+        """ Returns the name of the type associated with the object """
+        return obj.type.name
 
+    get_type_name.short_description = 'Type Name'
+    get_type_name.admin_order_field = 'type__name'
 
 class AccountAdmin(admin.ModelAdmin):
     ''' Admin View for Account '''
@@ -62,11 +85,6 @@ class AccountAdmin(admin.ModelAdmin):
     #     return queryset
 
 
-
-
-
-
-
 class ClientesAddressAdmin(admin.ModelAdmin):
     '''
     Admin View for ClientesAddress
@@ -84,36 +102,18 @@ class ClientesAddressAdmin(admin.ModelAdmin):
     list_filter = ['cliente', 'address']
 
 
-class ClientesContactAdmin(admin.ModelAdmin):
+class ClientesContactAdmin(CommonAdminSetupMixin, admin.ModelAdmin):
     '''
     Admin View for ClientesContact
     '''
-    list_display = ['cliente', 'type', 'data']
-    search_fields = ['cliente__lead_name',
-                     'cliente__first_name',
-                     'cliente__last_name',
-                     'cliente__cliente_id',
-                     'type__name',
-                     'data']
-    ordering = ['cliente', 'type']
-    list_filter = ['cliente', 'type']
 
 
 
-
-class ClientesSocialAdmin(admin.ModelAdmin):
+class ClientesSocialAdmin(CommonAdminSetupMixin, admin.ModelAdmin):
     '''
     Admin View for ClientesSocial
     '''
-    list_display = ['cliente', 'type', 'data']
-    search_fields = ['cliente__lead_name',
-                     'cliente__first_name',
-                     'cliente__last_name',
-                     'cliente__cliente_id',
-                     'type__name',
-                     'data']
-    ordering = ['cliente', 'type']
-    list_filter = ['cliente', 'type']
+
 
 
 class ClientesUTMAdmin(admin.ModelAdmin):
@@ -132,19 +132,11 @@ class ClientesUTMAdmin(admin.ModelAdmin):
     list_filter = ['cliente', 'campaign']
 
 
-class ClientesWebAdmin(admin.ModelAdmin):
+class ClientesWebAdmin(CommonAdminSetupMixin, admin.ModelAdmin):
     '''
     Admin View for ClientesWeb
     '''
-    list_display = ['cliente', 'type', 'data']
-    search_fields = ['cliente__lead_name',
-                     'cliente__first_name',
-                     'cliente__last_name',
-                     'cliente__cliente_id',
-                     'type__name',
-                     'data']
-    ordering = ['cliente', 'type']
-    list_filter = ['cliente', 'type']
+
 
 
 class MailCorpAdmin(admin.ModelAdmin):

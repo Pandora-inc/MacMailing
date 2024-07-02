@@ -1,10 +1,13 @@
 """ Modelo de datos relacionados a la actividad """
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from auxiliares.models import ContactType, Country, EmailType, SocialType, WebType, Type
 from ckeditor_uploader.fields import RichTextUploadingField
+
+from auxiliares.models import ContactType, Country, EmailType, SocialType, WebType, Type
+
+User = get_user_model()
 
 SALUTATIONS = [('Mrs.', 'Mrs.'), ('Mr.', 'Mr.'), ('Ms.', 'Ms.'),
                ('Dr.', 'Dr.'), ('Prof.', 'Prof.'), ('Other', 'Other')]
@@ -128,29 +131,29 @@ class Clientes(models.Model):
         name = str(self.first_name) + " " + str(self.last_name)
         return str(self.lead_name) + " - " + name + " - " + str(self.cliente_id)
 
-    def add_contact(self, type, data):
+    def add_contact(self, type_element, data):
         """ Agrega un contacto al cliente """
-        contact = ClientesContact(cliente=self, type=type, data=data)
+        contact = ClientesContact(cliente=self, type=type_element, data=data)
         contact.save()
 
-    def add_web(self, type, data):
+    def add_web(self, type_element, data):
         """ Agrega un contacto web al cliente """
-        web = ClientesWeb(cliente=self, type=type, data=data)
+        web = ClientesWeb(cliente=self, type=type_element, data=data)
         web.save()
 
-    def add_address(self, type, data):
+    def add_address(self, type_element, data):
         """ Agrega una dirección al cliente """
-        address = ClientesAddress(cliente=self, type=type, data=data)
+        address = ClientesAddress(cliente=self, type=type_element, data=data)
         address.save()
 
-    def add_email(self, type, data):
+    def add_email(self, type_element, data):
         """ Agrega un email al cliente """
-        email = ClientesEmail(cliente=self, type=type, data=data)
+        email = ClientesEmail(cliente=self, type=type_element, data=data)
         email.save()
 
-    def add_social(self, type, data):
+    def add_social(self, type_element, data):
         """ Agrega un contacto social al cliente """
-        social = ClientesSocial(cliente=self, type=type, data=data)
+        social = ClientesSocial(cliente=self, type=type_element, data=data)
         social.save()
 
     class Meta:
@@ -582,7 +585,7 @@ def propague_template(id_template: int):
         mail.save()
 
 @receiver(post_save, sender=TemplateFiles)
-def mi_funcion_al_guardar(sender, instance, **kwargs):
+def mi_funcion_al_guardar(instance, **kwargs):
     """ Función que se ejecuta al guardar un template """
     propague_template(instance.id)
 

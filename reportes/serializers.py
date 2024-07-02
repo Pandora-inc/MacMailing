@@ -1,12 +1,6 @@
+""" Serializers para los modelos de la aplicación reportes """
 from rest_framework import serializers
-from .models import Clientes, ExcelFiles
-
-
-class ClientesSerializer(serializers.ModelSerializer):
-    """ Serializer para el modelo Clientes """
-    class Meta:
-        model = Clientes
-        fields = '__all__'
+from .models import Clientes, ExcelFiles, Mail
 
 
 class ExcelSerializer(serializers.ModelSerializer):
@@ -42,7 +36,33 @@ class MailSerializer(serializers.Serializer):
     type = serializers.CharField()
     firma = serializers.CharField()
 
+    def create(self, validated_data):
+        return Mail(**validated_data)
 
+    def update(self, instance, validated_data):
+        instance.subject = validated_data.get('subject', instance.subject)
+        instance.from_name = validated_data.get('from_name', instance.from_name)
+        instance.from_email = validated_data.get('from_email', instance.from_email)
+        instance.to = validated_data.get('to', instance.to)
+        instance.cc = validated_data.get('cc', instance.cc)
+        instance.date = validated_data.get('date', instance.date)
+        instance.content = validated_data.get('content', instance.content)
+        instance.number = validated_data.get('number', instance.number)
+        instance.content_type = validated_data.get('content_type', instance.content_type)
+        instance.from_pass = validated_data.get('from_pass', instance.from_pass)
+        instance.from_smtp = validated_data.get('from_smtp', instance.from_smtp)
+        instance.from_port = validated_data.get('from_port', instance.from_port)
+        instance.salutation = validated_data.get('salutation', instance.salutation)
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.middle_name = validated_data.get('middle_name', instance.middle_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.lead_name = validated_data.get('lead_name', instance.lead_name)
+        instance.data = validated_data.get('data', instance.data)
+        instance.company_name = validated_data.get('company_name', instance.company_name)
+        instance.position = validated_data.get('position', instance.position)
+        instance.type = validated_data.get('type', instance.type)
+        instance.firma = validated_data.get('firma', instance.firma)
+        return instance
 
 class ClientesSerializer(serializers.ModelSerializer):
     """ Serializer para el modelo Clientes """

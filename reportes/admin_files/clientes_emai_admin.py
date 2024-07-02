@@ -1,23 +1,15 @@
-
+""" Admin de ClientesEmail """
 from django.contrib import admin
 
+from reportes.admin_files.admin_class import CommonAdminSetupMixin
 from reportes.models import Clientes
 from reportes.utils import get_response_account, if_admin
 
 
-class ClientesEmailAdmin(admin.ModelAdmin):
+class ClientesEmailAdmin(CommonAdminSetupMixin, admin.ModelAdmin):
     '''
     Admin View for ClientesEmail
     '''
-    list_display = ['cliente', 'type', 'data']
-    search_fields = ['cliente__lead_name',
-                     'cliente__first_name',
-                     'cliente__last_name',
-                     'cliente__cliente_id',
-                     'type__name',
-                     'data']
-    ordering = ['cliente', 'type']
-    list_filter = ['cliente', 'type']
 
     def get_queryset(self, request):
         ''' Obtener el queryset base '''

@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = int(os.getenv("DEBUG", default=1))
+DEBUG = int(os.getenv("DEBUG", default="1"))
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", '*').split(" ")
 
@@ -185,9 +185,13 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # ADMIN_REORDER = (
 #     # Keep original label and models
-#     {'app':'actividad', 'models': ('actividad.Clientes','actividad.Ordenes','actividad.Polizas','actividad.Comprobantes','actividad.Cheques','actividad.Rendiciones','actividad.Companias','actividad.Secciones','actividad.Productores')},
+#     {'app':'actividad', 'models': ('actividad.Clientes','actividad.Ordenes','actividad.Polizas',
+# 'actividad.Comprobantes','actividad.Cheques','actividad.Rendiciones','actividad.Companias',
+# 'actividad.Secciones','actividad.Productores')},
 #     {'app': 'reportes', 'models': ('reportes.RegistrosLibros', 'reportes.LibrosRubricados')},
-#     {'app': 'parametros', 'models': ('parametros.Bancos', 'parametros.Postal', 'parametros.Monedas', 'parametros.Tipospedido', 'parametros.Tipospoliza', 'parametros.Mediosdepago')},
+#     {'app': 'parametros', 'models': ('parametros.Bancos', 'parametros.Postal',
+# 'parametros.Monedas', 'parametros.Tipospedido', 'parametros.Tipospoliza',
+# 'parametros.Mediosdepago')},
 #     'auth',
 
 # )

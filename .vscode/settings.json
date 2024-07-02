@@ -33,5 +33,10 @@
     },
     "peacock.color": "#F9E64F",
     "python.linting.enabled": true,
-    "python.linting.pylintEnabled": true
+    "python.linting.pylintEnabled": true,
+    "python.testing.pytestArgs": [
+        "reportes"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }
