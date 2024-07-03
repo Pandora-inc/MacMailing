@@ -248,7 +248,7 @@ class UtilExcelFile():
                 if nombre:
                     self.add_contact_to_cliente(cliente, nombre, value[i])
 
-    def add_contact_to_cliente(self, cliente, nombre, valor):
+    def add_contact_to_cliente(self, cliente: Clientes, nombre: str, valor: str):
         """ Agrega un contacto al cliente """
         if ContactType.objects.filter(name=nombre).exists():
             contact_type = ContactType.objects.get(name=nombre)
