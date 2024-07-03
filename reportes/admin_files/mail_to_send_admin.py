@@ -10,7 +10,7 @@ from reportes.utils import if_admin, get_response_account
 from reportes.actions import get_mail_data, prepare_email_body, send_mail
 
 
-def enviar_email(_, request, queryset):
+def enviar_email(request, queryset):
     """ Función para enviar email desde el admin """
     try:
         for obj in queryset:
@@ -18,16 +18,14 @@ def enviar_email(_, request, queryset):
                 if send_mail(obj.mail_id):
                     obj.send = True  # Marcar el correo como enviado
                     obj.save()  # Guardar el objeto actualizado en la base de datos
-                    messages.success(request, f"Mail sent successfully to {obj.mail_id}")
+                    messages.success(request, f"Correo enviado correctamente a {obj.mail_id}")
                 else:
-                    messages.warning(request, f"Could not send email to {obj.mail_id}")
+                    messages.warning(request, f"No se pudo enviar el correo a {obj.mail_id}")
             else:
                 messages.warning(request, f"El correo {obj.mail_id} no está aprobado")
-    except KeyError as e:
-        messages.error(request, f"Error sending emails. Field bad defined: {e}")
     except Exception as e:
-        error_type = type(e).__name__
-        messages.error(request, f"Error sending emails: {e} (Error type: {error_type})")
+        messages.error(request, f"Error al enviar correos: {e}")
+
 
 enviar_email.short_description = "Send email"
 
@@ -89,27 +87,14 @@ class MailsToSendAdmin(admin.ModelAdmin):
     def mail_to(self, obj):
         '''
         Muestra el mail del destinatario
-
-        Parameters:
-            obj: Object
-                The object containing the mail information.
-
-        Returns:
-            str
-                The email address of the recipient.
-
-        Raises:
-            ClientesEmail.DoesNotExist
-                If the recipient email does not exist in the database.
-
         '''
         try:
             email = ClientesEmail.objects.get(
                 cliente=obj.mail.cliente, type=EmailType.objects.get(id=1))
-            return email.data
+            return email.email
         except ClientesEmail.DoesNotExist:
             email = ClientesEmail.objects.get(cliente=obj.mail.cliente).first()
-            return email.data
+            return email
 
 
     def save_model(self, request, obj, form, change):

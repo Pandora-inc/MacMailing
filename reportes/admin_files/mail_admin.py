@@ -10,7 +10,7 @@ from reportes.utils import get_response_account, if_admin
 from reportes.models import Clientes, Mail, MailCorp, MailsToSend, TemplateFiles, TemplatesGroup
 
 
-def prepare_to_send(_, request, queryset):
+def prepare_to_send(request, queryset):
     ''' Función para preparar los emails para enviar '''
     for obj in queryset:
         if obj.status_response is False:
@@ -67,7 +67,7 @@ class MailAdmin(admin.ModelAdmin):
         # Si 'fin' es True, establece los campos como readonly
         if obj and obj.status_response:
             return self.readonly_fields + ('mail_corp', 'cliente', 'subject', 'body',
-                                           'status', 'status_response',
+                                           'attachment', 'status', 'status_response',
                                            'template_group', 'reminder_days', 'use_template',)
         return self.readonly_fields
 
@@ -115,10 +115,13 @@ class MailAdmin(admin.ModelAdmin):
         """ Sobreescribe el formulario de creación """
         # Use custom form only for creating new instances
         if obj is None:
+
             mail_form = MailForm
-            if 'cliente' in request.GET:
-                selected_clientes_ids = map(int, request.GET.get('cliente').split(','))
+            if 'customer' in request.GET:
+                selected_clientes_ids = map(int, request.GET.get('customer').split(','))
+
                 initial_data = {'customer': selected_clientes_ids}
+
                 mail_form.initial = initial_data
                 mail_form.user = request.user
 
@@ -150,7 +153,6 @@ class MailAdmin(admin.ModelAdmin):
         return super().changeform_view(request, object_id, form_url, extra_context)
 
     def _handle_client_mail(self, cliente_id, mail_corp, request):
-        """ Handle the creation of mail for a client """
 
         template_group_id = request.POST.get('template_group', None)
         template_group = TemplatesGroup.objects.filter(
