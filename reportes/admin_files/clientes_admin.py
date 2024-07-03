@@ -14,6 +14,26 @@ class ClientesEmailInline(admin.TabularInline):
     '''
     model = ClientesEmail
 
+class VisibleFilter(admin.SimpleListFilter):
+    """ Filtro para mostrar los leads visibles o no visibles """
+    title = 'Visible'  # El título del filtro que se mostrará en el admin
+    parameter_name = 'visible'  # El parámetro que se pasará en la URL para aplicar el filtro
+
+    def lookups(self, request, model_admin):
+        # Definir las opciones del filtro: (valor, etiqueta a mostrar)
+        return (
+            ('true', 'Visible'),
+            ('false', 'No visible'),
+        )
+
+    def queryset(self, request, queryset):
+        # Aplicar el filtro al queryset
+        if self.value() == 'true':
+            return queryset.filter(visible=True)
+        if self.value() == 'false':
+            return queryset.filter(visible=False)
+        return queryset  # Sin filtrar si no se selecciona ningún valor
+
 class ClientesAdmin(admin.ModelAdmin):
     ''' Admin View for Clientes '''
     list_display = ['cliente_id', 'last_name', 'first_name',
@@ -22,7 +42,7 @@ class ClientesAdmin(admin.ModelAdmin):
                      'lead_name', 'status', 'responsible__name', 'contacted']
     ordering = ['cliente_id', 'last_name',
                 'lead_name', 'status', 'responsible', 'contacted']
-    list_filter = ['contacted', 'responsible', 'lead_name']
+    list_filter = ['contacted', 'responsible', 'lead_name', VisibleFilter]
     inlines = [ClientesEmailInline]
     actions = ['enviar_mail_replicado']
 

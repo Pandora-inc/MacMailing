@@ -126,6 +126,7 @@ class Clientes(models.Model):
     last_updated_on = models.DateTimeField(blank=True, null=True)
     contacted = models.BooleanField(blank=True, null=True, default=False)
     contacted_on = models.DateTimeField(blank=True, null=True)
+    visible = models.BooleanField(default=True)
 
     def __str__(self):
         name = str(self.first_name) + " " + str(self.last_name)
