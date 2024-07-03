@@ -1,0 +1,12 @@
+name: Test Secrets
+
+on: [push]
+
+jobs:
+  test-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check OpenAI Key
+        run: echo "OPENAI_KEY is set"
+        env:
+          OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
