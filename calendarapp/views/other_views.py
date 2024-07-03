@@ -1,22 +1,24 @@
-# cal/views.py
+""" This file contains the views for the calendarapp app. """
+
+import calendar
+
+from datetime import timedelta, datetime, date
 
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
 from django.views import generic
 from django.utils.safestring import mark_safe
-from datetime import timedelta, datetime, date
-import calendar
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
-from reportes.utils import if_admin
 
+from reportes.utils import if_admin
 from calendarapp.models import EventMember, Event
 from calendarapp.utils import Calendar
 from calendarapp.forms import EventForm, AddMemberForm
 
 
 def get_date(req_day):
+    """ Get the date from the request. """
     if req_day:
         year, month = (int(x) for x in req_day.split("-"))
         return date(year, month, day=1)
@@ -24,26 +26,25 @@ def get_date(req_day):
 
 
 def prev_month(d):
+    """ Get the previous month URL. """
     first = d.replace(day=1)
-    prev_month = first - timedelta(days=1)
-    month = "month=" + str(prev_month.year) + "-" + str(prev_month.month)
-    return month
-
+    prev_month_date = first - timedelta(days=1)
+    return f"month={prev_month_date.year}-{prev_month_date.month}"
 
 def next_month(d):
+    """ Get the next month URL. """
     days_in_month = calendar.monthrange(d.year, d.month)[1]
-    last = d.replace(day=days_in_month)
-    next_month = last + timedelta(days=1)
-    month = "month=" + str(next_month.year) + "-" + str(next_month.month)
-    return month
+    next_month_date = d + timedelta(days=days_in_month)
+    return f"month={next_month_date.year}-{next_month_date.month}"
 
 
 class CalendarView(LoginRequiredMixin, generic.ListView):
-    # login_url = "accounts:signin"
+    """ Calendar view """
     model = Event
     template_name = "calendar.html"
 
     def get_context_data(self, **kwargs):
+        """ Get the context data. """
         context = super().get_context_data(**kwargs)
         d = get_date(self.request.GET.get("month", None))
         cal = Calendar(d.year, d.month)
@@ -56,6 +57,7 @@ class CalendarView(LoginRequiredMixin, generic.ListView):
 
 # @login_required(login_url="signup")
 def create_event(request):
+    """ Create event """
     form = EventForm(request.POST or None)
     if request.POST and form.is_valid():
         title = form.cleaned_data["title"]
@@ -74,6 +76,7 @@ def create_event(request):
 
 
 class EventEdit(generic.UpdateView):
+    """ Edit event """
     model = Event
     fields = ["title", "description", "start_time", "end_time"]
     template_name = "event.html"
@@ -81,6 +84,7 @@ class EventEdit(generic.UpdateView):
 
 # @login_required(login_url="signup")
 def event_details(request, event_id):
+    """ Event details """
     event = Event.objects.get(id=event_id)
     eventmember = EventMember.objects.filter(event=event)
     context = {"event": event, "eventmember": eventmember}
@@ -88,6 +92,7 @@ def event_details(request, event_id):
 
 
 def add_eventmember(request, event_id):
+    """ Add event member """
     forms = AddMemberForm()
     if request.method == "POST":
         forms = AddMemberForm(request.POST)
@@ -98,24 +103,26 @@ def add_eventmember(request, event_id):
                 user = forms.cleaned_data["user"]
                 EventMember.objects.create(event=event, user=user)
                 return redirect("calendarapp:calendar")
-            else:
-                print("--------------User limit exceed!-----------------")
+            print("--------------User limit exceed!-----------------")
     context = {"form": forms}
     return render(request, "add_member.html", context)
 
 
 class EventMemberDeleteView(generic.DeleteView):
+    """ Delete event member """
     model = EventMember
     template_name = "event_delete.html"
     success_url = reverse_lazy("calendarapp:calendar")
 
 
 class CalendarViewIndex(LoginRequiredMixin, generic.base.TemplateView):
+    """ Calendar view """
     # login_url = "accounts:signin"
     template_name = "templates/admin/index/admin_index.html"
     form_class = EventForm
 
     def get(self, request, *args, **kwargs):
+        """ Get method for the calendar view. """
         forms = self.form_class()
 
         if if_admin(request.user):
@@ -143,11 +150,13 @@ class CalendarViewIndex(LoginRequiredMixin, generic.base.TemplateView):
 
 
 class CalendarViewNew(LoginRequiredMixin, generic.View):
+    """ Calendar view """
     # login_url = "accounts:signin"
     template_name = "calendarapp/calendar.html"
     form_class = EventForm
 
     def get(self, request, *args, **kwargs):
+        """ Get method for the calendar view. """
         forms = self.form_class()
 
         if if_admin(request.user):
@@ -166,7 +175,6 @@ class CalendarViewNew(LoginRequiredMixin, generic.View):
                     "title": event.title,
                     "start": event.start_time.strftime("%Y-%m-%dT%H:%M:%S"),
                     "end": event.end_time.strftime("%Y-%m-%dT%H:%M:%S"),
-
                 }
             )
         context = {"form": forms, "events": event_list,
@@ -174,6 +182,7 @@ class CalendarViewNew(LoginRequiredMixin, generic.View):
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
+        """ Post method for the calendar view. """
         forms = self.form_class(request.POST)
         if forms.is_valid():
             form = forms.save(commit=False)
@@ -186,15 +195,15 @@ class CalendarViewNew(LoginRequiredMixin, generic.View):
 
 
 class DashboardView(LoginRequiredMixin, generic.View):
+    """ Dashboard view """
     login_url = "accounts:signin"
     template_name = "calendarapp/dashboard.html"
 
     def get(self, request, *args, **kwargs):
+        """ Get method for the dashboard view. """
         if if_admin(request.user):
             events = Event.objects.get_all()
-            print("pepinos")
         else:
-            print("cosas")
             events = Event.objects.get_all_events(user=request.user)
 
         running_events = Event.objects.get_running_events(user=request.user)

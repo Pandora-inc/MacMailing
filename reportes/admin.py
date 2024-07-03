@@ -1,4 +1,4 @@
-
+""" Admin de la app reportes """
 from django.contrib import admin
 
 from .admin_files import clientes_emai_admin
@@ -9,8 +9,9 @@ from .admin_files.admin_class import (AccountAdmin, AttachmentAdmin, ClientesAdd
 from .admin_files.mail_admin import MailAdmin
 from .admin_files.clientes_admin import ClientesAdmin
 from .admin_files.mail_to_send_admin import MailsToSendAdmin
-from .models import (Account, Attachment, Clientes, ClientesAddress, ClientesContact, ClientesEmail, ClientesSocial,
-                    ClientesUTM, ClientesWeb, ExcelFiles, Mail, MailCorp, MailsToSend, TemplateFiles, TemplatesGroup)
+from .models import (Account, Attachment, Clientes, ClientesAddress, ClientesContact,
+                     ClientesEmail, ClientesSocial, ClientesUTM, ClientesWeb, ExcelFiles,
+                     Mail, MailCorp, MailsToSend, TemplateFiles, TemplatesGroup)
 
 admin.site.register(Attachment, AttachmentAdmin)
 admin.site.register(Clientes, ClientesAdmin)

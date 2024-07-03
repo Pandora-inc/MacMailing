@@ -1,3 +1,4 @@
+""" Event abstract model """
 from django.db import models
 
 

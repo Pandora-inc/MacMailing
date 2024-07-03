@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.shortcuts import redirect
 from django.urls import reverse
 
-from reportes.models import Clientes, ClientesEmail
+from reportes.models import ClientesEmail
 from reportes.utils import get_response_account, if_admin
 
 
@@ -42,11 +42,13 @@ class ClientesAdmin(admin.ModelAdmin):
 
             # Redirigir al formulario de Mail replicado
             selected_clientes_ids = queryset.values_list('id', flat=True)
-            url = reverse('admin:reportes_mail_add') + f'?customer={",".join(map(str, selected_clientes_ids))}'
+            additional = f'?cliente={",".join(map(str, selected_clientes_ids))}'
+            url = reverse('admin:reportes_mail_add') + additional
             return redirect(url)
-        else:
-            mensaje = "No leads have been selected to send the replicated mail."
-            self.message_user(request, message=mensaje, level='warning')
+
+        mensaje = "No leads have been selected to send the replicated mail."
+        self.message_user(request, message=mensaje, level='warning')
+        return None
 
     enviar_mail_replicado.short_description = "Create a new mails"
 

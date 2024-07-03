@@ -1,18 +1,21 @@
+""" This file contains the Calendar class which is used to render the calendar in the template. """
 # calendarapp/utils.py
 from calendar import HTMLCalendar
 from .models import Event
 
 
 class Calendar(HTMLCalendar):
+    """ Calendar class to render the calendar in the template. """
     def __init__(self, year=None, month=None):
         self.year = year
         self.month = month
-        super(Calendar, self).__init__()
+        super().__init__()
 
     # formats a day as a td
     # filter events by day
-    def formatday(self, day, events):
-        events_per_day = events.filter(start_time__day=day)
+    def formatday(self, day, weekday):
+        """ formats a day as a td """
+        events_per_day = weekday.filter(start_time__day=day)
         d = ""
         for event in events_per_day:
             d += f"<li> {event.get_html_url} </li>"
@@ -21,15 +24,22 @@ class Calendar(HTMLCalendar):
         return "<td></td>"
 
     # formats a week as a tr
+
     def formatweek(self, theweek, events):
+        """ formats a week as a tr """
         week = ""
-        for d, weekday in theweek:
+        for d, _ in theweek:
             week += self.formatday(d, events)
         return f"<tr> {week} </tr>"
 
     # formats a month as a table
     # filter events by year and month
-    def formatmonth(self, withyear=True):
+    def formatmonth(self, theyear=None, themonth=None, withyear=True):
+        """ formats a month as a table """
+        if theyear is None:
+            theyear = self.year
+        if themonth is None:
+            themonth = self.month
         events = Event.objects.filter(
             start_time__year=self.year, start_time__month=self.month
         )
@@ -37,9 +47,9 @@ class Calendar(HTMLCalendar):
             '<table border="0" cellpadding="0" cellspacing="0" class="calendar">\n'
         )  # noqa
         cal += (
-            f"{self.formatmonthname(self.year, self.month, withyear=withyear)}\n"
+            f"{self.formatmonthname(theyear, themonth, withyear=withyear)}\n"
         )  # noqa
         cal += f"{self.formatweekheader()}\n"
-        for week in self.monthdays2calendar(self.year, self.month):
+        for week in self.monthdays2calendar(theyear, themonth):
             cal += f"{self.formatweek(week, events)}\n"
         return cal

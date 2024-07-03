@@ -1,7 +1,6 @@
 """ Admin file for Mail model """
 
 from datetime import date
-from typing import Any
 from django.contrib import admin, messages
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -11,7 +10,7 @@ from reportes.utils import get_response_account, if_admin
 from reportes.models import Clientes, Mail, MailCorp, MailsToSend, TemplateFiles, TemplatesGroup
 
 
-def prepare_to_send(modeladmin, request, queryset):
+def prepare_to_send(request, queryset):
     ''' Función para preparar los emails para enviar '''
     for obj in queryset:
         if obj.status_response is False:
@@ -108,12 +107,11 @@ class MailAdmin(admin.ModelAdmin):
             dias = reminder - pass_days
             if dias >= 0:
                 return dias
-            else:
-                return "Estamos atrasados"
-        else:
-            return "Today is a great day"
+            return "We are late"
 
-    def get_form(self, request, obj=None, **kwargs):
+        return "Today is a great day"
+
+    def get_form(self, request, obj=None, change=False, **kwargs):
         """ Sobreescribe el formulario de creación """
         # Use custom form only for creating new instances
         if obj is None:
@@ -134,67 +132,55 @@ class MailAdmin(admin.ModelAdmin):
 
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         """ Sobreescribe la vista de cambio de formulario """
-        # Verifica si se está guardando el formulario (si es una solicitud POST)
         if request.method == 'POST':
             clientes = request.POST.getlist('cliente', None)
             if not clientes:
                 self.message_user(request, "Client is required", level=messages.WARNING)
                 return super().changeform_view(request, object_id, form_url, extra_context)
-            # TODO: Verificar si se puede hacer que el formulario se guarde si solo hay un cliente
-            # if len(clientes) == 1:
-            #     return super().changeform_view(request, object_id, form_url, extra_context)
 
             mail_corp_id = request.POST.get('mail_corp', None)
-            mail_corp = MailCorp.objects.get(pk=mail_corp_id)
+            mail_corp = MailCorp.objects.filter(pk=mail_corp_id).first()
             if not mail_corp:
                 self.message_user(request, "Mail Corp is required", level=messages.WARNING)
                 return super().changeform_view(request, object_id, form_url, extra_context)
 
-            template_group_id = request.POST.get('template_group', None)
-            if template_group_id:
-                template_group = TemplatesGroup.objects.get(pk=template_group_id)
-            else:
-                template_group = None
-
-            reminder_days = request.POST.get('reminder_days', 7)
-
-            use_template = request.POST.get('use_template', False)
-            use_template = True if use_template == 'on' else False
-
-            status_response = request.POST.get('status_response', False)
-            status_response = True if status_response == 'on' else False
-
-            status = request.POST.get('status', False)
-            status = True if (status in ['on', 'true', 1, True, "1"]) else False
-
-            for cliente in clientes:
-                client = Clientes.objects.get(pk=cliente)
-                if cliente:
-                    if Mail.objects.filter(mail_corp=mail_corp, cliente=cliente).exists():
-                        if len(clientes) == 1:
-                            return super().changeform_view(request, object_id, form_url, extra_context)
-                        else:
-                            self.message_user(request, f"{cliente} already have a mail.", level=messages.WARNING)
-                    else:
-                        mail = Mail.objects.create(
-                            mail_corp=mail_corp if mail_corp else None,
-                            cliente=client,
-                            status=status,
-                            status_response=status_response,
-                            use_template=use_template,
-                            template_group=template_group,
-                            reminder_days=reminder_days
-                        )
-                        if use_template and template_group:
-                            template = TemplateFiles.objects.filter(template_group=template_group,
-                                                                    orden=1)
-                            if template.exists():
-                                mail.body = template.first().text
-                                mail.subject = template.first().name
-
-                        if mail.save():
-                            self.message_user(request, f"{cliente} has been added.",
-                                              level=messages.SUCCESS)
+            for cliente_id in clientes:
+                if not self._handle_client_mail(cliente_id, mail_corp, request):
+                    self.message_user(request, f"{cliente_id} already have a mail.",
+                                      level=messages.WARNING)
 
             return HttpResponseRedirect(reverse('admin:reportes_mail_changelist'))
         return super().changeform_view(request, object_id, form_url, extra_context)
+
+    def _handle_client_mail(self, cliente_id, mail_corp, request):
+
+        template_group_id = request.POST.get('template_group', None)
+        template_group = TemplatesGroup.objects.filter(
+            pk=template_group_id).first() if template_group_id else None
+
+        reminder_days = request.POST.get('reminder_days', 7)
+        use_template = request.POST.get('use_template', 'off') == 'on'
+        status_response = request.POST.get('status_response', 'off') == 'on'
+        status = request.POST.get('status', False) in ['on', 'true', 1, True, "1"]
+
+        client = Clientes.objects.get(pk=cliente_id)
+        if Mail.objects.filter(mail_corp=mail_corp, cliente=client).exists():
+            return False
+        mail = Mail.objects.create(
+            mail_corp=mail_corp,
+            cliente=client,
+            status=status,
+            status_response=status_response,
+            use_template=use_template,
+            template_group=template_group,
+            reminder_days=reminder_days
+        )
+        if use_template and template_group:
+            template = TemplateFiles.objects.filter(template_group=template_group, orden=1).first()
+            if template:
+                mail.body = template.text
+                mail.subject = template.name
+
+        mail.save()
+        self.message_user(request, f"{cliente_id} has been added.", level=messages.SUCCESS)
+        return True

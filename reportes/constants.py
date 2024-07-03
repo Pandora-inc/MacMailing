@@ -1,3 +1,8 @@
+""" Constantes para el módulo de reportes. """
+
+import os
+
+
 INDICE_TRADUCCION = {
     'id': 'id',
     'estatus': 'status',
@@ -118,3 +123,7 @@ INDICE_TRADUCCION_CONTACT = {
     'Otro Contacto': 'Other Contact',
     'Usuario vinculado': 'Linked user',
 }
+
+
+API_BASE_URL = os.getenv('API_BASE_URL')
+BITRIX_WEBHOOK = os.environ.get("BITRIX_WEBHOOK", "v0uehhaf88vle9ua")

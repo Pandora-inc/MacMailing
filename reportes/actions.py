@@ -1,25 +1,28 @@
 """ This module contains functions to send emails and update the database. """
-from datetime import timedelta, datetime
-from email.mime.base import MIMEBase
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
-from email.utils import formatdate
-from email import encoders
-from pathlib import Path
-import string
 import smtplib
 import ssl
+import string
+
+from email import encoders
+from email.mime.base import MIMEBase
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import formatdate
+from pathlib import Path
+
+from datetime import timedelta, datetime
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import connection, transaction
+from django.http import Http404, JsonResponse
 from rest_framework import status
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.decorators import api_view
-from django.http import Http404
-from django.db import connection
-from calendarapp.models import Event
-from reportes.serializers import MailSerializer
-from reportes.models import (Clientes, Mail, TemplateFiles, MailsToSend)
 
+from calendarapp.models import Event
+from reportes.models import (Clientes, Mail, TemplateFiles, MailsToSend)
+from reportes.serializers import MailSerializer
 
 PRE_URL = str(Path(__file__).resolve().parent.parent)
 PRE_URL = PRE_URL+'/'
@@ -328,83 +331,52 @@ def get_template_file_and_save(id_template: int):
         with open(filename, "r", encoding="utf-8") as archivo:
             template.text = archivo.read()
             template.save()
-    except Exception as e_error:
+    except FileNotFoundError as e_error:
+        print("Error al leer el archivo")
+        print(e_error)
+        raise e_error
+    except FileExistsError as e_error:
         print("Error al leer el archivo")
         print(e_error)
         raise e_error
 
 
 def emails_cadena(cadena):
-    """ Función que nos servirá para extraer todos los email válidos de una cadena de texto. """
+    """ Función que extrae todos los emails válidos de una cadena de texto. """
     try:
         # Definimos una lista de signos de puntuación a eliminar, excepto @ y .
-        caracteres_puntuacion = string.punctuation.replace(
-            '@', '').replace('.', '').replace('_', '').replace('-', '')
-
+        caracteres_puntuacion = string.punctuation.replace('@', '').replace('.', '')
         # Eliminamos todos los caracteres de puntuación de la cadena,
         # que no se usan en los correos electrónicos
         traductor = str.maketrans("", "", caracteres_puntuacion)
         cadena_sin_puntuacion = cadena.translate(traductor)
-
-        # Dividimos la cadena con el método .split() convirtiéndola en una lista
-        cad = cadena_sin_puntuacion.lower().split()
-        # Creamos una lista vacía
+        # Dividimos la cadena en palabras y las convertimos en minúsculas
+        palabras = cadena_sin_puntuacion.lower().split()
+        # Creamos una lista para almacenar los emails válidos encontrados
         emails = []
-
-        for correo in cad:
-            try:
-                if "@" in correo:
-                    # Almacenamos el índice de la arroba
-                    indice_arroba = correo.index("@")
-
-                    # Se produce una excepción si hay más de una arroba e el email
-                    if correo.count("@") > 1:
-                        raise ValueError(
-                            "Hay más de una arroba en el e-mail: " + correo)
-
-                    # eliminamos los espacios en blanco del correo
-                    correo_limpio = correo.replace(" ", "")
-
-                    # si hay un punto después de la arroba dividimos el correo en nombre
-                    # (antes de la arroba) y dominio (después de la arroba)
-                    if "." in correo_limpio[indice_arroba + 1:]:
-                        nombre, dominio = correo.split("@")
-
-                        # si tiene dos o más caracteres, el dominio es válido.
-                        # Quitamos los espacios que puedan haber en el dominio
-                        # y añadimos el correo (dupla) en la lista 'emails'
-                        if len(dominio.split(".")[-1]) > 1:
-                            dominio_limpio = dominio.replace(" ", "")
-                            emails.append((nombre, dominio_limpio))
-                        else:
-                            print(
-                                f"El dominio del e-mail '{correo}' no es válido")
+        for palabra in palabras:
+            if "@" in palabra:
+                partes_email = palabra.split("@")
+                # Verificamos que haya exactamente una arroba en el correo
+                if len(partes_email) == 2:
+                    _, dominio = partes_email
+                    # Verificamos que haya un punto después de la arroba en el dominio
+                    if "." in dominio:
+                        # Añadimos el email a la lista de emails válidos
+                        emails.append(palabra)
                     else:
-                        print("No has introducido un dominio en el e-mail :", correo)
-
-            # Se muestra la excepción en caso de haber más de una arroba
-            except ValueError as e_error:
-                print(e_error)
-
-        # Si no hay correos en la lista...
-        if len(emails) == 0:
-            print("No se encontraron correos electrónicos en la cadena.")
-            return None
-        else:
-            # Recorremos la lista y mostramos todos los emails en caso de tener nombre de usuario..,
-            response = []
-            for email in emails:
-                if email[0]:
-                    response.append(f"{email[0]}@{email[1]}")
-                # de lo contrario se muestra el texto con el nombre del dominio en cuestión
+                        print(f"El dominio del email '{palabra}' no es válido.")
                 else:
-                    print("No existe  un nombre de usuario en :", email[1])
+                    print(f"El email '{palabra}' contiene más de una arroba.")
+        # Si no se encontraron emails válidos, mostramos un mensaje
+        if len(emails) == 0:
+            print("No se encontraron correos electrónicos válidos en la cadena.")
+            return None
+        return emails
+    except ValueError as e:
+        print(f"Error al procesar la cadena: {e}")
+        return None
 
-            return response
-
-    except Exception as e_error:
-        print(e_error)
-        print("Ha ocurrido un error inesperado al procesar la cadena.")
 
 def get_next_email_data() -> dict:
     '''
@@ -455,7 +427,7 @@ def get_next_email_data() -> dict:
 
         return msg
 
-def send_new_mail(msg_data) -> bool:
+def send_new_mail(msg_data) -> JsonResponse:
     """
     Sends a new email using the provided message data.
 
@@ -469,12 +441,15 @@ def send_new_mail(msg_data) -> bool:
             - 'content' (str): The content of the email.
             - 'firma' (str): The signature of the email.
             - 'mail_to_send_id' (int): The ID of the mail to be sent.
+            - 'from_smtp' (str): SMTP server address.
+            - 'from_port' (int): SMTP server port.
+            - 'from_pass' (str): Sender's email password.
 
     Returns:
-        bool: True if the email was sent successfully, False otherwise.
+        JsonResponse: JSON response indicating success or failure.
 
     Raises:
-        MailsToSend.DoesNotExist: If the mail with the given ID does not exist.
+        ObjectDoesNotExist: If the mail with the given ID does not exist.
         Exception: If there is an error in the process of sending the email.
 
     Additional aspects:
@@ -488,109 +463,79 @@ def send_new_mail(msg_data) -> bool:
              of the sent email in the database and create or update an event in the calendar app.
         - This function uses the 'register_first_email' function to register the first
             email sent to a client.
-        - This function uses the 'smtplib' library to establish a connection with the
-            SMTP server and send the email.
-        - This function handles various exceptions and updates the status and error message
-            of the 'MailsToSend' object accordingly.
-
     """
 
-    message = MIMEMultipart()
-    message['From'] = msg_data['from_email']
-    message['To'] = msg_data['To']
-    message['Subject'] = msg_data['Subject']
-    message['cc'] = msg_data['CC']
-
-    msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
-    msg_data['firma'] = prepare_email_body(msg_data['firma'], msg_data)
-
-    msg_data['content'] = add_image_to_email(msg_data['content'], message)
-    msg_data['firma'] = add_image_to_email(msg_data['firma'], message)
-
-    content = msg_data['content']+msg_data['firma']
-
-    message.attach(MIMEText(content, "html"))
     try:
-        mail_to_send = MailsToSend.objects.get(id=msg_data['mail_to_send_id'])
+        message = MIMEMultipart()
+        message['From'] = msg_data['from_email']
+        message['To'] = msg_data['To']
+        message['Subject'] = msg_data['Subject']
+        message['CC'] = msg_data['CC']
 
+        msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
+        msg_data['firma'] = prepare_email_body(msg_data['firma'], msg_data)
+
+        msg_data['content'] = add_image_to_email(msg_data['content'], message)
+        msg_data['firma'] = add_image_to_email(msg_data['firma'], message)
+
+        content = msg_data['content'] + msg_data['firma']
+        message.attach(MIMEText(content, "html"))
+
+        # Fetch attachments from database
         with connection.cursor() as cursor:
             cursor.callproc("get_mail_attachment", [msg_data['mail_id']])
-            attachment = cursor.fetchall()
+            attachments = cursor.fetchall()
 
-            for f in attachment:
-                with open(PRE_URL+'static_media/'+f[5], 'rb') as file:
+            for attachment in attachments:
+                with open(PRE_URL + 'static_media/' + attachment[5], 'rb') as file:
                     part = MIMEBase('application', 'octet-stream')
                     part.set_payload(file.read())
                     encoders.encode_base64(part)
-                    filename = f[4]+"."+f[5].split(".")[-1]
+                    filename = attachment[4] + "." + attachment[5].split(".")[-1]
                     part.add_header('Content-Disposition', f'attachment; filename={filename}')
                     message.attach(part)
 
-    except MailsToSend.DoesNotExist as e_error:
-        error = "Error al obtener el mail a enviar"
-        print(error)
-        print("ID del mail a enviar: "+str(msg_data['mail_to_send_id']))
-        raise e_error
-
-    except Exception as e_error:
-        error = "Error al obtener los adjuntos"
+        # Retrieve mail object
         mail_to_send = MailsToSend.objects.get(id=msg_data['mail_to_send_id'])
-        mail_to_send.status = False
-        mail_to_send.error_message = error + " - " + str(e_error)
-        mail_to_send.save()
 
-        # respuesta = Response(status=status.HTTP_200_OK)
-        respuesta = Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                             data="Error con los adjuntos" )
-        return respuesta
-
-    context = ssl.create_default_context()
-    try:
+        # Send email using SMTP
+        context = ssl.create_default_context()
         with smtplib.SMTP(msg_data['from_smtp'], msg_data['from_port']) as server:
             server.starttls(context=context)
-            try:
-                server.login(msg_data['from_email'], msg_data['from_pass'])
-            except Exception as e_error:
-                error = "Error en el loggeo"
-                mail_to_send.status = False
-                mail_to_send.error_message = error + " - " + str(e_error)
-                mail_to_send.save()
-                server.quit()
-                raise e_error
-            try:
-                server.send_message(message)
-                server.quit()
-                registro_envio_mail(msg_data['mail_id'], msg_data['number']+1)
-                register_first_email(msg_data['mail_id'])
+            server.login(msg_data['from_email'], msg_data['from_pass'])
+            server.send_message(message)
+            server.quit()
 
-            except Exception as e_error:
-                error = "Error en el envio del mail"
-                mail_to_send.status = False
-                mail_to_send.error_message = error + " - " + str(e_error)
-                mail_to_send.save()
-                server.quit()
-                raise e_error
-            else:
+        # Update mail object status and save
+        with transaction.atomic():
+            mail_to_send.send = True
+            mail_to_send.save()
 
-                mail_to_send.send = True
-                mail_to_send.save()
-                respuesta = Response(status=status.HTTP_200_OK,
-                                     data={'mail_id': msg_data['mail_id']} )
-                print(respuesta)
-                return respuesta
-    except Exception as e_error:
-        error = "Error en la conexión con el servidor"
-        mail_to_send.status = False
-        mail_to_send.error_message = error + " - " + str(e_error)
+            # Register email sending and first email
+            registro_envio_mail(msg_data['mail_id'], msg_data['number'] + 1)
+            register_first_email(msg_data['mail_id'])
+
+        return JsonResponse({'mail_id': msg_data['mail_id']}, status=200)
+
+    except ObjectDoesNotExist as e_error:
+        error_msg = f"Mail with ID {msg_data['mail_to_send_id']} does not exist."
+        mail_to_send.error_message = error_msg
         mail_to_send.save()
-        raise e_error
+        return JsonResponse({'code': e_error, 'error': error_msg}, status=404)
+
+    except smtplib.SMTPException as e:
+        error_msg = f"Error sending email: {e}"
+        mail_to_send.status = False
+        mail_to_send.error_message = error_msg
+        mail_to_send.save()
+        return JsonResponse({'error': error_msg}, status=500)
 
 class EmailAPI(APIView):
     """
     API endpoint that allows emails to be sent.
     """
     @api_view(['POST'])
-    def send_next_mail(self) -> bool:
+    def send_next_mail(self) -> Response:
         """
         Sends an email with the given id_mail.
 
@@ -605,7 +550,8 @@ class EmailAPI(APIView):
         if msg_data is None:
             return Response(status=status.HTTP_208_ALREADY_REPORTED)
 
-        send_new_mail(msg_data)
+        return send_new_mail(msg_data)
+
 
     def get_object(self, pk):
         """
@@ -691,13 +637,13 @@ class EmailAPI(APIView):
         except Mail.DoesNotExist as exc:
             raise Http404 from exc
 
-    def get(self, request, pk, format=None):
+    def get(self, request, pk):
         """ Get the email object with the specified primary key (pk). """
         mail = self.get_object(pk)
         serializer = MailSerializer(mail)
         return Response(serializer.data)
 
-    def put(self, request, pk, format=None):
+    def put(self, request, pk):
         """ Update the email object with the specified primary key (pk). """
         mail = self.get_object(pk)
         serializer = MailSerializer(mail, data=request.data)
@@ -706,7 +652,7 @@ class EmailAPI(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def post(self, request, format=None):
+    def post(self, request):
         """ Create a new email object. """
         serializer = MailSerializer(data=request.data)
         if serializer.is_valid():

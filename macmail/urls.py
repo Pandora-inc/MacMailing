@@ -19,9 +19,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic.base import TemplateView
 from calendarapp.views.other_views import CalendarViewIndex
-from reportes.views import ClientesListAPIView, ExcelsList_APIView, ProcessExcel, crear_correo
-import reportes.actions as actions
-from reportes.actions import EmailAPI
+from reportes.views import ClientesListAPIView, ExcelsListAPIView, ProcessExcel, crear_correo
+from reportes.actions import EmailAPI, send_mail_api
 import reportes.timer_to_send_email as timer_to_send
 
 urlpatterns = [
@@ -31,10 +30,10 @@ urlpatterns = [
     path("admin/", CalendarViewIndex.as_view(), name="calendar"),
     re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
     path('clientes/', ClientesListAPIView.as_view(), name='clientes'),
-    path('excels/', ExcelsList_APIView.as_view(), name='archivos'),
+    path('excels/', ExcelsListAPIView.as_view(), name='archivos'),
     path('excels_work/', ProcessExcel.as_view(), name='excels_work'),
     path("", include("calendarapp.urls")),
-    path("send_email/<int:id_mail>", actions.send_mail_api, name="send_email"),
+    path("send_email/<int:id_mail>", send_mail_api, name="send_email"),
     path("send_next_email/", EmailAPI.send_next_mail, name="send_next_email"),
     path("timer_to_send_email/", timer_to_send.timer_to_send_email, name="timer_to_send_email"),
     path('muchos_correos/', crear_correo, name='crear_correo'),
