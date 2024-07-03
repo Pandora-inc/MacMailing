@@ -398,7 +398,7 @@ class TemplateFiles(models.Model):
         __str__(): Returns a string representation of the template file.
 
     """
-    name = models.CharField(max_length=64, default="Sudject", verbose_name="Subject")
+    name = models.CharField(max_length=64, default="Subject", verbose_name="Subject")
     orden = models.PositiveIntegerField(default=1)
     file = models.FileField(upload_to='template_files/', blank=True, null=True)
     text = RichTextUploadingField(blank=True, null=True, config_name='awesome_ckeditor')
@@ -407,6 +407,7 @@ class TemplateFiles(models.Model):
         User, models.RESTRICT, blank=True, null=True)
     template_group = models.ForeignKey(
         TemplatesGroup, models.RESTRICT, blank=True, null=True)
+    attachment = models.ManyToManyField(Attachment, blank=True)
 
     def __str__(self):
         return str(self.name)
@@ -427,7 +428,6 @@ class Mail(models.Model):
         subject (str): The subject of the email.
         body (RichTextUploadingField): The body or content of the email.
         created (DateTimeField): The date and time when the email was created.
-        attachment (ManyToManyField): The attachments associated with the email.
         status (bool): The status of the email.
         status_response (bool): The status of the email response.
         use_template (bool): Indicates whether the email uses a template.
@@ -451,7 +451,6 @@ class Mail(models.Model):
     subject = models.CharField(max_length=256, blank=True, null=True)
     body = RichTextUploadingField(blank=True, null=True, config_name='awesome_ckeditor')
     created = models.DateTimeField(auto_now_add=True)
-    attachment = models.ManyToManyField(Attachment, blank=True)
     status = models.BooleanField(default=False)
     status_response = models.BooleanField(default=False)
     use_template = models.BooleanField(default=False)
@@ -496,6 +495,12 @@ class MailsToSend (models.Model):
     def __str__(self):
         return str(self.mail)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['mail'],
+                                    condition=models.Q(send=False),
+                                    name='unique_mail_send_false')
+        ]
 
 class UserAcount(models.Model):
     """

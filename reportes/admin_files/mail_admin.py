@@ -67,7 +67,7 @@ class MailAdmin(admin.ModelAdmin):
         # Si 'fin' es True, establece los campos como readonly
         if obj and obj.status_response:
             return self.readonly_fields + ('mail_corp', 'cliente', 'subject', 'body',
-                                           'attachment', 'status', 'status_response',
+                                           'status', 'status_response',
                                            'template_group', 'reminder_days', 'use_template',)
         return self.readonly_fields
 
