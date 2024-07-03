@@ -3,10 +3,10 @@ from django.contrib import admin, messages
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 
 from reportes.actions import get_template_file_and_save
-from reportes.models import Clientes, ExcelFiles
+from reportes.models import ExcelFiles
 from reportes.utils import UtilExcelFile, if_admin
 
-def procesar_excel(_, request, queryset):
+def procesar_excel(request, queryset):
     ''' Función para procesar los archivos excel '''
     for obj in queryset:
         try:
@@ -25,7 +25,7 @@ def procesar_excel(_, request, queryset):
 procesar_excel.short_description = "Process Excel"
 
 
-def template_file_propague(_, request, queryset):
+def template_file_propague(request, queryset):
     ''' Función para propagar las plantillas '''
     for obj in queryset:
         try:
@@ -66,12 +66,6 @@ class CommonAdminSetupMixin:
 
     get_type_name.short_description = 'Type Name'
     get_type_name.admin_order_field = 'type__name'
-
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        """ Filtrar los clientes visibles """
-        if db_field.name == "cliente":
-            kwargs["queryset"] = Clientes.objects.filter(visible=True)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 class AccountAdmin(admin.ModelAdmin):
     ''' Admin View for Account '''
