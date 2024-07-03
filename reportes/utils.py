@@ -1,10 +1,10 @@
 """ This module contains the class for reading """
-
 from datetime import datetime
+
 import openpyxl
-from .constants import INDICE_TRADUCCION, INDICE_TRADUCCION_CONTACT
 
 from auxiliares.models import ContactType, EmailType, SocialType, WebType, Country, Type
+from .constants import INDICE_TRADUCCION, INDICE_TRADUCCION_CONTACT
 from .models import (Clientes,
                      ClientesAddress,
                      ClientesContact,
@@ -13,8 +13,6 @@ from .models import (Clientes,
                      ClientesWeb,
                      MailCorp,
                      Account)
-
-
 
 class UtilExcelFile():
     '''
@@ -56,9 +54,10 @@ class UtilExcelFile():
             self.ws = self.wb.active
         except FileNotFoundError:
             print("El archivo no existe")
-        except Exception as e:
-            print("Error al abrir el archivo: " + str(e))
-
+        except PermissionError:
+            print("No tiene permisos para abrir el archivo")
+        except IsADirectoryError:
+            print("El archivo es un directorio")
 
     def clean_name(self, name):
         ''' Limpia el nombre de los campos '''
@@ -78,8 +77,7 @@ class UtilExcelFile():
         '''
         if clave in diccionario:
             return diccionario[clave]
-        else:
-            return clave
+        return clave
 
     def convertir_a_datetime(self, fecha_str):
         """ Convierte una fecha en string a datetime """
@@ -94,12 +92,12 @@ class UtilExcelFile():
             try:
                 if fecha_str is None:
                     return None
-                elif isinstance(fecha_str, datetime):
+                if isinstance(fecha_str, datetime):
                     return fecha_str
                 fecha_datetime = datetime.strptime(fecha_str, formato)
                 return fecha_datetime
             except ValueError:
-                pass
+                print(f"No se pudo convertir la fecha {fecha_str} con el formato {formato}")
 
         raise ValueError(f"No se pudo encontrar un formato válido para la fecha: {fecha_str}")
 
@@ -134,8 +132,7 @@ class UtilExcelFile():
             estructura, indice = self.get_structure()
 
             for row in self.ws.iter_rows(min_row=2):
-                i=0
-                # for i in range(len(row)):
+                i = 0
                 for campo in row:
                     if indice[i]:
                         indio = self.clean_name(indice[i])
@@ -147,138 +144,145 @@ class UtilExcelFile():
                     estructura[indio].append(dato)
                     i += 1
 
-        except KeyError as e:
-            print("Error de key error: " + str(e))
-            raise ValueError(str(e))
-        except Exception as e:
-            print("Error al obtener los datos: " + str(e))
-            raise ValueError(str(e))
-
+        except KeyError as e_error:
+            print("Error de key error: " + str(e_error))
+            raise ValueError(str(e_error)) from e_error
+        except Exception as e_error:
+            print("Error al obtener los datos: " + str(e_error))
+            raise ValueError(str(e_error)) from e_error
 
         return estructura, indice
 
     def print_datos(self):
         ''' Imprime los datos del excel '''
         data, indice = self.get_data()
+
         for i in range(len(data[list(data.keys())[0]])):
-
             if data['id'][i] is None:
-                print("No hay id en posicion: " + str(i))
+                print("No hay id en posición: " + str(i))
                 continue
-            if not Clientes.objects.filter(cliente_id=data['id'][i]).exists():
-                cliente = Clientes()
-                cliente.cliente_id = data['id'][i]
-                action = "creado"
-            else:
-                try:
-                    cliente = Clientes.objects.get(cliente_id=data['id'][i])
-                    action = "actualizado"
-                except Clientes.MultipleObjectsReturned as exc:
-                    cliente = Clientes.objects.filter(cliente_id=data['id'][i]).first()
-                    mensaje = f"Se encontraron multiples clientes con el id:{data['id'][i]}"
-                    raise ValueError(mensaje) from exc
 
-            cliente.status = self.get_status(data, i)
-            cliente.lead_name = self.get_lead_name(data, i)
-            cliente.salutation = self.get_salutation(data, i)
-            cliente.first_name = self.get_first_name(data, i)
-            cliente.middle_name = self.get_middle_name(data, i)
-            cliente.last_name = self.get_last_name(data, i)
-            cliente.date_of_birth = self.get_date_of_birth(data, i)
-            cliente.created = self.get_created(data, i)
-            cliente.source = self.get_source(data, i)
-            cliente.responsible = self.get_responsible(data, i)
-            cliente.status_information = self.get_status_information(data, i)
-            cliente.source_information = self.get_source_information(data, i)
-            cliente.created_by = self.get_created_by(data, i)
-            cliente.modified = self.get_modified(data, i)
-            cliente.modified_by = self.get_modified_by(data, i)
-            cliente.company_name = self.get_company_name(data, i)
-            cliente.position = self.get_position(data, i)
-            cliente.comment = self.get_comment(data, i)
-            cliente.total = self.get_total(data, i)
-            cliente.currency = self.get_currency(data, i)
-            cliente.product = self.get_product(data, i)
-            cliente.price = self.get_price(data, i)
-            cliente.quantity = self.get_quantity(data, i)
-            cliente.created_by_crm_form = self.get_created_by_crm_form(data, i)
-            cliente.repeat_lead = self.get_repeat_lead(data, i)
-            cliente.client = self.get_client(data, i)
-            cliente.customer_journey = self.get_customer_journey(data, i)
-            cliente.type = self.get_type(data, i)
-            cliente.country = self.get_country(data, i)
-            cliente.account = self.get_account(data, i)
-            cliente.addl_type_details_other = self.get_addl_type_details_other(data, i)
-            cliente.industry_sub_type = self.get_industry_sub_type(data, i)
-            cliente.last_updated_on = self.get_last_updated_on(data, i)
+            cliente = self.get_or_create_cliente(data['id'][i])
 
+            # Asignar atributos al cliente
+            self.assign_attributes_to_cliente(cliente, data, i)
+
+            # Guardar el cliente
             cliente.save()
 
-            direccion = ClientesAddress()
-            direccion.cliente = cliente
-            direccion.address = self.get_address(data, i)
-            direccion.street_house_no = self.get_street_house_no(data, i)
-            direccion.apartment_office_room_floor = self.get_apartment_office_room_floor(data, i)
-            direccion.city = self.get_city(data, i)
-            direccion.district = self.get_district(data, i)
-            direccion.region_area = self.get_regionarea(data, i)
-            direccion.postal_code = self.get_zippostal_code(data, i)
-            direccion.country = self.get_country_dire(data, i)
+            # Asignar dirección al cliente
+            self.assign_direccion_to_cliente(cliente, data, i)
 
-            direccion.save()
-            e = 0
-            for clave, item in data.items():
-                if item[i]:
-                    nombre = self.traducir_claves_dict(indice[e], INDICE_TRADUCCION_CONTACT)
-                    if nombre and ContactType.objects.filter(name=nombre):
-                        if not ClientesContact.objects.filter(cliente=cliente,
-                                                              type=ContactType.objects.get(name=nombre)).exists():
-                            cliente.add_contact(
-                                ContactType.objects.get(name=nombre), item[i])
-                        else:
-                            contact = ClientesContact.objects.get(
-                                cliente=cliente, type=ContactType.objects.get(name=nombre))
-                            contact.data = item[i]
-                            contact.save()
+            # Guardar la dirección
+            cliente.clientesaddress.save()
 
-                    elif nombre and WebType.objects.filter(name=nombre):
-                        if not ClientesWeb.objects.filter(cliente=cliente,
-                                                          type=WebType.objects.get(name=nombre)).exists():
-                            cliente.add_web(
-                                WebType.objects.get(name=nombre), item[i])
-                        else:
-                            contact = ClientesWeb.objects.get(
-                                cliente=cliente, type=WebType.objects.get(name=nombre))
-                            contact.data = item[i]
-                            contact.save()
+            # Asignar contactos, webs, emails, sociales al cliente
+            self.assign_contacts_to_cliente(cliente, data, indice, i)
 
-                    elif nombre and EmailType.objects.filter(name=nombre):
-                        if not ClientesEmail.objects.filter(cliente=cliente,
-                                                            type=EmailType.objects.get(name=nombre)).exists():
-                            cliente.add_email(
-                                EmailType.objects.get(name=nombre), item[i])
-                        else:
-                            contact = ClientesEmail.objects.get(
-                                cliente=cliente, type=EmailType.objects.get(name=nombre))
-                            contact.data = item[i]
-                            contact.save()
+            print(f"Se ha {'creado' if cliente.pk is None else 'actualizado'} \
+                  el cliente: {cliente.first_name} {cliente.last_name}")
 
-                    elif nombre and SocialType.objects.filter(name=nombre):
-                        if not ClientesSocial.objects.filter(cliente=cliente,
-                                                             type=SocialType.objects.get(name=nombre)).exists():
-                            cliente.add_social(
-                                SocialType.objects.get(name=nombre), item[i])
-                        else:
-                            contact = ClientesSocial.objects.get(
-                                cliente=cliente, type=SocialType.objects.get(name=nombre))
-                            contact.data = item[i]
-                            contact.save()
+    def get_or_create_cliente(self, cliente_id):
+        """ Obtiene o crea un cliente """
+        try:
+            return Clientes.objects.get(cliente_id=cliente_id)
+        except Clientes.DoesNotExist:
+            return Clientes(cliente_id=cliente_id)
 
-                e += 1
+    def assign_attributes_to_cliente(self, cliente, data, i):
+        """ Asigna los atributos al cliente """
+        cliente.status = self.get_status(data, i)
+        cliente.lead_name = self.get_lead_name(data, i)
+        cliente.salutation = self.get_salutation(data, i)
+        cliente.first_name = self.get_first_name(data, i)
+        cliente.middle_name = self.get_middle_name(data, i)
+        cliente.last_name = self.get_last_name(data, i)
+        cliente.date_of_birth = self.get_date_of_birth(data, i)
+        cliente.created = self.get_created(data, i)
+        cliente.source = self.get_source(data, i)
+        cliente.responsible = self.get_responsible(data, i)
+        cliente.status_information = self.get_status_information(data, i)
+        cliente.source_information = self.get_source_information(data, i)
+        cliente.created_by = self.get_created_by(data, i)
+        cliente.modified = self.get_modified(data, i)
+        cliente.modified_by = self.get_modified_by(data, i)
+        cliente.company_name = self.get_company_name(data, i)
+        cliente.position = self.get_position(data, i)
+        cliente.comment = self.get_comment(data, i)
+        cliente.total = self.get_total(data, i)
+        cliente.currency = self.get_currency(data, i)
+        cliente.product = self.get_product(data, i)
+        cliente.price = self.get_price(data, i)
+        cliente.quantity = self.get_quantity(data, i)
+        cliente.created_by_crm_form = self.get_created_by_crm_form(data, i)
+        cliente.repeat_lead = self.get_repeat_lead(data, i)
+        cliente.client = self.get_client(data, i)
+        cliente.customer_journey = self.get_customer_journey(data, i)
+        cliente.type = self.get_type(data, i)
+        cliente.country = self.get_country(data, i)
+        cliente.account = self.get_account(data, i)
+        cliente.addl_type_details_other = self.get_addl_type_details_other(data, i)
+        cliente.industry_sub_type = self.get_industry_sub_type(data, i)
+        cliente.last_updated_on = self.get_last_updated_on(data, i)
 
-            # cliente.save()
-            print("Se ha "+action+" el cliente: ",
-                  cliente.first_name, cliente.last_name)
+    def assign_direccion_to_cliente(self, cliente, data, i):
+        """ Asigna la dirección al cliente """
+        direccion = ClientesAddress(
+            cliente=cliente,
+            address=self.get_address(data, i),
+            street_house_no=self.get_street_house_no(data, i),
+            apartment_office_room_floor=self.get_apartment_office_room_floor(data, i),
+            city=self.get_city(data, i),
+            district=self.get_district(data, i),
+            region_area=self.get_regionarea(data, i),
+            postal_code=self.get_zippostal_code(data, i),
+            country=self.get_country_dire(data, i)
+        )
+        cliente.clientesaddress = direccion
+
+    def assign_contacts_to_cliente(self, cliente, data, indice, i):
+        """ Asigna los contactos al cliente """
+        for e, (_, value) in enumerate(data.items()):
+            if value[i]:
+                nombre = self.traducir_claves_dict(indice[e], INDICE_TRADUCCION_CONTACT)
+                if nombre:
+                    self.add_contact_to_cliente(cliente, nombre, value[i])
+
+    def add_contact_to_cliente(self, cliente, nombre, valor):
+        """ Agrega un contacto al cliente """
+        if ContactType.objects.filter(name=nombre).exists():
+            contact_type = ContactType.objects.get(name=nombre)
+            if not ClientesContact.objects.filter(cliente=cliente, type=contact_type).exists():
+                cliente.add_contact(contact_type, valor)
+            else:
+                contact = ClientesContact.objects.get(cliente=cliente, type=contact_type)
+                contact.data = valor
+                contact.save()
+        elif WebType.objects.filter(name=nombre).exists():
+            web_type = WebType.objects.get(name=nombre)
+            if not ClientesWeb.objects.filter(cliente=cliente, type=web_type).exists():
+                cliente.add_web(web_type, valor)
+            else:
+                web = ClientesWeb.objects.get(cliente=cliente, type=web_type)
+                web.data = valor
+                web.save()
+        elif EmailType.objects.filter(name=nombre).exists():
+            email_type = EmailType.objects.get(name=nombre)
+            if not ClientesEmail.objects.filter(cliente=cliente, type=email_type).exists():
+                cliente.add_email(email_type, valor)
+            else:
+                email = ClientesEmail.objects.get(cliente=cliente, type=email_type)
+                email.data = valor
+                email.save()
+        elif SocialType.objects.filter(name=nombre).exists():
+            social_type = SocialType.objects.get(name=nombre)
+            if not ClientesSocial.objects.filter(cliente=cliente, type=social_type).exists():
+                cliente.add_social(social_type, valor)
+            else:
+                social = ClientesSocial.objects.get(cliente=cliente, type=social_type)
+                social.data = valor
+                social.save()
+
 
     def add_sheet(self, sheet_name):
         ''' Agrega una hoja al archivo'''
@@ -298,14 +302,13 @@ class UtilExcelFile():
         '''
         if 'status' in data:
             return data['status'][indice]
-        elif 'estatus' in data:
+        if 'estatus' in data:
             return data['estatus'][indice]
-        elif 'stage' in data:
+        if 'stage' in data:
             return data['stage'][indice]
-        elif 'etapa' in data:
+        if 'etapa' in data:
             return data['etapa'][indice]
-        else:
-            return None
+        return None
 
     def get_lead_name(self, data: list, indice: int)-> str:
         '''
@@ -313,10 +316,9 @@ class UtilExcelFile():
         '''
         if 'lead_name' in data:
             return data['lead_name'][indice]
-        elif 'título_de_prospecto' in data:
+        if 'título_de_prospecto' in data:
             return data['título_de_prospecto'][indice]
-        else:
-            return None
+        return None
 
     def get_salutation(self, data: list, indice: int)-> str:
         '''
@@ -324,10 +326,9 @@ class UtilExcelFile():
         '''
         if 'salutation' in data:
             return data['salutation'][indice]
-        elif 'saludo' in data:
+        if 'saludo' in data:
             return data['saludo'][indice]
-        else:
-            return None
+        return None
 
     def get_first_name(self, data: list, indice: int)-> str:
         '''
@@ -335,10 +336,9 @@ class UtilExcelFile():
         '''
         if 'first_name' in data:
             return data['first_name'][indice]
-        elif 'nombre' in data:
+        if 'nombre' in data:
             return data['nombre'][indice]
-        else:
-            return None
+        return None
 
     def get_middle_name(self, data: list, indice: int)-> str:
         '''
@@ -346,10 +346,9 @@ class UtilExcelFile():
         '''
         if 'middle_name' in data:
             return data['middle_name'][indice]
-        elif 'segundo_nombre' in data:
+        if 'segundo_nombre' in data:
             return data['segundo_nombre'][indice]
-        else:
-            return None
+        return None
 
     def get_last_name(self, data: list, indice: int)-> str:
         '''
@@ -357,10 +356,9 @@ class UtilExcelFile():
         '''
         if 'last_name' in data:
             return data['last_name'][indice]
-        elif 'apellido' in data:
+        if 'apellido' in data:
             return data['apellido'][indice]
-        else:
-            return None
+        return None
 
     def get_date_of_birth(self, data: list, indice: int)-> str:
         '''
@@ -368,10 +366,9 @@ class UtilExcelFile():
         '''
         if 'date_of_birth' in data:
             return data['date_of_birth'][indice]
-        elif 'fecha_de_nacimiento' in data:
+        if 'fecha_de_nacimiento' in data:
             return data['fecha_de_nacimiento'][indice]
-        else:
-            return None
+        return None
 
     def get_created(self, data: list, indice: int)-> str:
         '''
@@ -379,10 +376,9 @@ class UtilExcelFile():
         '''
         if 'created' in data:
             return self.convertir_a_datetime(data['created'][indice])
-        elif 'creado' in data:
+        if 'creado' in data:
             return self.convertir_a_datetime(data['creado'][indice])
-        else:
-            return None
+        return None
 
     def get_source(self, data: list, indice: int)-> str:
         '''
@@ -390,10 +386,9 @@ class UtilExcelFile():
         '''
         if 'source' in data:
             return data['source'][indice]
-        elif 'origen' in data:
+        if 'origen' in data:
             return data['origen'][indice]
-        else:
-            return None
+        return None
 
     def get_responsible(self, data: list, indice: int)-> str:
         '''
@@ -417,10 +412,9 @@ class UtilExcelFile():
         '''
         if 'status_information' in data:
             return data['status_information'][indice]
-        elif 'información_de_estado' in data:
+        if 'información_de_estado' in data:
             return data['información_de_estado'][indice]
-        else:
-            return None
+        return None
 
     def get_source_information(self, data: list, indice: int)-> str:
         '''
@@ -429,10 +423,9 @@ class UtilExcelFile():
         try:
             if 'source_information' in data:
                 return data['source_information'][indice]
-            elif 'información_de_origen' in data:
+            if 'información_de_origen' in data:
                 return data['información_de_origen'][indice]
-            else:
-                return None
+            return None
         except MailCorp.DoesNotExist as exc:
             raise ValueError('The source_information does not exist: ' +
                              data['información_de_origen'][indice]) from exc
@@ -462,10 +455,9 @@ class UtilExcelFile():
         '''
         if 'modified' in data:
             return self.convertir_a_datetime(data['modified'][indice])
-        elif 'modificado' in data:
+        if 'modificado' in data:
             return self.convertir_a_datetime(data['modificado'][indice])
-        else:
-            return None
+        return None
 
     def get_modified_by(self, data: list, indice: int)-> str:
         '''
@@ -489,10 +481,9 @@ class UtilExcelFile():
         '''
         if 'company_name' in data:
             return data['company_name'][indice]
-        elif 'nombre_de_la_compañía' in data:
+        if 'nombre_de_la_compañía' in data:
             return data['nombre_de_la_compañía'][indice]
-        else:
-            return None
+        return None
 
     def get_position(self, data: list, indice: int)-> str:
         '''
@@ -500,10 +491,9 @@ class UtilExcelFile():
         '''
         if 'position' in data:
             return data['position'][indice]
-        elif 'cargo' in data:
+        if 'cargo' in data:
             return data['cargo'][indice]
-        else:
-            return None
+        return None
 
     def get_comment(self, data: list, indice: int)-> str:
         '''
@@ -511,10 +501,9 @@ class UtilExcelFile():
         '''
         if 'comment' in data:
             return data['comment'][indice]
-        elif 'comentario' in data:
+        if 'comentario' in data:
             return data['comentario'][indice]
-        else:
-            return None
+        return None
 
     def get_total(self, data: list, indice: int)-> str:
         '''
@@ -522,8 +511,7 @@ class UtilExcelFile():
         '''
         if 'total' in data:
             return data['total'][indice]
-        else:
-            return None
+        return None
 
     def get_currency(self, data: list, indice: int)-> str:
         '''
@@ -531,10 +519,9 @@ class UtilExcelFile():
         '''
         if 'currency' in data:
             return data['currency'][indice]
-        elif 'moneda' in data:
+        if 'moneda' in data:
             return data['moneda'][indice]
-        else:
-            return None
+        return None
 
     def get_product(self, data: list, indice: int)-> str:
         '''
@@ -542,10 +529,9 @@ class UtilExcelFile():
         '''
         if 'product' in data:
             return data['product'][indice]
-        elif 'producto' in data:
+        if 'producto' in data:
             return data['producto'][indice]
-        else:
-            return None
+        return None
 
     def get_price(self, data: list, indice: int)-> str:
         '''
@@ -553,10 +539,9 @@ class UtilExcelFile():
         '''
         if 'price' in data:
             return data['price'][indice]
-        elif 'precio' in data:
+        if 'precio' in data:
             return data['precio'][indice]
-        else:
-            return None
+        return None
 
     def get_quantity(self, data: list, indice: int)-> str:
         '''
@@ -564,10 +549,9 @@ class UtilExcelFile():
         '''
         if 'quantity' in data:
             return data['quantity'][indice]
-        elif 'cantidad' in data:
+        if 'cantidad' in data:
             return data['cantidad'][indice]
-        else:
-            return None
+        return None
 
     def get_created_by_crm_form(self, data: list, indice: int)-> str:
         '''
@@ -575,21 +559,19 @@ class UtilExcelFile():
         '''
         if 'created_by_crm_form' in data:
             return data['created_by_crm_form'][indice]
-        elif 'creado_por_el_formulario_del_crm' in data:
+        if 'creado_por_el_formulario_del_crm' in data:
             return data['creado_por_el_formulario_del_crm'][indice]
-        else:
-            return None
+        return None
 
-    def get_repeat_lead(self, data: list, indice: int)-> str:
+    def get_repeat_lead(self, data: list, indice: int) -> str:
         '''
-        This method is used to get the repeat lead from the data
+        Este método se utiliza para obtener el "lead" repetido de los datos
         '''
         if 'repeat_lead' in data:
-            return False if data['repeat_lead'][indice] == 'N' else True
-        elif 'prospecto_repetido' in data:
-            return False if data['prospecto_repetido'][indice] == 'N' else True
-        else:
-            return False
+            return data['repeat_lead'][indice] != 'N'
+        if 'prospecto_repetido' in data:
+            return data['prospecto_repetido'][indice] != 'N'
+        return False
 
     def get_client(self, data: list, indice: int)-> str:
         '''
@@ -597,10 +579,9 @@ class UtilExcelFile():
         '''
         if 'client' in data:
             return data['client'][indice]
-        elif 'cliente' in data:
+        if 'cliente' in data:
             return data['cliente'][indice]
-        else:
-            return None
+        return None
 
     def get_customer_journey(self, data: list, indice: int)-> str:
         '''
@@ -608,10 +589,9 @@ class UtilExcelFile():
         '''
         if 'customer_journey' in data:
             return data['customer_journey'][indice]
-        elif 'recorrido_del_cliente' in data:
+        if 'recorrido_del_cliente' in data:
             return data['recorrido_del_cliente'][indice]
-        else:
-            return None
+        return None
 
     def get_type(self, data: list, indice: int)-> str:
         '''
@@ -673,8 +653,7 @@ class UtilExcelFile():
         '''
         if 'addl_type_details_other' in data:
             return data['addl_type_details_other'][indice]
-        else:
-            return None
+        return None
 
     def get_industry_sub_type(self, data: list, indice: int)-> str:
         '''
@@ -682,8 +661,7 @@ class UtilExcelFile():
         '''
         if 'industry_sub_type' in data:
             return data['industry_sub_type'][indice]
-        else:
-            return None
+        return None
 
     def get_last_updated_on(self, data: list, indice: int)-> str:
         '''
@@ -691,10 +669,9 @@ class UtilExcelFile():
         '''
         if 'last_updated_on' in data:
             return self.convertir_a_datetime(data['last_updated_on'][indice])
-        elif 'última_actualización_en' in data:
+        if 'última_actualización_en' in data:
             return self.convertir_a_datetime(data['última_actualización_en'][indice])
-        else:
-            return None
+        return None
 
     def get_gg_sheet_row(self, data: list, indice: int)-> str:
         '''
@@ -702,8 +679,7 @@ class UtilExcelFile():
         '''
         if 'gg_sheet_row' in data:
             return data['gg_sheet_row'][indice]
-        else:
-            return None
+        return None
 
     def get_gg_sheet_id(self, data: list, indice: int)-> str:
         '''
@@ -711,8 +687,7 @@ class UtilExcelFile():
         '''
         if 'gg_sheet_id' in data:
             return data['gg_sheet_id'][indice]
-        else:
-            return None
+        return None
 
     def get_sub_type_hmcdelos(self, data: list, indice: int)-> str:
         '''
@@ -720,80 +695,71 @@ class UtilExcelFile():
         '''
         if 'sub_type_hmcdelos' in data:
             return data['sub_type_hmcdelos'][indice]
-        else:
-            return None
+        return None
 
     def get_address(self, data: list, indice: int)-> str:
         """ This method is used to get the address from the data """
         if 'address' in data:
             return data['address'][indice]
-        elif 'dirección' in data:
+        if 'dirección' in data:
             return data['dirección'][indice]
-        else:
-            return None
+        return None
 
     def get_street_house_no(self, data: list, indice: int)-> str:
         """ This method is used to get the street_house_no from the data """
         if 'street_house_no' in data:
             return data['street_house_no'][indice]
-        elif 'calle_casa_núm' in data:
+        if 'calle_casa_núm' in data:
             return data['calle_casa_núm'][indice]
-        else:
-            return None
+        return None
 
     def get_apartment_office_room_floor(self, data: list, indice: int)-> str:
         """ This method is used to get the apartment_office_room_floor from the data """
         if 'apartment_office_room_floor' in data:
             return data['apartment_office_room_floor'][indice]
-        elif 'departamento_oficina_habitación_piso' in data:
+        if 'departamento_oficina_habitación_piso' in data:
             return data['departamento_oficina_habitación_piso'][indice]
-        else:
-            return None
+        return None
 
     def get_city(self, data: list, indice: int)-> str:
         """ This method is used to get the city from the data """
         if 'city' in data:
             return data['city'][indice]
-        elif 'ciudad' in data:
+        if 'ciudad' in data:
             return data['ciudad'][indice]
-        else:
-            return None
+        return None
 
     def get_district(self, data: list, indice: int)-> str:
         """ This method is used to get the district from the data """
         if 'district' in data:
             return data['district'][indice]
-        elif 'distrito' in data:
+        if 'distrito' in data:
             return data['distrito'][indice]
-        else:
-            return None
+        return None
 
     def get_regionarea(self, data: list, indice: int)-> str:
         """ This method is used to get the regionarea from the data """
         if 'regionarea' in data:
             return data['regionarea'][indice]
-        elif 'regiónárea' in data:
+        if 'regiónárea' in data:
             return data['regiónárea'][indice]
-        else:
-            return None
+        return None
 
     def get_zippostal_code(self, data: list, indice: int)-> str:
         """ This method is used to get the zippostal_code from the data """
         if 'zippostal_code' in data:
             return data['zippostal_code'][indice]
-        elif 'código_postal' in data:
+        if 'código_postal' in data:
             return data['código_postal'][indice]
-        else:
-            return None
+        return None
 
     def get_country_dire(self, data: list, indice: int)-> str:
         """ This method is used to get the country_dire from the data """
         if 'country_dire' in data:
             return data['country_dire'][indice]
-        elif 'país' in data:
+        if 'país' in data:
             return data['país'][indice]
-        else:
-            return None
+        return None
 
 
 
@@ -801,14 +767,13 @@ def if_admin(user):
     """ Función para verificar si el usuario es admin """
     if user.is_superuser:
         return True
-    else:
-        grupos = user.groups.all()
 
-        for grupo in grupos:
-            if grupo.name == 'SuperAdmin' or grupo.name == 'Admin':
-                return True
+    grupos = user.groups.all()
 
-        return False
+    for grupo in grupos:
+        if grupo.name in ('SuperAdmin', 'Admin'):
+            return True
+    return False
 
 
 def get_response_account(user):

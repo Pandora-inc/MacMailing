@@ -1,16 +1,18 @@
-from auxiliares.models import Country, Type
-from reportes.models import Clientes, ClientesAddress, ClientesContact, ClientesEmail
-from reportes.serializers import ClientesSerializer
+""" Módulo que contiene las API's de la aplicación de reportes """
+# from .serializers import MySerializer
+import json
+import logging
+import requests
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.db import transaction, IntegrityError
 
-# from .serializers import MySerializer
-import requests
-import json
-import logging
-import os.path
+from auxiliares.models import Country, Type
+from reportes.constants import BITRIX_WEBHOOK
+from reportes.models import Clientes, ClientesAddress, ClientesContact, ClientesEmail
+from reportes.serializers import ClientesSerializer
 
 # Configurar el logging
 logging.basicConfig(
@@ -33,50 +35,50 @@ class MyAPIView(APIView):
     def post(self, request, *args, **kwargs):
         """ Método que recibe un JSON y lo imprime en la consola """
         data = json.dumps(request.data, indent=4)
-        logger.info(f"Received data: {data}")
-        id = request.data['data[FIELDS][ID]']
-        url = f'https://maquiavelo.bitrix24.com/rest/636/{os.environ.get("BITRIX_WEBHOOK", "v0uehhaf88vle9ua")}/crm.lead.get.json?ID={id}'
-        logger.info(url)
-        headers = {'Content-Type': 'html/text', 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-        response = requests.post(url, headers=headers)
+        logger.info("Received data: %s", data)
 
+        id_lead = request.data.get('data[FIELDS][ID]')
+        if not id_lead:
+            return Response({"error": "ID lead is missing"}, status=status.HTTP_400_BAD_REQUEST)
+
+        url = self.construct_url(id_lead)
+        logger.info(url)
+
+        response = self.make_request(url)
         if response.status_code != 200:
-            logger.info(response.status_code)
-            logger.info(response.json())
             return Response(response.json(), status=response.status_code)
 
         logger.info(response.json())
-
         result = response.json().get('result')
+        if not result:
+            return Response({"error": "Result not found"}, status=status.HTTP_400_BAD_REQUEST)
 
-        salutation = ''
-        if result['HONORIFIC']:
-            if result['HONORIFIC'] == 'HNR_EN_1': salutation = 'Mr.'
-            elif result['HONORIFIC'] == 'HNR_EN_2.': salutation = 'Ms.'
-            elif result['HONORIFIC'] == 'HNR_EN_3': salutation = 'Mrs.'
-            elif result['HONORIFIC'] == 'HNR_EN_4': salutation = 'Dr.'
+        data = self.construct_data(result)
 
-        lead_status = ''
-        if result['STATUS_ID'] == 'NEW': lead_status = '5% Lead Find'
-        elif result['STATUS_ID'] == 'IN_PROCESS': lead_status = '20% Lead Contacted'
-        elif result['STATUS_ID'] == 'PROCESSED': lead_status = '35% Lead Responded'
-        elif result['STATUS_ID'] == 'UC_Z2R285': lead_status = '50% Meeting / Samples / Prices'
-        elif result['STATUS_ID'] == 'UC_2KL9D9': lead_status = '75% Proposal Revision Feedback'
-        elif result['STATUS_ID'] == 'UC_R0MHEU': lead_status = '90% Proposal Accepted'
-        elif result['STATUS_ID'] == 'CONVERTED': lead_status = '100% Client'
-        elif result['STATUS_ID'] == 'JUNK': lead_status = 'On-Ice'
-        elif result['STATUS_ID'] == 'UC_CMOTYC': lead_status = 'Do not contact'
+        return self.process_data(result, data)
 
-        source = ''
-        if result['SOURCE_ID'] == 'WEBFORM': source = 'CRM form'
-        elif result['SOURCE_ID'] == 'CALLBACK': source = 'Callback'
-        elif result['SOURCE_ID'] == 'RC_GENERATOR': source = 'Sales boost'
-        elif result['SOURCE_ID'] == 'STORE': source = 'Online Store'
-        elif result['SOURCE_ID'] == 'CALL': source = 'Call'
+    def construct_url(self, id_lead):
+        """ Método que construye la URL para obtener la información de un lead """
+        url_base = 'https://maquiavelo.bitrix24.com/rest/636'
+        return f'{url_base}/{BITRIX_WEBHOOK}/crm.lead.get.json?ID={id_lead}'
 
+    def make_request(self, url):
+        """ Método que realiza una petición POST a una URL """
+        headers = {
+            'Content-Type': 'html/text',
+            'Accept': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+        }
+        return requests.post(url, headers=headers, timeout=5)
+
+    def construct_data(self, result):
+        """ Método que construye el diccionario de datos a partir de la información del lead """
+        salutation = self.get_salutation(result['HONORIFIC'])
+        lead_status = self.get_lead_status(result['STATUS_ID'])
+        source = self.get_source(result['SOURCE_ID'])
         lead_type = Type.objects.get(code=result['UF_CRM_1644500575']).id
 
-        data = {
+        return {
             'cliente_id': result['ID'],
             'status': lead_status,
             'lead_name': result['TITLE'],
@@ -94,103 +96,126 @@ class MyAPIView(APIView):
             'total': result['OPPORTUNITY'],
             'currency': 'US Dollar' if result['CURRENCY_ID'] == 'USD' else result['CURRENCY_ID'],
             'type': lead_type,
-            # 'repeat_lead': result['ID'],
             'addl_type_details_other': result['UF_CRM_1660655104670'],
-            # 'date_of_birth': result['BIRTHDATE'] if result['BIRTHDATE'] else None,
-            # 'created_by': result['ID'],
-            # 'modified_by': result['ID'],
-            # 'responsible': result['ID'],
-            # 'status_information': result['ID'],
-            # 'product': result['ID'],
-            # 'price': result['ID'],
-            # 'quantity': result['ID'],
-            # 'created_by_crm_form': result['ID'],
-            # 'repeat_lead': result['ID'],
-            # 'client': result['ID'],
-            # 'customer_journey': result['ID'],
-            # 'country': result['ID'],
-            # 'account': result['ID'],
-            # 'addl_type_details_other': result['ID'],
-            # 'industry_sub_type': result['ID'],
-            # 'last_updated_on': result['ID'],
-            # 'contacted': result['ID'],
-            # 'contacted_on': result['ID'],
         }
 
+    def get_salutation(self, honorific):
+        """ Método que retorna el saludo correspondiente al honorífico """
+        return {
+            'HNR_EN_1': 'Mr.',
+            'HNR_EN_2': 'Ms.',
+            'HNR_EN_3': 'Mrs.',
+            'HNR_EN_4': 'Dr.'
+        }.get(honorific, '')
 
+    def get_lead_status(self, status_id):
+        """ Método que retorna el estado del lead """
+        return {
+            'NEW': '5% Lead Find',
+            'IN_PROCESS': '20% Lead Contacted',
+            'PROCESSED': '35% Lead Responded',
+            'UC_Z2R285': '50% Meeting / Samples / Prices',
+            'UC_2KL9D9': '75% Proposal Revision Feedback',
+            'UC_R0MHEU': '90% Proposal Accepted',
+            'CONVERTED': '100% Client',
+            'JUNK': 'On-Ice',
+            'UC_CMOTYC': 'Do not contact'
+        }.get(status_id, '')
+
+    def get_source(self, source_id):
+        """ Método que retorna la fuente del lead """
+        return {
+            'WEBFORM': 'CRM form',
+            'CALLBACK': 'Callback',
+            'RC_GENERATOR': 'Sales boost',
+            'STORE': 'Online Store',
+            'CALL': 'Call'
+        }.get(source_id, '')
+
+    def process_data(self, result, data):
+        """ Método que procesa la información del lead """
         try:
             cliente = Clientes.objects.get(cliente_id=result['ID'])
-            serializer = ClientesSerializer(cliente, data=data, partial=True)  # partial=True permite actualizaciones parciales
-            if serializer.is_valid():
-                serializer.save()
-
-                if 'EMAIL' in result:
-                    for email in result['EMAIL']:
-                        if email['VALUE_TYPE'] == 'WORK':
-                            email_type = 1
-                        elif email['VALUE_TYPE'] == 'HOME':
-                            email_type = 2
-                        elif email['VALUE_TYPE'] == 'NEWSLETTER':
-                            email_type = 3
-                        else:
-                            email_type = 4
-
-                        try:
-                            with transaction.atomic():
-                                ClientesEmail.objects.update_or_create(
-                                    cliente=cliente,
-                                    type_id=email_type,
-                                    defaults={'data': email['VALUE']}
-                                )
-                        except IntegrityError:
-                            # Handle the case where there is a duplicate entry
-                            print(f"Duplicate entry found for cliente {cliente} and type_id {email_type}.")
-
-                if 'PHONE' in result:
-                    for phone in result['PHONE']:
-                        if phone['VALUE_TYPE'] == 'WORK':
-                            phone_type = 1
-                        elif phone['VALUE_TYPE'] == 'HOME':
-                            phone_type = 2
-                        elif phone['VALUE_TYPE'] == 'NEWSLETTER':
-                            phone_type = 3
-                        else:
-                            phone_type = 4
-
-                        try:
-                            with transaction.atomic():
-                                ClientesContact.objects.update_or_create(
-                                    cliente=cliente,
-                                    data=phone['VALUE'],
-                                    type_id=phone_type)
-                        except IntegrityError:
-                            # Handle the case where there is a duplicate entry
-                            print(f"Duplicate entry found for cliente {cliente} and type_id {phone_type}.")
-
-                if result['ADDRESS']:
-                    ClientesAddress.objects.update_or_create(
-                        cliente=cliente,
-                        address=result['ADDRESS'],
-                        street_house_no=result['ADDRESS_2'],
-                        city=result['ADDRESS_CITY'],
-                        postal_code=result['ADDRESS_POSTAL_CODE'],
-                        region_area=result['ADDRESS_REGION'],
-                        district=result['ADDRESS_PROVINCE'],
-                        country=Country.objects.get(description=result['ADDRESS_COUNTRY'])
-                    )
-
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                logger.info(serializer.errors)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return self.update_cliente(cliente, data, result)
         except Clientes.DoesNotExist:
-            serializer = ClientesSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            else:
-                logger.info(serializer.errors)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return self.create_cliente(data)
+
+    def update_cliente(self, cliente, data, result):
+        """ Método que actualiza un cliente en la base de datos """
+        serializer = ClientesSerializer(cliente, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            self.update_emails(cliente, result)
+            self.update_phones(cliente, result)
+            self.update_address(cliente, result)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        logger.info(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def create_cliente(self, data):
+        """ Método que crea un cliente en la base de datos """
+        serializer = ClientesSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        logger.info(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update_emails(self, cliente, result):
+        """ Método que actualiza los correos electrónicos de un cliente """
+        if 'EMAIL' in result:
+            for email in result['EMAIL']:
+                email_type = self.get_contact_type(email['VALUE_TYPE'])
+                try:
+                    with transaction.atomic():
+                        ClientesEmail.objects.update_or_create(
+                            cliente=cliente,
+                            type_id=email_type,
+                            defaults={'data': email['VALUE']}
+                        )
+                except IntegrityError:
+                    logger.warning("Duplicate entry found for cliente %s and type_id %s.",
+                                   cliente, email_type)
+
+    def update_phones(self, cliente, result):
+        """ Método que actualiza los teléfonos de un cliente """
+        if 'PHONE' in result:
+            for phone in result['PHONE']:
+                phone_type = self.get_contact_type(phone['VALUE_TYPE'])
+                try:
+                    with transaction.atomic():
+                        ClientesContact.objects.update_or_create(
+                            cliente=cliente,
+                            data=phone['VALUE'],
+                            type_id=phone_type
+                        )
+                except IntegrityError:
+                    logger.warning("Duplicate entry found for cliente %s and type_id %s.",
+                                   cliente, phone_type)
+
+    def update_address(self, cliente, result):
+        """ Método que actualiza la dirección de un cliente """
+        if result.get('ADDRESS'):
+            ClientesAddress.objects.update_or_create(
+                cliente=cliente,
+                address=result['ADDRESS'],
+                defaults={
+                    'street_house_no': result.get('ADDRESS_2'),
+                    'city': result.get('ADDRESS_CITY'),
+                    'postal_code': result.get('ADDRESS_POSTAL_CODE'),
+                    'region_area': result.get('ADDRESS_REGION'),
+                    'district': result.get('ADDRESS_PROVINCE'),
+                    'country': Country.objects.get(description=result['ADDRESS_COUNTRY'])
+                }
+            )
+
+    def get_contact_type(self, value_type):
+        """ Método que retorna el tipo de contacto """
+        return {
+            'WORK': 1,
+            'HOME': 2,
+            'NEWSLETTER': 3
+        }.get(value_type, 4)
 
 
 def convert_to_client(data):
@@ -198,3 +223,4 @@ def convert_to_client(data):
     cliente = ClientesSerializer(data=data)
     if cliente.is_valid():
         return cliente.save()
+    return None
