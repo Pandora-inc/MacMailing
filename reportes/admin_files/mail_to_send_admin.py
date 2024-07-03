@@ -10,7 +10,7 @@ from reportes.utils import if_admin, get_response_account
 from reportes.actions import get_mail_data, prepare_email_body, send_mail
 
 
-def enviar_email(request, queryset):
+def enviar_email(_, request, queryset):
     """ Función para enviar email desde el admin """
     try:
         for obj in queryset:
@@ -87,14 +87,27 @@ class MailsToSendAdmin(admin.ModelAdmin):
     def mail_to(self, obj):
         '''
         Muestra el mail del destinatario
+
+        Parameters:
+            obj: Object
+                The object containing the mail information.
+
+        Returns:
+            str
+                The email address of the recipient.
+
+        Raises:
+            ClientesEmail.DoesNotExist
+                If the recipient email does not exist in the database.
+
         '''
         try:
             email = ClientesEmail.objects.get(
                 cliente=obj.mail.cliente, type=EmailType.objects.get(id=1))
-            return email.email
+            return email.data
         except ClientesEmail.DoesNotExist:
             email = ClientesEmail.objects.get(cliente=obj.mail.cliente).first()
-            return email
+            return email.data
 
 
     def save_model(self, request, obj, form, change):
