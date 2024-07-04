@@ -18,14 +18,16 @@ def enviar_email(_, request, queryset):
                 if send_mail(obj.mail_id):
                     obj.send = True  # Marcar el correo como enviado
                     obj.save()  # Guardar el objeto actualizado en la base de datos
-                    messages.success(request, f"Correo enviado correctamente a {obj.mail_id}")
+                    messages.success(request, f"Mail sent successfully to {obj.mail_id}")
                 else:
-                    messages.warning(request, f"No se pudo enviar el correo a {obj.mail_id}")
+                    messages.warning(request, f"Could not send email to {obj.mail_id}")
             else:
                 messages.warning(request, f"El correo {obj.mail_id} no está aprobado")
+    except KeyError as e:
+        messages.error(request, f"Error sending emails. Field bad defined: {e}")
     except Exception as e:
-        messages.error(request, f"Error al enviar correos: {e}")
-
+        error_type = type(e).__name__
+        messages.error(request, f"Error sending emails: {e} (Error type: {error_type})")
 
 enviar_email.short_description = "Send email"
 
