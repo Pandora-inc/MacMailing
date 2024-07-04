@@ -1,8 +1,8 @@
 """ This module contains functions to send emails and update the database. """
+# imports de bibliotecas estándar y terceros
 import smtplib
 import ssl
 import string
-
 from email import encoders
 from email.mime.base import MIMEBase
 from email.mime.image import MIMEImage
@@ -10,9 +10,10 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
 from datetime import timedelta, datetime
-
 import certifi
+import requests
 
+# imports de Django y Django Rest Framework
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import connection, transaction
 from django.http import Http404, JsonResponse
@@ -21,9 +22,11 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+# imports específicos de tu aplicación
 from calendarapp.models import Event
 from reportes.models import (Clientes, ClientesEmail, Mail, TemplateFiles, MailsToSend)
 from reportes.serializers import MailSerializer
+from reportes.constants import BITRIX_BASE_URL, BITRIX_WEBHOOK
 
 PRE_URL = str(Path(__file__).resolve().parent.parent)
 PRE_URL = PRE_URL+'/'
@@ -155,6 +158,8 @@ def registro_envio_mail(id_mail: int, send_number: int):
             crear_evento(mail)
 
             actualizar_con_template(id_mail)
+
+            actualizar_status_bitrix(mail)
             print("Registro de envio de mail actualizado")
         except Mail.DoesNotExist as e_error:
             print("Error al actualizar el registro de envio de mail")
@@ -164,6 +169,46 @@ def registro_envio_mail(id_mail: int, send_number: int):
             print("Error al actualizar el registro de envio de mail")
             print(e_error)
             raise e_error
+
+def actualizar_status_bitrix(mail: Mail):
+    """
+    Update the status of a lead in Bitrix CRM.
+
+    Parameters:
+        mail (Mail): The email object containing the lead information.
+
+    Returns:
+        Response: A response object indicating the success or failure of the status update.
+
+    Raises:
+        Exception: If an error occurs during the status update process.
+
+    """
+    try:
+        url = f'{BITRIX_BASE_URL}/{BITRIX_WEBHOOK}/crm.lead.update.json'
+        data = {
+            "id": mail.cliente.cliente_id,
+            "fields": {
+                "STATUS_ID": "IN_PROCESS"
+            },
+            "params": {
+                "REGISTER_SONET_EVENT": "Y"
+            }
+        }
+
+        headers = {
+            'Content-Type': 'html/text',
+            'Accept': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+        }
+        response = requests.post(url, json=data, headers=headers, timeout=5)
+        if response.status_code != 200:
+            return Response(response.json(), status=response.status_code)
+        return Response({"error": "Result not found"}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e_error:
+        print("Error al actualizar el estado del mail en Bitrix")
+        print(e_error)
+        raise e_error
 
 def prepare_email_body(text: str, data: dict) -> str:
     '''
