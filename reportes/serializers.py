@@ -17,7 +17,8 @@ class MailSerializer(serializers.Serializer):
     from_name = serializers.CharField(max_length=100)
     from_email = serializers.EmailField()
     to = serializers.EmailField()
-    cc = serializers.ListField(child=serializers.EmailField())
+    cc = serializers.ListField(child=serializers.EmailField(), allow_empty=True,
+                               required=False, allow_null=True)
     date = serializers.DateTimeField()
     content = serializers.CharField()
     number = serializers.IntegerField()
@@ -25,21 +26,27 @@ class MailSerializer(serializers.Serializer):
     from_pass = serializers.CharField()
     from_smtp = serializers.CharField()
     from_port = serializers.IntegerField()
-    salutation = serializers.CharField()
+    salutation = serializers.CharField(allow_blank=True, required=False, allow_null=True)
     first_name = serializers.CharField()
-    middle_name = serializers.CharField()
+    middle_name = serializers.CharField(allow_blank=True, required=False, allow_null=True)
     last_name = serializers.CharField()
     lead_name = serializers.CharField()
     data = serializers.CharField()
-    company_name = serializers.CharField()
-    position = serializers.CharField()
+    company_name = serializers.CharField(allow_blank=True, required=False, allow_null=True)
+    position = serializers.CharField(allow_blank=True, required=False, allow_null=True)
     type = serializers.CharField()
-    firma = serializers.CharField()
+    firma = serializers.CharField(allow_blank=True, required=False, allow_null=True)
+    user_name = serializers.CharField(allow_blank=True, required=False, allow_null=True)
+    user_last_name = serializers.CharField(allow_blank=True, required=False, allow_null=True)
+    mail_id = serializers.IntegerField()
+    mail_to_send_id = serializers.IntegerField(required=False, allow_null=True)
 
     def create(self, validated_data):
+        """ Crear un objeto Mail """
         return Mail(**validated_data)
 
     def update(self, instance, validated_data):
+        """ Actualizar un objeto Mail """
         instance.subject = validated_data.get('subject', instance.subject)
         instance.from_name = validated_data.get('from_name', instance.from_name)
         instance.from_email = validated_data.get('from_email', instance.from_email)

@@ -1,0 +1,200 @@
+@startuml
+!theme reddress-lightorange
+!define RECTANGLE entity
+skinparam linetype ortho
+
+RECTANGLE Account {
+    +id: Integer
+    +name: CharField
+    +supervisor: CharField
+    +created: DateTimeField
+}
+
+RECTANGLE MailCorp {
+    +id: Integer
+    +name: CharField
+    +email: CharField
+    +password: CharField
+    +smtp: CharField
+    +smtp_port: Integer
+    +imap: CharField
+    +imap_port: Integer
+    +created: DateTimeField
+    +account: ForeignKey(Account)
+    +user: ForeignKey(UserAcount)
+}
+
+RECTANGLE Clientes {
+    +id: Integer
+    +cliente_id: Integer
+    +status: CharField
+    +lead_name: CharField
+    +salutation: CharField
+    +first_name: CharField
+    +middle_name: CharField
+    +last_name: CharField
+    +date_of_birth: DateTimeField
+    +created: DateTimeField
+    +source: CharField
+    +responsible: ForeignKey(MailCorp)
+    +status_information: CharField
+    +source_information: TextField
+    +created_by: ForeignKey(MailCorp)
+    +modified: DateTimeField
+    +modified_by: ForeignKey(MailCorp)
+    +company_name: CharField
+    +position: CharField
+    +comment: TextField
+    +total: DecimalField
+    +currency: CharField
+    +product: CharField
+    +price: DecimalField
+    +quantity: Integer
+    +created_by_crm_form: CharField
+    +repeat_lead: BooleanField
+    +client: CharField
+    +customer_journey: CharField
+    +type: ForeignKey(Type)
+    +country: ForeignKey(Country)
+    +account: ForeignKey(Account)
+    +addl_type_details_other: CharField
+    +industry_sub_type: CharField
+    +last_updated_on: DateTimeField
+    +contacted: BooleanField
+    +contacted_on: DateTimeField
+    +visible: BooleanField
+}
+
+RECTANGLE ClientesContact {
+    +id: Integer
+    +cliente: ForeignKey(Clientes)
+    +type: CharField
+    +data: CharField
+}
+
+RECTANGLE ClientesWeb {
+    +id: Integer
+    +cliente: ForeignKey(Clientes)
+    +type: CharField
+    +data: CharField
+}
+
+RECTANGLE ClientesEmail {
+    +id: Integer
+    +cliente: ForeignKey(Clientes)
+    +type: CharField
+    +data: CharField
+}
+
+RECTANGLE ClientesSocial {
+    +id: Integer
+    +cliente: ForeignKey(Clientes)
+    +type: CharField
+    +data: CharField
+}
+
+RECTANGLE ClientesAddress {
+    +id: Integer
+    +cliente: ForeignKey(Clientes)
+    +address: CharField
+    +street_house_no: CharField
+    +apartment_office_room_floor: CharField
+    +city: CharField
+    +district: CharField
+    +region_area: CharField
+    +postal_code: CharField
+    +country: ForeignKey(Country)
+}
+
+RECTANGLE ClientesUTM {
+    +id: Integer
+    +cliente: ForeignKey(Clientes)
+    +source: CharField
+    +medium: CharField
+    +campaign: CharField
+    +content: CharField
+    +term: CharField
+}
+
+RECTANGLE Attachment {
+    +id: Integer
+    +name: CharField
+    +file: FileField
+    +created: DateTimeField
+}
+
+RECTANGLE TemplatesGroup {
+    +id: Integer
+    +name: CharField
+    +created: DateTimeField
+    +create_user: ForeignKey(UserAcount)
+    +mail_corp: ForeignKey(MailCorp)
+    +max_number: Integer
+}
+
+RECTANGLE TemplateFiles {
+    +id: Integer
+    +name: CharField
+    +orden: Integer
+    +file: FileField
+    +created: DateTimeField
+    +create_user: ForeignKey(UserAcount)
+    +template_group: ForeignKey(TemplatesGroup)
+    +attachment: ForeignKey(Attachment)
+}
+
+RECTANGLE Mail {
+    +id: Integer
+    +mail_corp: ForeignKey(MailCorp)
+    +cliente: ForeignKey(Clientes)
+    +subject: CharField
+    +created: DateTimeField
+    +status: CharField
+    +status_response: CharField
+    +use_template: BooleanField
+    +template_group: ForeignKey(TemplatesGroup)
+    +send_number: Integer
+    +last_send: DateTimeField
+    +reminder_days: Integer
+    +mail: ForeignKey(Mail)
+    +send: BooleanField
+    +user_approved: ForeignKey(UserAcount)
+    +date_approved: DateTimeField
+    +approved: BooleanField
+    +error_message: CharField
+}
+
+RECTANGLE UserAcount {
+    +id: Integer
+    +user: ForeignKey(User)
+    +account: ForeignKey(Account)
+    +name_usr_acount: CharField
+    +created: DateTimeField
+}
+
+UserAcount "1" -- "0..*" Mail
+UserAcount "1" -- "0..*" MailCorp
+MailCorp "1" -- "0..*" Account
+Country "1" -- "0..*" Account
+Account "1" -- "0..*" Mail
+Type "1" -- "0..*" Mail
+Country "1" -- "0..*" Mail
+UserAcount "1" -- "0..*" TemplateFiles
+UserAcount "1" -- "0..*" TemplatesGroup
+Mail "1" -- "0..*" Clientes
+Mail "1" -- "0..*" TemplatesGroup
+TemplatesGroup "1" -- "0..*" MailCorp
+TemplateFiles "1" -- "0..*" TemplatesGroup
+Attachment "1" -- "0..*" TemplateFiles
+Clientes "1" -- "0..*" Country
+Clientes "1" -- "0..*" Account
+Clientes "1" -- "0..*" MailCorp
+Clientes "1" -- "0..*" ClientesUTM
+Clientes "1" -- "0..*" ClientesSocial
+Clientes "1" -- "0..*" ClientesEmail
+Clientes "1" -- "0..*" ClientesWeb
+Clientes "1" -- "0..*" ClientesContact
+Clientes "1" -- "1" ClientesAddress
+Country "1" -- "0..*" ClientesAddress
+
+@enduml

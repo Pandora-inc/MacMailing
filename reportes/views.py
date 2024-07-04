@@ -71,9 +71,7 @@ class ProcessExcel(APIView):
         """
         Retrieves data from the database using a SQL query and returns it as a response.
         """
-        cursor = connection.cursor()
-        cursor.execute("SELECT * FROM reportes_clientes")
-        clientes = cursor.fetchall()
+        clientes = Clientes.objects.all()
         return Response(clientes)
 
 def crear_correo(request):
