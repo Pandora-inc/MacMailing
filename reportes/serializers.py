@@ -40,6 +40,7 @@ class MailSerializer(serializers.Serializer):
     user_last_name = serializers.CharField(allow_blank=True, required=False, allow_null=True)
     mail_id = serializers.IntegerField()
     mail_to_send_id = serializers.IntegerField(required=False, allow_null=True)
+    contacted = serializers.BooleanField(required=False, allow_null=True)
 
     def create(self, validated_data):
         """ Crear un objeto Mail """

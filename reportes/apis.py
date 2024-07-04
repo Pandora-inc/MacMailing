@@ -1,6 +1,5 @@
 """ Módulo que contiene las API's de la aplicación de reportes """
 # from .serializers import MySerializer
-import json
 import logging
 import requests
 
@@ -10,7 +9,7 @@ from rest_framework import status
 from django.db import transaction, IntegrityError
 
 from auxiliares.models import Country, Type
-from reportes.constants import BITRIX_WEBHOOK
+from reportes.constants import BITRIX_WEBHOOK, BITRIX_BASE_URL
 from reportes.models import Clientes, ClientesAddress, ClientesContact, ClientesEmail
 from reportes.serializers import ClientesSerializer
 
@@ -34,12 +33,11 @@ class MyAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         """ Método que recibe un JSON y lo imprime en la consola """
-        data = json.dumps(request.data, indent=4)
-        logger.info("Received data: %s", data)
-
         id_lead = request.data.get('data[FIELDS][ID]')
         if not id_lead:
             return Response({"error": "ID lead is missing"}, status=status.HTTP_400_BAD_REQUEST)
+
+        logger.info("Received petition for lead id: %s", id_lead)
 
         url = self.construct_url(id_lead)
         logger.info(url)
@@ -48,10 +46,11 @@ class MyAPIView(APIView):
         if response.status_code != 200:
             return Response(response.json(), status=response.status_code)
 
-        logger.info(response.json())
         result = response.json().get('result')
         if not result:
             return Response({"error": "Result not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        logger.info("Received data for lead id: %s title: %s", result['ID'], result['TITLE'])
 
         data = self.construct_data(result)
 
@@ -59,8 +58,7 @@ class MyAPIView(APIView):
 
     def construct_url(self, id_lead):
         """ Método que construye la URL para obtener la información de un lead """
-        url_base = 'https://maquiavelo.bitrix24.com/rest/636'
-        return f'{url_base}/{BITRIX_WEBHOOK}/crm.lead.get.json?ID={id_lead}'
+        return f'{BITRIX_BASE_URL}/{BITRIX_WEBHOOK}/crm.lead.get.json?ID={id_lead}'
 
     def make_request(self, url):
         """ Método que realiza una petición POST a una URL """
@@ -97,6 +95,7 @@ class MyAPIView(APIView):
             'currency': 'US Dollar' if result['CURRENCY_ID'] == 'USD' else result['CURRENCY_ID'],
             'type': lead_type,
             'addl_type_details_other': result['UF_CRM_1660655104670'],
+            'contacted': result['STATUS_ID'] == 'IN_PROCESS',
         }
 
     def get_salutation(self, honorific):
@@ -173,6 +172,7 @@ class MyAPIView(APIView):
                             type_id=email_type,
                             defaults={'data': email['VALUE']}
                         )
+                        logger.info("Email %s updated for cliente %s", email['VALUE'], cliente)
                 except IntegrityError:
                     logger.warning("Duplicate entry found for cliente %s and type_id %s.",
                                    cliente, email_type)

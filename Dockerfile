@@ -14,6 +14,7 @@ RUN apt-get update && apt-get -y dist-upgrade
 # install dependencies
 RUN pip install --upgrade pip
 COPY ./requirements.txt .
+COPY ./entrypoint.sh .
 RUN pip install -r requirements.txt
 
 # copy project
