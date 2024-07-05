@@ -158,8 +158,11 @@ def registro_envio_mail(id_mail: int, send_number: int):
             crear_evento(mail)
 
             actualizar_con_template(id_mail)
+            actualizacion = actualizar_status_bitrix(mail)
+            if actualizacion.status_code != 200:
+                print("Error al actualizar el estado del mail en Bitrix")
+                print(actualizacion.data)
 
-            actualizar_status_bitrix(mail)
             print("Registro de envio de mail actualizado")
         except Mail.DoesNotExist as e_error:
             print("Error al actualizar el registro de envio de mail")

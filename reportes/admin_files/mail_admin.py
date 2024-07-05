@@ -7,18 +7,22 @@ from django.urls import reverse
 
 from reportes.forms import MailForm
 from reportes.utils import get_response_account, if_admin
-from reportes.models import Clientes, Mail, MailCorp, MailsToSend, TemplateFiles, TemplatesGroup
+from reportes.models import (Clientes, Mail, MailCorp, MailsToSend,
+                             TemplateFiles, TemplatesGroup, ClientesEmail)
 
 
 def prepare_to_send(_, request, queryset):
     ''' Función para preparar los emails para enviar '''
     for obj in queryset:
         if obj.status_response is False:
-            print(obj.status)
-            mail = MailsToSend()
-            mail.mail = Mail.objects.get(pk=obj.pk)
-            print(obj.mail_corp)
-            mail.save()
+            if not ClientesEmail.objects.filter(cliente=obj.cliente).exists():
+                messages.add_message(request, messages.ERROR, f"Client {obj.cliente} has no email.")
+            else:
+                mail = MailsToSend()
+                mail.mail = Mail.objects.get(pk=obj.pk)
+                mail.save()
+
+                messages.add_message(request, messages.SUCCESS, f"{obj} has been added to the queue.")
 
 prepare_to_send.short_description = "Prepare shipment"
 
