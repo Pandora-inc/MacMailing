@@ -1,6 +1,5 @@
 """ Módulo que contiene las API's de la aplicación de reportes """
 # from .serializers import MySerializer
-import logging
 import requests
 
 from rest_framework.views import APIView
@@ -13,22 +12,13 @@ from reportes.constants import BITRIX_WEBHOOK, BITRIX_BASE_URL
 from reportes.models import Clientes, ClientesAddress, ClientesContact, ClientesEmail
 from reportes.serializers import ClientesSerializer
 
-# Configurar el logging
-logging.basicConfig(
-    filename='reportes/logs/api.log',  # Nombre del archivo de log
-    level=logging.INFO,  # Nivel de logging
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'  # Formato del log
-)
-
-logger = logging.getLogger(__name__)
-
 class MyAPIView(APIView):
     """ Clase que recibe un JSON y lo imprime en la consola """
 
     def get(self, request, *args, **kwargs):
         """ Método que imprime un mensaje en la consola """
         message = "Hola mundo"
-        logger.info(message)
+        print(message)
         return Response({"message": message}, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
@@ -37,10 +27,10 @@ class MyAPIView(APIView):
         if not id_lead:
             return Response({"error": "ID lead is missing"}, status=status.HTTP_400_BAD_REQUEST)
 
-        logger.info("Received petition for lead id: %s", id_lead)
+        print("Received petition for lead id: %s", id_lead)
 
         url = self.construct_url(id_lead)
-        logger.info(url)
+        print(url)
 
         response = self.make_request(url)
         if response.status_code != 200:
@@ -50,7 +40,7 @@ class MyAPIView(APIView):
         if not result:
             return Response({"error": "Result not found"}, status=status.HTTP_400_BAD_REQUEST)
 
-        logger.info("Received data for lead id: %s title: %s", result['ID'], result['TITLE'])
+        print("Received data for lead id: %s title: %s", result['ID'], result['TITLE'])
 
         data = self.construct_data(result)
 
@@ -137,7 +127,7 @@ class MyAPIView(APIView):
             cliente = Clientes.objects.get(cliente_id=result['ID'])
             return self.update_cliente(cliente, data, result)
         except Clientes.DoesNotExist:
-            return self.create_cliente(data)
+            return self.create_cliente(data, result)
 
     def update_cliente(self, cliente, data, result):
         """ Método que actualiza un cliente en la base de datos """
@@ -148,16 +138,20 @@ class MyAPIView(APIView):
             self.update_phones(cliente, result)
             self.update_address(cliente, result)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        logger.info(serializer.errors)
+        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def create_cliente(self, data):
+    def create_cliente(self, data, result):
         """ Método que crea un cliente en la base de datos """
         serializer = ClientesSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
+            cliente = convert_to_client(result)
+            self.update_emails(cliente, result)
+            self.update_phones(cliente, result)
+            self.update_address(cliente, result)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        logger.info(serializer.errors)
+        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update_emails(self, cliente, result):
@@ -172,9 +166,9 @@ class MyAPIView(APIView):
                             type_id=email_type,
                             defaults={'data': email['VALUE']}
                         )
-                        logger.info("Email %s updated for cliente %s", email['VALUE'], cliente)
+                        print("Email %s updated for cliente %s", email['VALUE'], cliente)
                 except IntegrityError:
-                    logger.warning("Duplicate entry found for cliente %s and type_id %s.",
+                    print("Duplicate entry found for cliente %s and type_id %s.",
                                    cliente, email_type)
 
     def update_phones(self, cliente, result):
@@ -190,7 +184,7 @@ class MyAPIView(APIView):
                             type_id=phone_type
                         )
                 except IntegrityError:
-                    logger.warning("Duplicate entry found for cliente %s and type_id %s.",
+                    print("Duplicate entry found for cliente %s and type_id %s.",
                                    cliente, phone_type)
 
     def update_address(self, cliente, result):

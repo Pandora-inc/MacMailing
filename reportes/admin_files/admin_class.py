@@ -29,7 +29,10 @@ def template_file_propague(_, request, queryset):
     ''' Función para propagar las plantillas '''
     for obj in queryset:
         try:
-            get_template_file_and_save(obj.id)
+            if get_template_file_and_save(obj.id):
+                messages.success(request, f"Template propagated successfully: {obj}")
+            else:
+                messages.warning(request, f"Template not have file to propagated: {obj}")
         except ObjectDoesNotExist as e:
             messages.error(request, f"Object not found: {e}")
         except ValidationError as e:

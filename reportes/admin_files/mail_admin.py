@@ -153,11 +153,14 @@ class MailAdmin(admin.ModelAdmin):
         """ Handle the creation of mail for a client """
 
         template_group_id = request.POST.get('template_group', None)
+        if not template_group_id:
+            print("NO TEMPLATE GROUP")
+            return False
+
         template_group = TemplatesGroup.objects.filter(
-            pk=template_group_id).first() if template_group_id else None
+            pk=template_group_id).first()
 
         reminder_days = request.POST.get('reminder_days', 7)
-        use_template = request.POST.get('use_template', 'off') == 'on'
         status_response = request.POST.get('status_response', 'off') == 'on'
         status = request.POST.get('status', False) in ['on', 'true', 1, True, "1"]
 
@@ -169,15 +172,14 @@ class MailAdmin(admin.ModelAdmin):
             cliente=client,
             status=status,
             status_response=status_response,
-            use_template=use_template,
             template_group=template_group,
             reminder_days=reminder_days
         )
-        if use_template and template_group:
-            template = TemplateFiles.objects.filter(template_group=template_group, orden=1).first()
-            if template:
-                mail.body = template.text
-                mail.subject = template.name
+
+        template = TemplateFiles.objects.filter(template_group=template_group, orden=1).first()
+        if template:
+            mail.body = template.text
+            mail.subject = template.name
 
         mail.save()
         self.message_user(request, f"{cliente_id} has been added.", level=messages.SUCCESS)

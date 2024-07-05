@@ -50,4 +50,15 @@ class MailForm(forms.ModelForm):
     class Meta:
         """ Clase Meta """
         model = Mail
-        fields = '__all__'
+        fields = [
+            'mail_corp',
+            'cliente',
+            'subject',
+            'body',
+            'template_group',
+            'reminder_days',
+            'status',
+            'status_response',
+            'last_send',
+            'send_number',
+        ]

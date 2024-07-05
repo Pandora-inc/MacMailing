@@ -378,7 +378,7 @@ def send_mail_api(request, id_mail: int) -> bool:
     send_new_mail(msg_data)
 
 
-def get_template_file_and_save(id_template: int):
+def get_template_file_and_save(id_template: int) -> bool:
     """
     Retrieves a template file from the database, reads its contents,
     and saves the contents as text in the same template object.
@@ -391,11 +391,13 @@ def get_template_file_and_save(id_template: int):
     """
     template = TemplateFiles.objects.get(id=id_template)
     try:
-        filename = template.file.path
-
-        with open(filename, "r", encoding="utf-8") as archivo:
-            template.text = archivo.read()
-            template.save()
+        filename = template.file
+        if filename:
+            with open(filename, "r", encoding="utf-8") as archivo:
+                template.text = archivo.read()
+                template.save()
+                return True
+        return False
     except FileNotFoundError as e_error:
         print("Error al leer el archivo")
         print(e_error)
@@ -536,6 +538,7 @@ def send_new_mail(msg_data) -> JsonResponse:
             server.login(msg_data['from_email'], msg_data['from_pass'])
             server.send_message(message)
         print("Email sent successfully")
+
         # Update mail object status and save
         with transaction.atomic():
             mail_to_send.send = True

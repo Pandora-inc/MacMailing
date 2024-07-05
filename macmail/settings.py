@@ -11,13 +11,6 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os.path
 from pathlib import Path
-from dotenv import load_dotenv, find_dotenv
-
-dotenv_path = find_dotenv()
-if dotenv_path:
-    load_dotenv(dotenv_path)
-else:
-    print(".env file not found")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,10 +20,10 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(os.getenv("DEBUG", default="1"))
 
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", '*').split(" ")
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", '*').split(" ")
 
 # Obteniendo la variable de entorno y separando los orígenes por espacio
-trusted_origins = os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(" ")
+trusted_origins = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(" ")
 
 # Filtrando posibles valores vacíos en la lista resultante
 CSRF_TRUSTED_ORIGINS = [origin for origin in trusted_origins if origin]
@@ -144,7 +137,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "static_media")
 
 #ckeditor upload path
-CKEDITOR_UPLOAD_PATH="uploads/"
+CKEDITOR_UPLOAD_PATH = "uploads/"
 
 CKEDITOR_CONFIGS = {
     'awesome_ckeditor': {

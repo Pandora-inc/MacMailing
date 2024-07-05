@@ -347,9 +347,9 @@ class Attachment(models.Model):
     Methods:
         __str__(): Returns a string representation of the attachment.
     """
-    name = models.CharField(max_length=64, blank=True, null=True)
-    file = models.FileField(upload_to='attachments/', blank=True, null=True)
-    created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    name = models.CharField(max_length=64, unique=True)
+    file = models.FileField(upload_to='attachments/')
+    created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return str(self.name)
@@ -405,8 +405,7 @@ class TemplateFiles(models.Model):
     created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     create_user = models.ForeignKey(
         User, models.RESTRICT, blank=True, null=True)
-    template_group = models.ForeignKey(
-        TemplatesGroup, models.RESTRICT, blank=True, null=True)
+    template_group = models.ForeignKey(TemplatesGroup, models.RESTRICT)
     attachment = models.ManyToManyField(Attachment, blank=True)
 
     def __str__(self):
@@ -416,6 +415,7 @@ class TemplateFiles(models.Model):
         """ Meta data of the model """
         verbose_name = 'template file'
         verbose_name_plural = 'template files'
+        unique_together = ('orden', 'template_group')
 
 
 class Mail(models.Model):
@@ -444,18 +444,15 @@ class Mail(models.Model):
         'mail_corp' should be unique.
 
     """
-    mail_corp = models.ForeignKey(
-        MailCorp, models.RESTRICT, blank=True, null=True)
-    cliente = models.ForeignKey(
-        Clientes, models.RESTRICT, blank=True, null=True, verbose_name='lead')
-    subject = models.CharField(max_length=256, blank=True, null=True)
-    body = RichTextUploadingField(blank=True, null=True, config_name='awesome_ckeditor')
+    mail_corp = models.ForeignKey(MailCorp, models.RESTRICT)
+    cliente = models.ForeignKey(Clientes, models.RESTRICT, verbose_name='lead')
+    subject = models.CharField(max_length=256)
+    body = RichTextUploadingField(config_name='awesome_ckeditor')
     created = models.DateTimeField(auto_now_add=True)
     status = models.BooleanField(default=False)
     status_response = models.BooleanField(default=False)
-    use_template = models.BooleanField(default=False)
-    template_group = models.ForeignKey(
-        TemplatesGroup, models.RESTRICT, blank=True, null=True)
+    use_template = models.BooleanField(default=True)
+    template_group = models.ForeignKey(TemplatesGroup, models.RESTRICT)
     send_number = models.IntegerField(default=0)
     last_send = models.DateTimeField(blank=True, null=True)
     reminder_days = models.IntegerField(default=7)
