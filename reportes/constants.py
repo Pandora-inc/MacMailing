@@ -127,4 +127,4 @@ INDICE_TRADUCCION_CONTACT = {
 
 API_BASE_URL = os.getenv('API_BASE_URL')
 BITRIX_BASE_URL = os.getenv('BITRIX_BASE_URL')
-BITRIX_WEBHOOK = os.getenv("BITRIX_WEBHOOK", "v0uehhaf88vle9ua")
+BITRIX_WEBHOOK = os.getenv("BITRIX_WEBHOOK", "3wqls24osihtratk")

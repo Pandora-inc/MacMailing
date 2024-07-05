@@ -14,7 +14,7 @@ class Type(models.Model):
 
 class Country(models.Model):
     ''' Paises '''
-    description = models.CharField(max_length=64, blank=True, null=True)
+    description = models.CharField(max_length=64)
 
     def __str__(self):
         return str(self.description)

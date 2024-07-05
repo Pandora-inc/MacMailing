@@ -3,5 +3,10 @@ from django.urls import path
 from .apis import MyAPIView
 
 urlpatterns = [
-    path('api/my-endpoint/', MyAPIView.as_view(), name='my-api'),
+    path('api/update_client/',
+         MyAPIView.as_view(http_method_names=['post']),
+         name='update-client'),
+    path('api/delete_client/',
+         MyAPIView.as_view(http_method_names=['delete']),
+         name='delete-client'),
 ]

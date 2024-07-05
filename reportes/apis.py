@@ -27,12 +27,13 @@ class MyAPIView(APIView):
         if not id_lead:
             return Response({"error": "ID lead is missing"}, status=status.HTTP_400_BAD_REQUEST)
 
-        print("Received petition for lead id: %s", id_lead)
+        print(f"Received petition for lead id: {id_lead}")
 
         url = self.construct_url(id_lead)
         print(url)
 
         response = self.make_request(url)
+
         if response.status_code != 200:
             return Response(response.json(), status=response.status_code)
 
@@ -40,11 +41,28 @@ class MyAPIView(APIView):
         if not result:
             return Response({"error": "Result not found"}, status=status.HTTP_400_BAD_REQUEST)
 
-        print("Received data for lead id: %s title: %s", result['ID'], result['TITLE'])
+        print(f"Received data for lead id: {result['ID']} title: {result['TITLE']}")
 
         data = self.construct_data(result)
+        if not data:
+            return Response({"error": "Data not found"}, status=status.HTTP_400_BAD_REQUEST)
 
         return self.process_data(result, data)
+
+    def delete(self, request, *args, **kwargs):
+        """ Metodo que cambia el estado de un cliente a visible false"""
+        id_lead = request.data.get('data[FIELDS][ID]')
+        if not id_lead:
+            return Response({"error": "ID lead is missing"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            cliente = Clientes.objects.get(cliente_id=id_lead)
+            cliente.visible = False
+            cliente.save()
+            print(f"Cliente {cliente} marked as not visible")
+            return Response({"message": "Cliente deleted"}, status=status.HTTP_200_OK)
+        except Clientes.DoesNotExist:
+            return Response({"error": "Cliente not found"}, status=status.HTTP_400_BAD_REQUEST)
 
     def construct_url(self, id_lead):
         """ Método que construye la URL para obtener la información de un lead """
@@ -64,6 +82,10 @@ class MyAPIView(APIView):
         salutation = self.get_salutation(result['HONORIFIC'])
         lead_status = self.get_lead_status(result['STATUS_ID'])
         source = self.get_source(result['SOURCE_ID'])
+        if result.get('UF_CRM_1644500575') is None:
+            print("Lead type not found")
+            return None
+
         lead_type = Type.objects.get(code=result['UF_CRM_1644500575']).id
 
         return {
@@ -166,10 +188,9 @@ class MyAPIView(APIView):
                             type_id=email_type,
                             defaults={'data': email['VALUE']}
                         )
-                        print("Email %s updated for cliente %s", email['VALUE'], cliente)
+                        print(f"Email {email['VALUE']} updated for cliente {cliente}")
                 except IntegrityError:
-                    print("Duplicate entry found for cliente %s and type_id %s.",
-                                   cliente, email_type)
+                    print(f"Duplicate entry found for cliente {cliente} and type_id {email_type}.")
 
     def update_phones(self, cliente, result):
         """ Método que actualiza los teléfonos de un cliente """
@@ -184,24 +205,31 @@ class MyAPIView(APIView):
                             type_id=phone_type
                         )
                 except IntegrityError:
-                    print("Duplicate entry found for cliente %s and type_id %s.",
-                                   cliente, phone_type)
+                    print(f"Duplicate entry found for cliente {cliente} and type_id {phone_type}.")
 
     def update_address(self, cliente, result):
         """ Método que actualiza la dirección de un cliente """
         if result.get('ADDRESS'):
-            ClientesAddress.objects.update_or_create(
-                cliente=cliente,
-                address=result['ADDRESS'],
-                defaults={
-                    'street_house_no': result.get('ADDRESS_2'),
-                    'city': result.get('ADDRESS_CITY'),
-                    'postal_code': result.get('ADDRESS_POSTAL_CODE'),
-                    'region_area': result.get('ADDRESS_REGION'),
-                    'district': result.get('ADDRESS_PROVINCE'),
-                    'country': Country.objects.get(description=result['ADDRESS_COUNTRY'])
-                }
-            )
+            if not result.get('ADDRESS_COUNTRY'):
+                print(f"Country not found for address {result['ADDRESS']}")
+            else:
+                if Country.objects.filter(description=result['ADDRESS_COUNTRY']).exists():
+                    country = Country.objects.get(description=result['ADDRESS_COUNTRY'])
+                else:
+                    country = Country.objects.create(description=result['ADDRESS_COUNTRY'])
+
+                ClientesAddress.objects.update_or_create(
+                    cliente=cliente,
+                    address=result['ADDRESS'],
+                    defaults={
+                        'street_house_no': result.get('ADDRESS_2'),
+                        'city': result.get('ADDRESS_CITY'),
+                        'postal_code': result.get('ADDRESS_POSTAL_CODE'),
+                        'region_area': result.get('ADDRESS_REGION'),
+                        'district': result.get('ADDRESS_PROVINCE'),
+                        'country_id': country
+                    }
+                )
 
     def get_contact_type(self, value_type):
         """ Método que retorna el tipo de contacto """

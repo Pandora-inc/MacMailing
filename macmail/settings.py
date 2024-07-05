@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'ckeditor', # CKEditor config
     'ckeditor_uploader', # CKEditor media uploader
     'calendarapp',
+    'django_select2',
+    # 'django_admin_listfilter_dropdown',
 ]
 
 MIDDLEWARE = [
@@ -145,35 +147,34 @@ CKEDITOR_CONFIGS = {
     },
 }
 
+# Configuración de django-select2
+SELECT2_JS = 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.full.min.js'
+SELECT2_CSS = 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-# ADMIN_SITE = 'reportes.admin.my_admin_site'
-
 # LOGGING = {
 #     'version': 1,
 #     'disable_existing_loggers': False,
-#     'filters': {
-#         'require_debug_false': {
-#             '()': 'django.utils.log.RequireDebugFalse'
-#         }
-#     },
 #     'handlers': {
-#         'mail_admins': {
-#             'level': 'ERROR',
-#             'filters': ['require_debug_false'],
-#             'class': 'django.utils.log.AdminEmailHandler'
-#         }
+#         'file': {
+#             'level': 'DEBUG',
+#             'class': 'logging.RotatingFileHandler',
+#             'filename': 'logs/debug.log',
+#         },
 #     },
 #     'loggers': {
-#         'django.request': {
-#             'handlers': ['mail_admins'],
-#             'level': 'ERROR',
+#         'django': {
+#             'handlers': ['file'],
+#             'level': 'DEBUG',
 #             'propagate': True,
 #         },
-#     }
+#     },
 # }
+
+# ADMIN_SITE = 'reportes.admin.my_admin_site'
 
 
 # ADMIN_REORDER = (

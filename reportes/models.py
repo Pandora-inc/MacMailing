@@ -88,7 +88,7 @@ class Clientes(models.Model):
     middle_name = models.CharField(max_length=32, blank=True, null=True)
     last_name = models.CharField(max_length=32, blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
-    created = models.DateTimeField(blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True)
     source = models.CharField(max_length=32, blank=True, null=True)
     responsible = models.ForeignKey(
         MailCorp, models.RESTRICT, blank=True, null=True, related_name='responsable')
@@ -96,7 +96,7 @@ class Clientes(models.Model):
     source_information = models.TextField(blank=True, null=True)
     created_by = models.ForeignKey(
         MailCorp, models.RESTRICT, blank=True, null=True, related_name='creado_por')
-    modified = models.DateTimeField(blank=True, null=True)
+    modified = models.DateTimeField(auto_now=True, blank=True, null=True)
     modified_by = models.ForeignKey(
         MailCorp, models.RESTRICT, blank=True, null=True, related_name='modificado_por')
     company_name = models.CharField(max_length=64, blank=True, null=True)
@@ -458,7 +458,7 @@ class Mail(models.Model):
     reminder_days = models.IntegerField(default=7)
 
     def __str__(self):
-        return str(self.subject)
+        return f"{self.subject} ({self.cliente})"
 
     class Meta:
         """ Meta data of the model """
@@ -488,11 +488,13 @@ class MailsToSend (models.Model):
     approved = models.BooleanField(default=False)
     status = models.BooleanField(default=True)
     error_message = models.TextField(blank=True, null=True)
+    order = models.IntegerField(default=0)
 
     def __str__(self):
-        return str(self.mail)
+        return f"{self.mail}"
 
     class Meta:
+        unique_together = (('mail', 'order'),)
         constraints = [
             models.UniqueConstraint(fields=['mail'],
                                     condition=models.Q(send=False),

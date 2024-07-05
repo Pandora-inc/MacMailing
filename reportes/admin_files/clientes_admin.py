@@ -4,8 +4,8 @@ from django.contrib import admin
 from django.shortcuts import redirect
 from django.urls import reverse
 
-from reportes.models import ClientesEmail
-from reportes.utils import get_response_account, if_admin
+from reportes.models import Clientes, ClientesEmail
+from reportes.utils import Select2WidgetWithSearch, get_response_account, if_admin
 
 
 class ClientesEmailInline(admin.TabularInline):
@@ -45,6 +45,14 @@ class ClientesAdmin(admin.ModelAdmin):
     list_filter = ['contacted', 'responsible', 'lead_name', VisibleFilter]
     inlines = [ClientesEmailInline]
     actions = ['enviar_mail_replicado']
+
+    class Meta:
+        """ Meta class for the SprintsAdminForm """
+        model = Clientes
+        fields = '__all__'
+        widgets = {
+            'responsible': Select2WidgetWithSearch,
+        }
 
     def get_queryset(self, request):
         ''' Obtener el queryset base '''

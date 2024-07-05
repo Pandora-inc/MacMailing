@@ -158,8 +158,11 @@ def registro_envio_mail(id_mail: int, send_number: int):
             crear_evento(mail)
 
             actualizar_con_template(id_mail)
+            actualizacion = actualizar_status_bitrix(mail)
+            if actualizacion.status_code != 200:
+                print("Error al actualizar el estado del mail en Bitrix")
+                print(actualizacion.data)
 
-            actualizar_status_bitrix(mail)
             print("Registro de envio de mail actualizado")
         except Mail.DoesNotExist as e_error:
             print("Error al actualizar el registro de envio de mail")
@@ -185,10 +188,13 @@ def actualizar_status_bitrix(mail: Mail):
 
     """
     try:
+        print("Actualizando estado del mail en Bitrix")
+        print(mail.cliente.cliente_id)
         url = f'{BITRIX_BASE_URL}/{BITRIX_WEBHOOK}/crm.lead.update.json'
         data = {
-            "id": mail.cliente.cliente_id,
+            "ID": mail.cliente.cliente_id,
             "fields": {
+                "ID": mail.cliente.cliente_id,
                 "STATUS_ID": "IN_PROCESS"
             },
             "params": {

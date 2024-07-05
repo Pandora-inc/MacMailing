@@ -2,6 +2,7 @@
 from datetime import datetime
 
 import openpyxl
+from django_select2.forms import Select2Widget
 
 from auxiliares.models import ContactType, EmailType, SocialType, WebType, Country, Type
 from .constants import INDICE_TRADUCCION, INDICE_TRADUCCION_CONTACT
@@ -779,3 +780,10 @@ def if_admin(user):
 def get_response_account(user):
     ''' Obtener las cuentas de respuesta del usuario '''
     return MailCorp.objects.filter(user=user)
+
+
+class Select2WidgetWithSearch(Select2Widget):
+    """ Select2Widget with search fields """
+    search_fields = [
+        'text__icontains',
+    ]
