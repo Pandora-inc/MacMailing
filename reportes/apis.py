@@ -9,7 +9,7 @@ from django.db import transaction, IntegrityError
 
 from auxiliares.models import Country, Type
 from reportes.constants import BITRIX_WEBHOOK, BITRIX_BASE_URL
-from reportes.models import Clientes, ClientesAddress, ClientesContact, ClientesEmail
+from reportes.models import Clientes, ClientesAddress, ClientesContact, ClientesEmail, MailCorp
 from reportes.serializers import ClientesSerializer
 
 class MyAPIView(APIView):
@@ -85,7 +85,9 @@ class MyAPIView(APIView):
         if result.get('UF_CRM_1644500575') is None:
             print("Lead type not found")
             return None
-
+        responsable = None
+        if self.get_responsable(result['ASSIGNED_BY_ID']):
+            responsable = self.get_responsable(result['ASSIGNED_BY_ID'])
         lead_type = Type.objects.get(code=result['UF_CRM_1644500575']).id
 
         return {
@@ -108,6 +110,7 @@ class MyAPIView(APIView):
             'type': lead_type,
             'addl_type_details_other': result['UF_CRM_1660655104670'],
             'contacted': result['STATUS_ID'] == 'IN_PROCESS',
+            'responsible': responsable,
         }
 
     def get_salutation(self, honorific):
@@ -239,6 +242,18 @@ class MyAPIView(APIView):
             'NEWSLETTER': 3
         }.get(value_type, 4)
 
+    def get_responsable(self, responsable_id: int):
+        """ Método que obtiene el responsable de un lead """
+        url=f'{BITRIX_BASE_URL}/{BITRIX_WEBHOOK}/crm.lead.get.json?ID={responsable_id}'
+        response = self.make_request(url)
+        if response.status_code != 200:
+            return None
+
+        result = response.json().get('result')
+
+        if MailCorp.objects.filter(email=result['EMAIL']).exists():
+            return MailCorp.objects.get(email=result['EMAIL'])
+        return None
 
 def convert_to_client(data):
     """ Método que convierte un JSON a un objeto de tipo Clientes """

@@ -417,15 +417,10 @@ def get_template_file_and_save(id_template: int) -> bool:
 def emails_cadena(cadena):
     """ Función que extrae todos los emails válidos de una cadena de texto. """
     try:
-        # Definimos una lista de signos de puntuación a eliminar, excepto @ y .
         caracteres_puntuacion = string.punctuation.replace('@', '').replace('.', '')
-        # Eliminamos todos los caracteres de puntuación de la cadena,
-        # que no se usan en los correos electrónicos
         traductor = str.maketrans("", "", caracteres_puntuacion)
         cadena_sin_puntuacion = cadena.translate(traductor)
-        # Dividimos la cadena en palabras y las convertimos en minúsculas
         palabras = cadena_sin_puntuacion.lower().split()
-        # Creamos una lista para almacenar los emails válidos encontrados
         emails = []
         for palabra in palabras:
             if "@" in palabra:
@@ -438,16 +433,16 @@ def emails_cadena(cadena):
                         # Añadimos el email a la lista de emails válidos
                         emails.append(palabra)
                     else:
-                        print(f"El dominio del email '{palabra}' no es válido.")
+                        print(f"The domain of the email '{palabra}' is not valid.")
                 else:
-                    print(f"El email '{palabra}' contiene más de una arroba.")
+                    print(f"The email '{palabra}' contains more than one arroba.")
         # Si no se encontraron emails válidos, mostramos un mensaje
         if len(emails) == 0:
-            print("No se encontraron correos electrónicos válidos en la cadena.")
+            print("No valid emails were found in the string.")
             return None
         return emails
     except ValueError as e:
-        print(f"Error al procesar la cadena: {e}")
+        print(f"Error processing string: {e}")
         return None
 
 
@@ -511,6 +506,9 @@ def send_new_mail(msg_data) -> JsonResponse:
         message['To'] = msg_data['to']
         message['Subject'] = msg_data['subject']
         message['CC'] = msg_data['cc']
+
+        print("Sending email...")
+        print(message['CC'])
 
         msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
         msg_data['firma'] = prepare_email_body(msg_data['firma'], msg_data)
