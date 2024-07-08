@@ -1,10 +1,12 @@
 """ Configuraciones del Admin """
 from django.contrib import admin, messages
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
 
 from reportes.actions import get_template_file_and_save
 from reportes.models import Clientes, ExcelFiles
 from reportes.utils import UtilExcelFile, if_admin
+
 
 def procesar_excel(_, request, queryset):
     ''' Función para procesar los archivos excel '''
@@ -54,7 +56,7 @@ class CommonAdminSetupMixin:
         'data'
     ]
     ordering = ['cliente', 'type']
-    list_filter = ['cliente', 'type']
+    list_filter = [('cliente', RelatedDropdownFilter), ('type', RelatedDropdownFilter)]
 
     def get_client_name(self, obj):
         """ Returns the name of the client associated with the object """
@@ -108,7 +110,7 @@ class ClientesAddressAdmin(admin.ModelAdmin):
                      'postal_code',
                      'country__description']
     ordering = ['cliente', 'address', 'city', 'postal_code', 'country']
-    list_filter = ['cliente', 'address']
+    list_filter = [('cliente', RelatedDropdownFilter)]
 
 
 class ClientesContactAdmin(CommonAdminSetupMixin, admin.ModelAdmin):
@@ -155,7 +157,7 @@ class MailCorpAdmin(admin.ModelAdmin):
     list_display = ['name', 'email', 'account', 'user']
     search_fields = ['name', 'email', 'account__name', 'user__username']
     ordering = ['name', 'email', 'account', 'user']
-    list_filter = ['account', 'user']
+    list_filter = [('account', RelatedDropdownFilter), ('user', RelatedDropdownFilter)]
 
     def get_queryset(self, request):
         ''' Obtener el queryset base '''
@@ -227,7 +229,8 @@ class TemplateFilesAdmin(admin.ModelAdmin):
     search_fields = ['name', 'orden', 'template_group__name']
     readonly_fields = ('create_user',)
     ordering = ['name', 'orden', 'template_group__name']
-    list_filter = ['template_group', 'create_user']
+    list_filter = [('template_group', RelatedDropdownFilter),
+                   ('create_user', RelatedDropdownFilter)]
 
     # DEPRECATED - Se usa get_queryset
     # def get_queryset(self, request):

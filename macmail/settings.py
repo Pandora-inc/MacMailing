@@ -44,8 +44,8 @@ INSTALLED_APPS = [
     'ckeditor', # CKEditor config
     'ckeditor_uploader', # CKEditor media uploader
     'calendarapp',
-    'django_select2',
-    # 'django_admin_listfilter_dropdown',
+    # 'django_select2',
+    'django_admin_listfilter_dropdown',
 ]
 
 MIDDLEWARE = [

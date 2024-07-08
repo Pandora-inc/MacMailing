@@ -4,6 +4,7 @@ from datetime import date
 from django.contrib import admin, messages
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django_admin_listfilter_dropdown.filters import DropdownFilter, RelatedDropdownFilter
 
 from reportes.forms import MailForm
 from reportes.utils import get_response_account, if_admin
@@ -53,7 +54,8 @@ class MailAdmin(admin.ModelAdmin):
                      'last_send']
     ordering = ['mail_corp', 'cliente', 'subject',
                 'send_number', 'status', 'last_send']
-    list_filter = ['mail_corp', 'send_number', 'status', 'status_response']
+    list_filter = [('mail_corp', RelatedDropdownFilter), ('send_number', DropdownFilter),
+                   'status', 'status_response']
     readonly_fields = ('body', 'subject', 'last_send', 'send_number', 'created')
 
     actions = [prepare_to_send]
@@ -79,7 +81,7 @@ class MailAdmin(admin.ModelAdmin):
         return self.readonly_fields
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        """ Sobreescribe el campo de formulario para filtrar los clientes """
+        """ Sobrescribe el campo de formulario para filtrar los clientes """
         # Define una función para filtrar los clientes basados en el campo 'responsable'
         if db_field.name == "cliente":
             if not if_admin(request.user):
@@ -119,7 +121,7 @@ class MailAdmin(admin.ModelAdmin):
         return "Today is a great day"
 
     def get_form(self, request, obj=None, change=False, **kwargs):
-        """ Sobreescribe el formulario de creación """
+        """ Sobrescribe el formulario de creación """
         # Use custom form only for creating new instances
         if obj is None:
             mail_form = MailForm
@@ -135,7 +137,7 @@ class MailAdmin(admin.ModelAdmin):
 
 
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
-        """ Sobreescribe la vista de cambio de formulario """
+        """ Sobrescribe la vista de cambio de formulario """
         if request.method == 'POST':
             clientes = request.POST.getlist('cliente', None)
             if not clientes:
