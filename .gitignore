@@ -145,3 +145,4 @@ app/macmail/settings.py
 /data
 /issues/Planificaciones
 /keys
+/static_media
