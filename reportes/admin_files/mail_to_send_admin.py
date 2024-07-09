@@ -3,6 +3,7 @@
 from django.contrib import admin, messages
 from django.utils.safestring import mark_safe
 from django.utils import timezone
+import newrelic.agent
 
 from auxiliares.models import EmailType
 from reportes.models import ClientesEmail, Mail
@@ -10,11 +11,13 @@ from reportes.utils import if_admin, get_response_account
 from reportes.actions import get_mail_data, prepare_email_body, send_mail
 
 
+@newrelic.agent.background_task(name='Envio de mail', group='Mail')
 def enviar_email(_, request, queryset):
     """ Función para enviar email desde el admin """
     try:
         for obj in queryset:
             if obj.approved is True:
+                newrelic.agent.add_custom_parameter("mail_id", obj.mail_id)
                 if send_mail(obj.mail_id):
                     obj.send = True  # Marcar el correo como enviado
                     obj.save()  # Guardar el objeto actualizado en la base de datos
@@ -43,7 +46,9 @@ class MailsToSendAdmin(admin.ModelAdmin):
         'mail_body',
         'user_approved',
         'date_approved')
-    search_fields = ['mail__mail_corp__name', 'mail__cliente__lead_name', 'approved', 'send']
+    search_fields = ['mail__mail_corp__name', 'mail__cliente__lead_name',
+                     'mail__cliente__last_name', 'mail__cliente__first_name', 'approved', 'send']
+
     ordering = ['mail', 'approved', 'send']
 
     def get_queryset(self, request):

@@ -17,6 +17,7 @@ import requests
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import connection, transaction
 from django.http import Http404, JsonResponse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -24,6 +25,7 @@ from rest_framework.views import APIView
 
 # imports específicos de tu aplicación
 from calendarapp.models import Event
+from reportes.utils import send_log_message
 from reportes.models import (Clientes, ClientesEmail, Mail, TemplateFiles, MailsToSend)
 from reportes.serializers import MailSerializer
 from reportes.constants import BITRIX_BASE_URL, BITRIX_WEBHOOK
@@ -49,13 +51,15 @@ def crear_evento(mail: Mail):
     try:
         title = str(mail.send_number) + ' - ' + str(mail.subject)
         description = "Recordatorio envio de mail Nro "+str(mail.send_number)
+        if timezone.is_naive(mail.last_send):
+            mail.last_send = timezone.make_aware(mail.last_send, timezone.get_default_timezone())
         start_time = mail.last_send+timedelta(days=mail.reminder_days)
         end_time = start_time+timedelta(hours=1)
         # user = User.objects.get(id=mail.mail_corp.user.id)
         connection.cursor()
 
         if Event.objects.filter(title=title).exists():
-            print ("Evento ya existe")
+            send_log_message ("Evento ya existe")
             event = Event.objects.get(title=title)
             event.description = description
             event.start_time = start_time
@@ -70,12 +74,12 @@ def crear_evento(mail: Mail):
                 end_time=end_time,
             )
     except Exception as e_error:
-        print(type(e_error))
-        print("Error al crear el evento")
-        print(e_error)
+        send_log_message(type(e_error))
+        send_log_message("Error al crear el evento")
+        send_log_message(e_error)
         raise e_error
 
-    print("Evento creado")
+    send_log_message("Evento creado")
 
 def actualizar_con_template(id_mail: int):
     """
@@ -121,12 +125,12 @@ def actualizar_con_template(id_mail: int):
             mail.status = 0
             mail.save()
     except Mail.DoesNotExist as exc:
-        print("Error al actualizar el mail con el template")
-        print("No existe el mail")
+        send_log_message("Error al actualizar el mail con el template")
+        send_log_message("No existe el mail")
         raise Http404 from exc
     except Exception as e_error:
-        print("Error al actualizar el mail con el template")
-        print(e_error)
+        send_log_message("Error al actualizar el mail con el template")
+        send_log_message(e_error)
         raise e_error
 
 def registro_envio_mail(id_mail: int, send_number: int):
@@ -157,20 +161,23 @@ def registro_envio_mail(id_mail: int, send_number: int):
 
             crear_evento(mail)
 
-            actualizar_con_template(id_mail)
-            actualizacion = actualizar_status_bitrix(mail)
-            if actualizacion.status_code != 200:
-                print("Error al actualizar el estado del mail en Bitrix")
-                print(actualizacion.data)
+            if mail.send_number == 1:
+                actualizar_con_template(id_mail)
+                actualizacion = actualizar_status_bitrix(mail)
+                if actualizacion.status_code != 200:
+                    send_log_message("Error al actualizar el estado del mail en Bitrix")
+                    send_log_message(f"Error: {actualizacion.status_code}")
+                    send_log_message(actualizacion.data)
+                send_log_message("Registro actualizado en bitrix")
 
-            print("Registro de envio de mail actualizado")
+            send_log_message("Registro de envio de mail actualizado")
         except Mail.DoesNotExist as e_error:
-            print("Error al actualizar el registro de envio de mail")
-            print("No existe el mail")
+            send_log_message("Error al actualizar el registro de envio de mail")
+            send_log_message("No existe el mail")
             raise e_error
         except Exception as e_error:
-            print("Error al actualizar el registro de envio de mail")
-            print(e_error)
+            send_log_message("Error al actualizar el registro de envio de mail")
+            send_log_message(e_error)
             raise e_error
 
 def actualizar_status_bitrix(mail: Mail):
@@ -188,8 +195,8 @@ def actualizar_status_bitrix(mail: Mail):
 
     """
     try:
-        print("Actualizando estado del mail en Bitrix")
-        print(mail.cliente.cliente_id)
+        send_log_message("Actualizando estado del mail en Bitrix")
+        send_log_message(mail.cliente.cliente_id)
         url = f'{BITRIX_BASE_URL}/{BITRIX_WEBHOOK}/crm.lead.update.json'
         data = {
             "ID": mail.cliente.cliente_id,
@@ -207,13 +214,13 @@ def actualizar_status_bitrix(mail: Mail):
             'Accept': 'application/json',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
         }
-        response = requests.post(url, json=data, headers=headers, timeout=5)
+        response = requests.post(url, data=data, headers=headers, timeout=5)
         if response.status_code != 200:
             return Response(response.json(), status=response.status_code)
         return Response({"error": "Result not found"}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e_error:
-        print("Error al actualizar el estado del mail en Bitrix")
-        print(e_error)
+        send_log_message("Error al actualizar el estado del mail en Bitrix")
+        send_log_message(e_error)
         raise e_error
 
 def prepare_email_body(text: str, data: dict) -> str:
@@ -230,67 +237,74 @@ def get_mail_data(id_mail: int) -> dict:
     '''
     Obtiene los datos del mail a enviar.
     '''
-    mail = Mail.objects.get(id=id_mail)
-    if mail:  # Asegúrate de que mail no sea None
+    try:
+        mail = Mail.objects.get(id=id_mail)
         return get_data_for_mail(mail)
-    return None
+    except Mail.DoesNotExist as e_error:
+        send_log_message("Error when obtaining the data of the mail to be sent.")
+        send_log_message("Mail does not exist")
+        raise e_error
 
 def get_data_for_mail(mail: Mail, next_mail_id: int=None) -> dict:
     '''
     Obtiene los datos del mail a enviar.
     '''
-    mail_corp = mail.mail_corp
-    cliente = mail.cliente
-    if cliente:  # Asegúrate de que cliente no sea None
-        cliente_email = ClientesEmail.objects.filter(cliente=cliente, type=1).first()
-        if cliente_email:  # Asegúrate de que cliente_email no sea None
-            data = {
-                'subject': mail.subject,
-                'from_name': mail_corp.name,
-                'from_email': mail_corp.email,
-                'to': cliente_email.data,
-                'date': datetime.now().isoformat(),
-                'content': mail.body,
-                'number': mail.send_number,
-                'content_type': 'text/html',
-                'from_pass': mail_corp.password,
-                'from_smtp': mail_corp.smtp,
-                'from_port': mail_corp.smtp_port,
-                'salutation': cliente.salutation,
-                'first_name': cliente.first_name,
-                'middle_name': cliente.middle_name,
-                'last_name': cliente.last_name,
-                'lead_name': cliente.lead_name,
-                'data': cliente_email.data,
-                'company_name': cliente.company_name,
-                'position': cliente.position,
-                'type': cliente.type.name,
-                'firma': mail_corp.firma,
-                'user_name': mail_corp.user.first_name,
-                'user_last_name': mail_corp.user.last_name,
-                'mail_id': mail.id,
-            }
+    try:
+        mail_corp = mail.mail_corp
+        cliente = mail.cliente
+        if cliente:  # Asegúrate de que cliente no sea None
+            cliente_email = ClientesEmail.objects.filter(cliente=cliente, type=1).first()
+            if cliente_email:  # Asegúrate de que cliente_email no sea None
+                data = {
+                    'subject': mail.subject,
+                    'from_name': mail_corp.name,
+                    'from_email': mail_corp.email,
+                    'to': cliente_email.data,
+                    'date': datetime.now().isoformat(),
+                    'content': mail.body,
+                    'number': mail.send_number,
+                    'content_type': 'text/html',
+                    'from_pass': mail_corp.password,
+                    'from_smtp': mail_corp.smtp,
+                    'from_port': mail_corp.smtp_port,
+                    'salutation': cliente.salutation,
+                    'first_name': cliente.first_name,
+                    'middle_name': cliente.middle_name,
+                    'last_name': cliente.last_name,
+                    'lead_name': cliente.lead_name,
+                    'data': cliente_email.data,
+                    'company_name': cliente.company_name,
+                    'position': cliente.position,
+                    'type': cliente.type.name,
+                    'firma': mail_corp.firma,
+                    'user_name': mail_corp.user.first_name,
+                    'user_last_name': mail_corp.user.last_name,
+                    'mail_id': mail.id,
+                }
 
-            if cliente.source_information:
-                data['cc'] = emails_cadena(cliente.source_information)
+                if cliente.source_information:
+                    data['cc'] = emails_cadena(cliente.source_information)
 
-            if next_mail_id:
-                data['mail_to_send_id'] = next_mail_id
-            else:
-                data['mail_to_send_id'] = MailsToSend.objects.filter(mail=mail,
-                                                                     send=False).first().id
+                if next_mail_id:
+                    data['mail_to_send_id'] = next_mail_id
+                else:
+                    data['mail_to_send_id'] = MailsToSend.objects.filter(mail=mail,
+                                                                        send=False).first().id
 
-            serializer = MailSerializer(data=data)
-            if serializer.is_valid():
-                return serializer.data
+                serializer = MailSerializer(data=data)
+                if serializer.is_valid():
+                    return serializer.data
 
-            print("Error al obtener los datos del mail a enviar.")
-            print(serializer.errors)
-            return serializer.errors
+                send_log_message("Error al obtener los datos del mail a enviar.")
+                send_log_message(serializer.errors)
+                return serializer.errors
 
-        print("No se encontró cliente_email con type=1 para el cliente.")
-    print("El mail no tiene un cliente asociado.")
-    return None
+        send_log_message("El mail no tiene un cliente asociado.")
+        return None
+    except ClientesEmail.DoesNotExist as e_error:
+        send_log_message("Error when obtaining the data of the mail to send.")
+        send_log_message("No customer_email with type=1 was found for the customer.")
+        raise e_error
 
 def add_image_to_email(content: str, message: MIMEMultipart) -> str:
     """ Función que localiza y formatea las imágenes que se encuentran en el contenido del mail. """
@@ -314,12 +328,12 @@ def add_image_to_email(content: str, message: MIMEMultipart) -> str:
                 message.attach(image)
         return content
     except FileNotFoundError as e_error:
-        print("Error al agregar la imagen al mail")
-        print(e_error)
+        send_log_message("Error al agregar la imagen al mail")
+        send_log_message(e_error)
         raise e_error
     except Exception as e_error:
-        print("Error al agregar la imagen al mail")
-        print(e_error)
+        send_log_message("Error al agregar la imagen al mail")
+        send_log_message(e_error)
         raise e_error
 
 def register_first_email(id_mail: int):
@@ -342,16 +356,16 @@ def register_first_email(id_mail: int):
             cliente.contacted_on = datetime.now()
             cliente.save()
     except Mail.DoesNotExist as e_error:
-        print("Error al registrar el primer mail")
-        print("No existe el mail")
+        send_log_message("Error al registrar el primer mail")
+        send_log_message("No existe el mail")
         raise e_error
     except Clientes.DoesNotExist as e_error:
-        print("Error al registrar el primer mail")
-        print("No existe el cliente")
+        send_log_message("Error al registrar el primer mail")
+        send_log_message("No existe el cliente")
         raise e_error
     except Exception as e_error:
-        print("Error al registrar el primer mail")
-        print(e_error)
+        send_log_message("Error al registrar el primer mail")
+        send_log_message(e_error)
         raise e_error
 
 
@@ -405,12 +419,12 @@ def get_template_file_and_save(id_template: int) -> bool:
                 return True
         return False
     except FileNotFoundError as e_error:
-        print("Error al leer el archivo")
-        print(e_error)
+        send_log_message("Error al leer el archivo")
+        send_log_message(e_error)
         raise e_error
     except FileExistsError as e_error:
-        print("Error al leer el archivo")
-        print(e_error)
+        send_log_message("Error al leer el archivo")
+        send_log_message(e_error)
         raise e_error
 
 
@@ -433,34 +447,33 @@ def emails_cadena(cadena):
                         # Añadimos el email a la lista de emails válidos
                         emails.append(palabra)
                     else:
-                        print(f"The domain of the email '{palabra}' is not valid.")
+                        send_log_message(f"The domain of the email '{palabra}' is not valid.")
                 else:
-                    print(f"The email '{palabra}' contains more than one arroba.")
+                    send_log_message(f"The email '{palabra}' contains more than one arroba.")
         # Si no se encontraron emails válidos, mostramos un mensaje
         if len(emails) == 0:
-            print("No valid emails were found in the string.")
+            send_log_message("No valid emails were found in the string.")
             return None
         return emails
-    except ValueError as e:
-        print(f"Error processing string: {e}")
-        return None
+    except ValueError as error:
+        send_log_message(f"Error processing string: {error}")
+        raise error
 
 
 def get_next_email_data() -> dict:
     '''
     Obtiene los datos del mail a enviar.
     '''
-    next_mail = MailsToSend.objects.filter(approved=True,
+    try:
+        next_mail = MailsToSend.objects.filter(approved=True,
                                            send=False).order_by('date_approved').first()
-
-    if next_mail:
         mail = next_mail.mail
         if mail:  # Asegúrate de que mail no sea None
             return get_data_for_mail(mail, next_mail.id)
-        print("next_mail no tiene un mail asociado.")
-    print("No se encontró un mail para enviar.")
-
-    return None
+        send_log_message("next_mail no tiene un mail asociado.")
+    except MailsToSend.DoesNotExist:
+        send_log_message("No email found to send.")
+        return None
 
 def send_new_mail(msg_data) -> JsonResponse:
     """
@@ -505,10 +518,12 @@ def send_new_mail(msg_data) -> JsonResponse:
         message['From'] = msg_data['from_email']
         message['To'] = msg_data['to']
         message['Subject'] = msg_data['subject']
-        message['CC'] = msg_data['cc']
+        if msg_data['cc']:
+            message['CC'] = ', '.join(msg_data['cc'])
+            if message['CC'] is None:
+                send_log_message("sin cc")
+                message['CC'] = ''
 
-        print("Sending email...")
-        print(message['CC'])
 
         msg_data['content'] = prepare_email_body(msg_data['content'], msg_data)
         msg_data['firma'] = prepare_email_body(msg_data['firma'], msg_data)
@@ -518,7 +533,6 @@ def send_new_mail(msg_data) -> JsonResponse:
 
         content = msg_data['content'] + msg_data['firma']
         message.attach(MIMEText(content, "html"))
-
         mail = Mail.objects.get(id=msg_data['mail_id'])
         attachments = TemplateFiles.objects.get(
                                                 orden=mail.send_number+1,
@@ -541,7 +555,6 @@ def send_new_mail(msg_data) -> JsonResponse:
             server.starttls(context=context)
             server.login(msg_data['from_email'], msg_data['from_pass'])
             server.send_message(message)
-        print("Email sent successfully")
 
         # Update mail object status and save
         with transaction.atomic():
@@ -557,14 +570,18 @@ def send_new_mail(msg_data) -> JsonResponse:
     except ObjectDoesNotExist as e_error:
         error_msg = f"Mail with ID {msg_data['mail_to_send_id']} does not exist."
         mail_to_send.error_message = error_msg
+        mail_to_send.approved = False
         mail_to_send.save()
+        send_log_message(error_msg)
         return JsonResponse({'code': e_error, 'error': error_msg}, status=404)
 
     except smtplib.SMTPException as e:
         error_msg = f"Error sending email: {e}"
         mail_to_send.status = False
         mail_to_send.error_message = error_msg
+        mail_to_send.approved = False
         mail_to_send.save()
+        send_log_message(error_msg)
         return JsonResponse({'error': error_msg}, status=500)
 
 class EmailAPI(APIView):

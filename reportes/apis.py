@@ -8,6 +8,7 @@ from rest_framework import status
 from django.db import transaction, IntegrityError
 
 from auxiliares.models import Country, Type
+from reportes.utils import send_log_message
 from reportes.constants import BITRIX_WEBHOOK, BITRIX_BASE_URL
 from reportes.models import Clientes, ClientesAddress, ClientesContact, ClientesEmail, MailCorp
 from reportes.serializers import ClientesSerializer
@@ -18,7 +19,7 @@ class MyAPIView(APIView):
     def get(self, request, *args, **kwargs):
         """ Método que imprime un mensaje en la consola """
         message = "Hola mundo"
-        print(message)
+        send_log_message(message)
         return Response({"message": message}, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
@@ -27,10 +28,10 @@ class MyAPIView(APIView):
         if not id_lead:
             return Response({"error": "ID lead is missing"}, status=status.HTTP_400_BAD_REQUEST)
 
-        print(f"Received petition for lead id: {id_lead}")
+        send_log_message(f"Received petition for lead id: {id_lead}")
 
         url = self.construct_url(id_lead)
-        print(url)
+        send_log_message(url)
 
         response = self.make_request(url)
 
@@ -41,7 +42,7 @@ class MyAPIView(APIView):
         if not result:
             return Response({"error": "Result not found"}, status=status.HTTP_400_BAD_REQUEST)
 
-        print(f"Received data for lead id: {result['ID']} title: {result['TITLE']}")
+        send_log_message(f"Received data for lead id: {result['ID']} title: {result['TITLE']}")
 
         data = self.construct_data(result)
         if not data:
@@ -59,7 +60,7 @@ class MyAPIView(APIView):
             cliente = Clientes.objects.get(cliente_id=id_lead)
             cliente.visible = False
             cliente.save()
-            print(f"Cliente {cliente} marked as not visible")
+            send_log_message(f"Cliente {cliente} marked as not visible")
             return Response({"message": "Cliente deleted"}, status=status.HTTP_200_OK)
         except Clientes.DoesNotExist:
             return Response({"error": "Cliente not found"}, status=status.HTTP_400_BAD_REQUEST)
@@ -83,7 +84,7 @@ class MyAPIView(APIView):
         lead_status = self.get_lead_status(result['STATUS_ID'])
         source = self.get_source(result['SOURCE_ID'])
         if result.get('UF_CRM_1644500575') is None:
-            print("Lead type not found")
+            send_log_message("Lead type not found")
             return None
         responsable = None
         if self.get_responsable(result['ASSIGNED_BY_ID']):
@@ -163,7 +164,7 @@ class MyAPIView(APIView):
             self.update_phones(cliente, result)
             self.update_address(cliente, result)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        print(serializer.errors)
+        send_log_message(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def create_cliente(self, data, result):
@@ -176,7 +177,7 @@ class MyAPIView(APIView):
             self.update_phones(cliente, result)
             self.update_address(cliente, result)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        print(serializer.errors)
+        send_log_message(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update_emails(self, cliente, result):
@@ -191,9 +192,10 @@ class MyAPIView(APIView):
                             type_id=email_type,
                             defaults={'data': email['VALUE']}
                         )
-                        print(f"Email {email['VALUE']} updated for cliente {cliente}")
+                        send_log_message(f"Email {email['VALUE']} updated for cliente {cliente}")
                 except IntegrityError:
-                    print(f"Duplicate entry found for cliente {cliente} and type_id {email_type}.")
+                    send_log_message(
+                        f"Duplicate entry found for cliente {cliente} and type_id {email_type}.")
 
     def update_phones(self, cliente, result):
         """ Método que actualiza los teléfonos de un cliente """
@@ -208,13 +210,14 @@ class MyAPIView(APIView):
                             type_id=phone_type
                         )
                 except IntegrityError:
-                    print(f"Duplicate entry found for cliente {cliente} and type_id {phone_type}.")
+                    send_log_message(
+                        f"Duplicate entry found for cliente {cliente} and type_id {phone_type}.")
 
     def update_address(self, cliente, result):
         """ Método que actualiza la dirección de un cliente """
         if result.get('ADDRESS'):
             if not result.get('ADDRESS_COUNTRY'):
-                print(f"Country not found for address {result['ADDRESS']}")
+                send_log_message(f"Country not found for address {result['ADDRESS']}")
             else:
                 if Country.objects.filter(description=result['ADDRESS_COUNTRY']).exists():
                     country = Country.objects.get(description=result['ADDRESS_COUNTRY'])
@@ -251,8 +254,10 @@ class MyAPIView(APIView):
 
         result = response.json().get('result')
 
-        if MailCorp.objects.filter(email=result['EMAIL']).exists():
-            return MailCorp.objects.get(email=result['EMAIL'])
+        send_log_message(result)
+        if 'EMAIL' in result:
+            if MailCorp.objects.filter(email=result['EMAIL']).exists():
+                return MailCorp.objects.get(email=result['EMAIL'])
         return None
 
 def convert_to_client(data):

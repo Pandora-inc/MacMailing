@@ -1,8 +1,10 @@
 """ This module contains the class for reading """
 from datetime import datetime
 
+import logging
 import openpyxl
 from django_select2.forms import Select2Widget
+import newrelic.agent
 
 from auxiliares.models import ContactType, EmailType, SocialType, WebType, Country, Type
 from .constants import INDICE_TRADUCCION, INDICE_TRADUCCION_CONTACT
@@ -102,8 +104,6 @@ class UtilExcelFile():
 
         raise ValueError(f"No se pudo encontrar un formato válido para la fecha: {fecha_str}")
 
-
-
     def get_structure(self):
         ''' Devuelve un diccionario con la estructura del excel y un diccionario con los indices '''
         response = {}
@@ -116,7 +116,6 @@ class UtilExcelFile():
                 if cell.value:
                     indio = self.clean_name(cell.value)
                     indio = self.traducir_claves_dict(indio, INDICE_TRADUCCION)
-                    # TODO: Este if es una excepción, hay que ver como solucionarlo
                     if i == 58:
                         indio = indio+"_dire"
                 else:
@@ -787,3 +786,10 @@ class Select2WidgetWithSearch(Select2Widget):
     search_fields = [
         'text__icontains',
     ]
+
+
+def send_log_message(message):
+    """ Send a log message """
+    logger = logging.getLogger('my_app_logger')
+    newrelic.agent.record_custom_event('MyCustomLog', {'message': message})
+    logger.debug(message)
