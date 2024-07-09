@@ -81,12 +81,12 @@ class Clientes(models.Model):
     """ Modelo para el registro de los clientes """
     cliente_id = models.IntegerField(unique=True, verbose_name='lead id')
     status = models.CharField(max_length=32, blank=True, null=True)
-    lead_name = models.CharField(max_length=64, blank=True, null=True)
+    lead_name = models.CharField(max_length=64)
     salutation = models.CharField(
         max_length=16, blank=True, null=True, choices=SALUTATIONS)
-    first_name = models.CharField(max_length=32, blank=True, null=True)
+    first_name = models.CharField(max_length=32)
     middle_name = models.CharField(max_length=32, blank=True, null=True)
-    last_name = models.CharField(max_length=32, blank=True, null=True)
+    last_name = models.CharField(max_length=32)
     date_of_birth = models.DateField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     source = models.CharField(max_length=32, blank=True, null=True)
