@@ -7,7 +7,7 @@ from django.urls import reverse
 from django_admin_listfilter_dropdown.filters import DropdownFilter, RelatedDropdownFilter
 
 from reportes.forms import MailForm
-from reportes.utils import get_response_account, if_admin
+from reportes.utils import get_response_account, if_admin, send_log_message
 from reportes.models import (Clientes, Mail, MailCorp, MailsToSend,
                              TemplateFiles, TemplatesGroup, ClientesEmail)
 
@@ -137,7 +137,33 @@ class MailAdmin(admin.ModelAdmin):
 
 
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
-        """ Sobrescribe la vista de cambio de formulario """
+        """
+        Handles the form submission for changing a specific form instance in the admin interface.
+
+        Parameters:
+        - request (HttpRequest): The HTTP request object.
+        - object_id (str): The ID of the object being changed.
+        - form_url (str): The URL of the form.
+        - extra_context (dict): Any extra context data to be passed to the form.
+
+        Behavior:
+        - If the request method is POST, processes the form data.
+        - Validates if the 'cliente' field is provided in the form data, displays a warning
+        message if not.
+        - Retrieves the 'mail_corp' ID from the form data and fetches the corresponding MailCorp
+        object.
+        - Validates if the 'mail_corp' is provided, displays a warning message if not.
+        - Iterates over each 'cliente' ID in the form data and calls the '_handle_client_mail'
+        method for each.
+        - Redirects to the 'reportes_mail_changelist' URL after processing the form data.
+
+        Returns:
+        - HttpResponseRedirect: Redirects to the 'reportes_mail_changelist' URL.
+
+        Note:
+        This method is part of the MailAdmin class and is intended to be used within the Django
+        admin interface for managing emails.
+        """
         if request.method == 'POST':
             clientes = request.POST.getlist('cliente', None)
             if not clientes:
@@ -158,38 +184,78 @@ class MailAdmin(admin.ModelAdmin):
             return HttpResponseRedirect(reverse('admin:reportes_mail_changelist'))
         return super().changeform_view(request, object_id, form_url, extra_context)
 
-    def _handle_client_mail(self, cliente_id, mail_corp, request):
-        """ Handle the creation of mail for a client """
 
+    def _handle_client_mail(self, cliente_id, mail_corp, request):
+        """
+        Handles the creation or update of an email for a specific client and mail
+        corporation.
+
+        Parameters:
+        - cliente_id (int): The ID of the client for whom the email is being handled.
+        - mail_corp (MailCorp): The mail corporation associated with the email.
+        - request (HttpRequest): The HTTP request object.
+
+        Returns:
+        - bool: True if the email was successfully created or updated, False otherwise.
+
+        Behavior:
+        - If no template group is provided in the request, a log message is sent and the
+        method returns False.
+        - Retrieves the template group based on the provided ID from the request.
+        - Extracts the reminder days, status response, and status from the request data.
+        - Fetches the client object based on the provided ID.
+        - Checks if there is an existing email for the client and mail corporation.
+            - If exists, updates the existing email with new data and saves it.
+            - If not, creates a new email with the provided data and saves it.
+        - If a template is found for the template group, sets the email body and subject
+        accordingly.
+        - Sends a success message to the user indicating the operation outcome.
+
+        Note:
+        This method is part of the MailAdmin class and is intended to be used within the Django
+        admin interface for managing emails.
+        """
         template_group_id = request.POST.get('template_group', None)
         if not template_group_id:
-            print("NO TEMPLATE GROUP")
+            send_log_message("NO TEMPLATE GROUP")
             return False
 
-        template_group = TemplatesGroup.objects.filter(
-            pk=template_group_id).first()
+        template_group = TemplatesGroup.objects.filter(pk=template_group_id).first()
 
         reminder_days = request.POST.get('reminder_days', 7)
         status_response = request.POST.get('status_response', 'off') == 'on'
         status = request.POST.get('status', False) in ['on', 'true', 1, True, "1"]
 
         client = Clientes.objects.get(pk=cliente_id)
-        if Mail.objects.filter(mail_corp=mail_corp, cliente=client).exists():
-            return False
-        mail = Mail.objects.create(
-            mail_corp=mail_corp,
-            cliente=client,
-            status=status,
-            status_response=status_response,
-            template_group=template_group,
-            reminder_days=reminder_days
-        )
 
-        template = TemplateFiles.objects.filter(template_group=template_group, orden=1).first()
-        if template:
-            mail.body = template.text
-            mail.subject = template.name
+        # Buscar un correo existente para este cliente y empresa de correo
+        existing_mail = Mail.objects.filter(mail_corp=mail_corp, cliente=client).first()
 
-        mail.save()
-        self.message_user(request, f"{cliente_id} has been added.", level=messages.SUCCESS)
-        return True
+        if existing_mail:
+            # Actualizar el correo existente
+            existing_mail.status = status
+            existing_mail.status_response = status_response
+            existing_mail.template_group = template_group
+            existing_mail.reminder_days = reminder_days
+            existing_mail.save()
+            self.message_user(request, f"{cliente_id} has been updated.", level=messages.SUCCESS)
+            return True
+        else:
+            # Crear un nuevo correo si no existe uno para este cliente y empresa de correo
+            mail = Mail.objects.create(
+                mail_corp=mail_corp,
+                cliente=client,
+                status=status,
+                status_response=status_response,
+                template_group=template_group,
+                reminder_days=reminder_days
+            )
+
+            template = TemplateFiles.objects.filter(template_group=template_group, orden=1).first()
+            if template:
+                mail.body = template.text
+                mail.subject = template.name
+
+            mail.save()
+            self.message_user(request, f"{cliente_id} has been added.", level=messages.SUCCESS)
+            return True

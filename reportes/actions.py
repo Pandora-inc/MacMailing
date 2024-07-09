@@ -156,7 +156,10 @@ def registro_envio_mail(id_mail: int, send_number: int):
             mail = Mail.objects.get(id=id_mail)
             mail.status = 1
             mail.send_number = send_number
-            mail.last_send = datetime.now()
+            now = datetime.now()
+            if timezone.is_naive(now):
+                now = timezone.make_aware(now, timezone.get_default_timezone())
+            mail.last_send = now
             mail.save()
 
             crear_evento(mail)
@@ -467,10 +470,10 @@ def get_next_email_data() -> dict:
     try:
         next_mail = MailsToSend.objects.filter(approved=True,
                                            send=False).order_by('date_approved').first()
-        mail = next_mail.mail
-        if mail:  # Asegúrate de que mail no sea None
-            return get_data_for_mail(mail, next_mail.id)
-        send_log_message("next_mail no tiene un mail asociado.")
+
+        if next_mail:  # Asegúrate de que mail no sea None
+            send_log_message(f"Next mail to send: {next_mail.id}")
+            return get_data_for_mail(next_mail.mail, next_mail.id)
     except MailsToSend.DoesNotExist:
         send_log_message("No email found to send.")
         return None
@@ -534,8 +537,18 @@ def send_new_mail(msg_data) -> JsonResponse:
         content = msg_data['content'] + msg_data['firma']
         message.attach(MIMEText(content, "html"))
         mail = Mail.objects.get(id=msg_data['mail_id'])
+
+        number = mail.send_number+1
+        while mail.template_group.max_number < number:
+            number = number - mail.template_group.max_number
+            if number == mail.template_group.max_number:
+                break
+
+        send_log_message(f"order: {number}")
+        send_log_message(f"group: {mail.template_group}")
+
         attachments = TemplateFiles.objects.get(
-                                                orden=mail.send_number+1,
+                                                orden=number,
                                                 template_group=mail.template_group
                                                 ).attachment.all()
         for attachment in attachments:
@@ -546,7 +559,7 @@ def send_new_mail(msg_data) -> JsonResponse:
                 filename = attachment.name + "." + str(attachment.file).split(".", maxsplit=1)[-1]
                 part.add_header('Content-Disposition', f'attachment; filename={filename}')
                 message.attach(part)
-
+        send_log_message(f"Buscando el mensaje: {msg_data['mail_to_send_id']}")
         mail_to_send = MailsToSend.objects.get(id=msg_data['mail_to_send_id'])
 
         # Send email using SMTP
