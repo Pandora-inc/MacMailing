@@ -111,7 +111,7 @@ class MyAPIView(APIView):
             'type': lead_type,
             'addl_type_details_other': result['UF_CRM_1660655104670'],
             'contacted': result['STATUS_ID'] == 'IN_PROCESS',
-            'responsible': responsable,
+            'responsible': responsable.id if responsable else None,
         }
 
     def get_salutation(self, honorific):
@@ -247,17 +247,17 @@ class MyAPIView(APIView):
 
     def get_responsable(self, responsable_id: int):
         """ Método que obtiene el responsable de un lead """
-        url=f'{BITRIX_BASE_URL}/{BITRIX_WEBHOOK}/crm.lead.get.json?ID={responsable_id}'
+        url=f'{BITRIX_BASE_URL}/{BITRIX_WEBHOOK}/user.get.json?ID={responsable_id}'
         response = self.make_request(url)
         if response.status_code != 200:
+            send_log_message(response.json())
+            send_log_message(url)
             return None
 
-        result = response.json().get('result')
-
-        send_log_message(result)
+        result = response.json().get('result')[0]
         if 'EMAIL' in result:
             if MailCorp.objects.filter(email=result['EMAIL']).exists():
-                return MailCorp.objects.get(email=result['EMAIL'])
+                return MailCorp.objects.filter(email=result['EMAIL']).first()
         return None
 
 def convert_to_client(data):
