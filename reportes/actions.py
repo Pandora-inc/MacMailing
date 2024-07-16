@@ -171,7 +171,8 @@ def registro_envio_mail(id_mail: int, send_number: int):
                     send_log_message("Error al actualizar el estado del mail en Bitrix")
                     send_log_message(f"Error: {actualizacion.status_code}")
                     send_log_message(actualizacion.data)
-                send_log_message("Registro actualizado en bitrix")
+                else:
+                    send_log_message("Registro actualizado en bitrix")
 
             send_log_message("Registro de envio de mail actualizado")
         except Mail.DoesNotExist as e_error:
@@ -202,25 +203,21 @@ def actualizar_status_bitrix(mail: Mail):
         send_log_message(mail.cliente.cliente_id)
         url = f'{BITRIX_BASE_URL}/{BITRIX_WEBHOOK}/crm.lead.update.json'
         data = {
-            "ID": mail.cliente.cliente_id,
-            "fields": {
-                "ID": mail.cliente.cliente_id,
-                "STATUS_ID": "IN_PROCESS"
+            'ID': mail.cliente.cliente_id,
+            'fields': {
+                'ID': mail.cliente.cliente_id,
+                'STATUS_ID': 'IN_PROCESS'
             },
-            "params": {
-                "REGISTER_SONET_EVENT": "Y"
+            'params': {
+                'REGISTER_SONET_EVENT': 'Y'
             }
         }
 
-        headers = {
-            'Content-Type': 'html/text',
-            'Accept': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-        }
-        response = requests.post(url, data=data, headers=headers, timeout=5)
+        response = requests.post(url, json=data, timeout=5)
         if response.status_code != 200:
-            return Response(response.json(), status=response.status_code)
-        return Response({"error": "Result not found"}, status=status.HTTP_400_BAD_REQUEST)
+            send_log_message(str(data))
+
+        return Response(response.json(), status=response.status_code)
     except Exception as e_error:
         send_log_message("Error al actualizar el estado del mail en Bitrix")
         send_log_message(e_error)

@@ -449,7 +449,7 @@ class Mail(models.Model):
     subject = models.CharField(max_length=256)
     body = RichTextUploadingField(config_name='awesome_ckeditor')
     created = models.DateTimeField(auto_now_add=True)
-    status = models.BooleanField(default=False)
+    status = models.BooleanField(default=True)
     status_response = models.BooleanField(default=False)
     use_template = models.BooleanField(default=True)
     template_group = models.ForeignKey(TemplatesGroup, models.RESTRICT)

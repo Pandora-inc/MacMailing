@@ -83,12 +83,18 @@ class MyAPIView(APIView):
         salutation = self.get_salutation(result['HONORIFIC'])
         lead_status = self.get_lead_status(result['STATUS_ID'])
         source = self.get_source(result['SOURCE_ID'])
-        if result.get('UF_CRM_1644500575') is None:
-            send_log_message("Lead type not found")
-            return None
         responsable = None
         if self.get_responsable(result['ASSIGNED_BY_ID']):
             responsable = self.get_responsable(result['ASSIGNED_BY_ID'])
+
+        if result.get('UF_CRM_1644500575'):
+            if Type.objects.filter(code=result['UF_CRM_1644500575']).exists() is False:
+                send_log_message(f"Lead type {result['UF_CRM_1644500575']} not found")
+                return None
+        else:
+            send_log_message(f"Lead type is empty")
+            return None
+
         lead_type = Type.objects.get(code=result['UF_CRM_1644500575']).id
 
         return {

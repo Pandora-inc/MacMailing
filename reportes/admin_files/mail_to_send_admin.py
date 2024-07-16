@@ -1,8 +1,9 @@
 """ Admin de mails a enviar """
 
 from django.contrib import admin, messages
-from django.utils.safestring import mark_safe
 from django.utils import timezone
+from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy as _
 import newrelic.agent
 
 from auxiliares.models import EmailType
@@ -10,6 +11,21 @@ from reportes.models import ClientesEmail, Mail
 from reportes.utils import if_admin, get_response_account
 from reportes.actions import get_mail_data, prepare_email_body, send_mail
 
+
+class MailFromFilter(admin.SimpleListFilter):
+    title = _('mail from')
+    parameter_name = 'mail_from'
+
+    def lookups(self, request, model_admin):
+        # Utilizamos un set para evitar duplicados
+        unique_emails = set(Mail.objects.values_list('mail_corp__email', flat=True).distinct())
+        return [(email, email) for email in unique_emails]
+
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(mail__mail_corp__email=self.value())
+        return queryset
 
 @newrelic.agent.background_task(name='Envio de mail', group='Mail')
 def enviar_email(_, request, queryset):
@@ -48,6 +64,7 @@ class MailsToSendAdmin(admin.ModelAdmin):
         'date_approved')
     search_fields = ['mail__mail_corp__name', 'mail__cliente__lead_name',
                      'mail__cliente__last_name', 'mail__cliente__first_name', 'approved', 'send']
+    list_filter = [MailFromFilter, 'approved']
 
     ordering = ['mail', 'approved', 'send']
 
