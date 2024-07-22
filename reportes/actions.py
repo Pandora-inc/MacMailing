@@ -295,6 +295,7 @@ def get_data_for_mail(mail: Mail, next_mail_id: int=None) -> dict:
                 if serializer.is_valid():
                     return serializer.data
 
+                send_log_message(f"Lead: {cliente}")
                 send_log_message("Error al obtener los datos del mail a enviar.")
                 send_log_message(serializer.errors)
                 return serializer.errors
@@ -515,6 +516,10 @@ def send_new_mail(msg_data) -> JsonResponse:
 
     try:
         message = MIMEMultipart()
+
+        send_log_message(f"Buscando el mensaje: {msg_data['mail_to_send_id']}")
+        mail_to_send = MailsToSend.objects.get(id=msg_data['mail_to_send_id'])
+
         message['From'] = msg_data['from_email']
         message['To'] = msg_data['to']
         message['Subject'] = msg_data['subject']
@@ -556,8 +561,6 @@ def send_new_mail(msg_data) -> JsonResponse:
                 filename = attachment.name + "." + str(attachment.file).split(".", maxsplit=1)[-1]
                 part.add_header('Content-Disposition', f'attachment; filename={filename}')
                 message.attach(part)
-        send_log_message(f"Buscando el mensaje: {msg_data['mail_to_send_id']}")
-        mail_to_send = MailsToSend.objects.get(id=msg_data['mail_to_send_id'])
 
         # Send email using SMTP
         context = ssl.create_default_context(cafile=certifi.where())
@@ -591,6 +594,16 @@ def send_new_mail(msg_data) -> JsonResponse:
         mail_to_send.error_message = error_msg
         mail_to_send.approved = False
         mail_to_send.save()
+        send_log_message(error_msg)
+        return JsonResponse({'error': error_msg}, status=500)
+
+    except KeyError as error:
+        error_msg = f"Error in the message data: {error}"
+        mail_to_send.status = False
+        mail_to_send.error_message = error_msg
+        mail_to_send.approved = False
+        mail_to_send.save()
+        send_log_message(f"Mail to: {msg_data['to']}")
         send_log_message(error_msg)
         return JsonResponse({'error': error_msg}, status=500)
 
