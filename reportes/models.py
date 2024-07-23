@@ -58,7 +58,7 @@ class MailCorp(models.Model):
 
     """
     name = models.CharField(max_length=64, blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
+    email = models.EmailField(unique=True)
     # password = models.CharField(_('password'), max_length=64, blank=True, null=True)
     password = models.CharField(max_length=64, blank=True, null=True)
     smtp = models.CharField(max_length=64, blank=True, null=True)

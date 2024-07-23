@@ -44,9 +44,11 @@ class ClientesAdmin(admin.ModelAdmin):
     ordering = ['cliente_id', 'last_name',
                 'lead_name', 'status', 'responsible', 'contacted']
     list_filter = ['contacted',
-                   ('responsible',RelatedDropdownFilter),
-                   ('lead_name', DropdownFilter),
-                   VisibleFilter]
+                    ('responsible',RelatedDropdownFilter),
+                    ('lead_name', DropdownFilter),
+                    ('status', DropdownFilter),
+                    ('type', RelatedDropdownFilter),
+                    VisibleFilter]
     inlines = [ClientesEmailInline]
     actions = ['enviar_mail_replicado']
 
