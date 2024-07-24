@@ -432,7 +432,11 @@ def get_template_file_and_save(id_template: int) -> bool:
 def emails_cadena(cadena):
     """ Función que extrae todos los emails válidos de una cadena de texto. """
     try:
-        caracteres_puntuacion = string.punctuation.replace('@', '').replace('.', '')
+        caracteres_puntuacion = string.punctuation.replace('@', '')
+        caracteres_puntuacion = caracteres_puntuacion.replace('.', '')
+        caracteres_puntuacion = caracteres_puntuacion.replace('_', '')
+        caracteres_puntuacion = caracteres_puntuacion.replace('-', '')
+
         traductor = str.maketrans("", "", caracteres_puntuacion)
         cadena_sin_puntuacion = cadena.translate(traductor)
         palabras = cadena_sin_puntuacion.lower().split()

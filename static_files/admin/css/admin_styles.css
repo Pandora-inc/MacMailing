@@ -1,5 +1,5 @@
 /* Estilos para resaltar el campo "status" */
-.field-proximo [value="Estamos atrasados"] {
+.field-proximo [value="We are late"] {
     border: #FF0000; /* Color rojo para el valor "inactivo" */
 }
 

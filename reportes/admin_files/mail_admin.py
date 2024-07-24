@@ -41,7 +41,7 @@ class MailAdmin(admin.ModelAdmin):
         js = ('admin/js/admin/admin_script.js',)
 
     list_display = ['mail_corp', 'cliente', 'subject', 'send_number',
-                    'status', 'status_response', 'last_send', 'proximo']
+                    'status', 'status_response', 'last_send', 'next']
     search_fields = ['mail_corp__name',
                      'mail_corp__email',
                      'cliente__lead_name',
@@ -99,7 +99,7 @@ class MailAdmin(admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-    def proximo(self, obj):
+    def next(self, obj):
         '''
         Calcula los días que faltan para el proximo envío
         '''
