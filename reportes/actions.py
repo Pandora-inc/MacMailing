@@ -584,7 +584,15 @@ def send_new_mail(msg_data) -> JsonResponse:
 
         return JsonResponse({'mail_id': msg_data['mail_id']}, status=200)
 
-    except ObjectDoesNotExist as e_error:
+    except TemplateFiles.DoesNotExist as e_error:
+        error_msg = f"Error obtaining the template file: {e_error}"
+        mail_to_send.error_message = error_msg
+        mail_to_send.approved = False
+        mail_to_send.save()
+        send_log_message(error_msg)
+        return JsonResponse({'code': e_error, 'error': error_msg}, status=404)
+
+    except MailsToSend.DoesNotExist as e_error:
         error_msg = f"Mail with ID {msg_data['mail_to_send_id']} does not exist."
         mail_to_send.error_message = error_msg
         mail_to_send.approved = False

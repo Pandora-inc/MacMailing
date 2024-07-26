@@ -2,6 +2,7 @@
 
 from datetime import date
 from django.contrib import admin, messages
+from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django_admin_listfilter_dropdown.filters import DropdownFilter, RelatedDropdownFilter
@@ -20,13 +21,19 @@ def prepare_to_send(_, request, queryset):
                 messages.add_message(request,
                                      messages.ERROR, f"Client {obj.cliente} has no email.")
             else:
-                mail = MailsToSend()
-                mail.mail = Mail.objects.get(pk=obj.pk)
-                mail.order = mail.mail.send_number
-                mail.save()
+                try:
+                    mail = MailsToSend()
+                    mail.mail = Mail.objects.get(pk=obj.pk)
+                    mail.order = mail.mail.send_number
+                    mail.save()
 
-                messages.add_message(request,
-                                     messages.SUCCESS, f"{obj} has been added to the queue.")
+                    messages.add_message(request,
+                                        messages.SUCCESS, f"{obj} has been added to the queue.")
+
+                except IntegrityError as e:
+                    send_log_message(f"Error: {e}")
+                    messages.add_message(request,
+                                        messages.WARNING, f"{obj} exist in mail to send.")
 
 prepare_to_send.short_description = "Prepare shipment"
 
