@@ -381,7 +381,7 @@ def send_mail(id_mail: int) -> bool:
         bool: True if the email was sent successfully, False otherwise.
     """
     msg_data = get_mail_data(id_mail)
-    if send_new_mail(msg_data):
+    if send_new_mail(msg_data).status_code == 200:
         return True
     return False
 
@@ -607,7 +607,7 @@ def send_new_mail(msg_data) -> JsonResponse:
         mail_to_send.approved = False
         mail_to_send.save()
         send_log_message(error_msg)
-        return JsonResponse({'error': error_msg}, status=500)
+        return JsonResponse({'code': e_error, 'error': error_msg}, status=500)
 
     except KeyError as error:
         error_msg = f"Error in the message data: {error}"
@@ -617,7 +617,7 @@ def send_new_mail(msg_data) -> JsonResponse:
         mail_to_send.save()
         send_log_message(f"Mail to: {msg_data['to']}")
         send_log_message(error_msg)
-        return JsonResponse({'error': error_msg}, status=500)
+        return JsonResponse({'code': e_error, 'error': error_msg}, status=500)
 
 class EmailAPI(APIView):
     """

@@ -235,7 +235,7 @@ class ClientesEmail(models.Model):
     """
     cliente = models.ForeignKey(Clientes, models.RESTRICT, verbose_name='lead')
     type = models.ForeignKey(EmailType, models.RESTRICT)
-    data = models.CharField(max_length=250)
+    data = models.EmailField(max_length=250)
 
     class Meta:
         """ Meta data of the model """
@@ -462,7 +462,12 @@ class Mail(models.Model):
 
     class Meta:
         """ Meta data of the model """
-        unique_together = ('cliente', 'mail_corp')
+        unique_together = ('cliente', 'mail_corp', 'template_group')
+        constraints = [
+            models.UniqueConstraint(fields=['cliente'],
+                                    condition=models.Q(status=True),
+                                    name='unique_mail_status_true')
+        ]
 
 
 class MailsToSend (models.Model):
