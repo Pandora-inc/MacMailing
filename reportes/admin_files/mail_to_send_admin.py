@@ -9,7 +9,7 @@ import newrelic.agent
 from auxiliares.models import EmailType
 from reportes.models import ClientesEmail, Mail
 from reportes.utils import if_admin, get_response_account
-from reportes.actions import get_mail_data, prepare_email_body, send_mail
+from reportes.actions import get_mail_data, prepare_email_body, register_first_email, registro_envio_mail, send_mail
 
 
 class MailFromFilter(admin.SimpleListFilter):
@@ -35,8 +35,6 @@ def enviar_email(_, request, queryset):
             if obj.approved is True:
                 newrelic.agent.add_custom_parameter("mail_id", obj.mail_id)
                 if send_mail(obj.mail_id):
-                    obj.send = True  # Marcar el correo como enviado
-                    obj.save()  # Guardar el objeto actualizado en la base de datos
                     messages.success(request, f"Mail sent successfully to {obj.mail_id}")
                 else:
                     messages.warning(request, f"Could not send email to {obj.mail_id}")

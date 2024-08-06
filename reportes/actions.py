@@ -600,8 +600,8 @@ def send_new_mail(msg_data) -> JsonResponse:
         send_log_message(error_msg)
         return JsonResponse({'code': e_error, 'error': error_msg}, status=404)
 
-    except smtplib.SMTPException as e:
-        error_msg = f"Error sending email: {e}"
+    except smtplib.SMTPException as e_error:
+        error_msg = f"Error sending email: {e_error}"
         mail_to_send.status = False
         mail_to_send.error_message = error_msg
         mail_to_send.approved = False
@@ -609,8 +609,8 @@ def send_new_mail(msg_data) -> JsonResponse:
         send_log_message(error_msg)
         return JsonResponse({'code': e_error, 'error': error_msg}, status=500)
 
-    except KeyError as error:
-        error_msg = f"Error in the message data: {error}"
+    except KeyError as e_error:
+        error_msg = f"Error in the message data: {e_error}"
         mail_to_send.status = False
         mail_to_send.error_message = error_msg
         mail_to_send.approved = False
